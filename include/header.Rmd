@@ -88,7 +88,10 @@ knitr::opts_chunk$set(message = TRUE,
                       # https://yihui.org/knitr/demo/cache/#reproducibility-with-rng
                       cache.extra = knitr::rand_seed)
 
-options(knitr.table.format = "html") 
+options(knitr.table.format = "html")
+
+# Don't use dingbats in PDF figure output
+grDevices::pdf.options(useDingbats = FALSE)
 
 # Expand the width for more plotting area
 knitr::opts_knit$set(width = 1600)
