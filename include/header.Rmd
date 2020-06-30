@@ -1,8 +1,8 @@
 
 
 <!-- Load custom CSS/JS for code folding -->
-<link rel="stylesheet" type="text/css" href="../include/hideOutput.css">
-<script src="../include/hideOutput.js"></script>
+<link rel="stylesheet" type="text/css" href="../../include/hideOutput.css">
+<script src="../../include/hideOutput.js"></script>
 
 ***
 
@@ -14,15 +14,15 @@ Configuration of project directory & analysis outputs:
 
 ```{r config, warning = FALSE}
 
-source(here("rr_helpers.R"))
+library(here)
 
 # Set up outputs
 message("Document index: ", doc_id)
 
 # Specify where to save outputs
-out        <- here("output", doc_id); dir.create(out, recursive = TRUE)
-figout     <- here("figures", doc_id, "/")
-cache      <- paste0("~/tmp/", basename(here()), "/", doc_id, "/")
+out        <- here(subdir, "output", doc_id); dir.create(out, recursive = TRUE)
+figout     <- here(subdir, "figures", subdir, doc_id, "/")
+cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
 
 ```
 
@@ -32,6 +32,7 @@ The root directory of this project is:
 
 ```{r here, echo = FALSE, cache = FALSE}
 
+source(here("rr_helpers.R"))
 message(here())
 
 ```

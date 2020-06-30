@@ -212,6 +212,7 @@ rr_ggplot <- function(df, plot_num, ...) {
     # Make a path for the source data by appending a suffix to the figure path,
     # and write source data there as a TSV
     src_path <- paste0(fig_path, ".source_data.tsv")
+    
     write_tsv(df, src_path)
     
     # Output a message with path to source data file

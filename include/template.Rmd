@@ -5,14 +5,14 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
     theme: flatly
-    css: ../include/style.css
+    css: ../../include/style.css
     toc: yes
     toc_depth: 4
     number_sections: true
     df_print: paged
     includes:
-      before_body: ../include/header.html
-      after_body:  ../include/footer.html
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
 ---
 
 <!-- FRONT MATTER, insert configuration info -->
@@ -22,6 +22,7 @@ output:
 # Index of the document
 # ...determines name of the subfolder of `outputs` and `figures`
 doc_id <- "01"
+subdir <- # "bulk" or "singlecell"
 
 suppressMessages(library(here))
 
@@ -43,6 +44,7 @@ Describe this analysis here.
 ```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
 
 # Load liraries here
+library(here)
 
 ```
 
