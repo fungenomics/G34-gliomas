@@ -1,0 +1,326 @@
+---
+title: "01 - Bulk RNAseq"
+author: "Selin Jessa [[selin.jessa@mail.mcgill.ca](mailto:selin.jessa@mail.mcgill.ca)]"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    keep_md: true
+    theme: flatly
+    css: ../../include/style.css
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+    includes:
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
+---
+
+<!-- FRONT MATTER, insert configuration info -->
+
+```{r header, echo = FALSE, results = 'asis', warning = FALSE}
+
+# Index of the document
+# ...determines name of the subfolder of `outputs` and `figures`
+doc_id <- "01"
+subdir <- "bulk"
+
+suppressMessages(library(here))
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "header.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF FRONT MATTER -->
+
+
+# Overview
+
+Here we perform basic RNAseq analysis for G34R/V mutant high-grade gliomas.
+
+This document:
+
+* loads metadata for bulk RNAseq of G34R/V mutant tumors as well as tumors of
+other comparator groups
+* loads metadata for bulk RNAseq of tumor-derived cell lines
+* prepares the inputs for our in-house bulk RNAseq pipeline (code not included in this
+repository)
+* generates basic plots of gene expression levels
+
+More complex downstream analysis is performed in subsequent documents.
+
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+# General
+library(tidyverse)
+library(magrittr)
+library(glue)
+
+# For plotting
+library(ggplot2)
+library(scales)
+library(ggrepel)
+library(cytobox)
+ggplot2::theme_set(cytobox::theme_min(base_size = 13))
+
+# Custom
+source(here::here("bulk/analysis/functions.R"))
+
+```
+
+# Analysis
+
+## Prepare inputs for RNAseq pipeline - cell lines
+
+Load sample metadata:
+
+```{r load_bulk_meta, message = FALSE}
+
+bulk_samples <- readxl::read_xlsx(
+  here::here("bulk", "data", "2020-02-25_bulkRNAseq_metadata.xlsx")) %>% 
+  mutate(G34_batch = ifelse(is.na(G34_batch), "Old", G34_batch))
+
+# Count number of samples per group
+table(bulk_samples$Group)
+
+```
+
+Next, we prepare the inputs for the RNAseq. For each comparison (i.e. differential
+gene expression), we need two files:
+
+* `info.samples.tsv` - describing the membership of each sample to each group
+* `info.groups.tsv`  - describing the two groups in the comparison
+
+
+We perform differential gene expression analysis between G34 tumors and each other
+“comparator” group:
+
+```{r raptor_pairs, dependson = 'load_bulk_meta'}
+
+# Get the tumor groups (other than G34R/V)
+(groups <- unique(bulk_samples$Group) %>% tail(5))
+
+# Generate inputs for each group
+for (group in groups) {
+  
+  # Create a name describing the comparison
+  comp <- paste0(gsub("/", ".", "HGG-G34R/V"), "_vs_", gsub("/", ".", group))
+  dir.create(file.path(out, comp), showWarnings = FALSE)
+  
+  # Create the info.samples.tsv, which needs three columns: ID (path
+  # to the alignment and counts on Hydra), Nickname (short sample name), and Group
+  bulk_samples %>%
+    select(ID, Nickname = Sample, Group, Batch = G34_batch) %>%
+    filter(Group %in% c("HGG-G34R/V", group)) %>%
+    write_tsv(file.path(out, comp, "info.samples.tsv"))
+  
+  # Create the info.groups.tsv
+  data.frame(Group = c("HGG-G34R/V", group),
+             Label = c("HGG-G34R/V", group),
+             Order = c(2, 1),
+             stringsAsFactors = FALSE) %>%
+    write_tsv(file.path(out, comp, "info.groups.tsv"))
+  
+}
+
+```
+
+
+We will also need one version with all samples together, since normalization is
+dataset-dependent, and we will compare expression levels across groups.
+
+```{r raptor_all, dependson = 'load_bulk_meta'}
+
+# As above, but without batch correction since we won't be doing differential
+# expression analysis here
+dir.create(file.path(out, "All_tumor_samples"), showWarnings = FALSE)
+
+bulk_samples %>%
+  select(ID, Nickname = IC_Sample, Group) %>%
+  write_tsv(file.path(out, "All_tumor_samples", "info.samples.tsv"))
+
+data.frame(Group = unique(bulk_samples$Group),
+           Label = unique(bulk_samples$Group),
+           Order = seq_along(unique(bulk_samples$Group)),
+           stringsAsFactors = FALSE) %>%
+  write_tsv(file.path(out, "All_tumor_samples", "info.groups.tsv"))
+
+```
+
+
+Finally, we peform one analysis among G34R/V tumors, between PDGFRA mutants
+vs. WT:
+
+```{r raptor_pdgfra, dependson = 'load_bulk_meta'}
+
+# Exactly as above
+dir.create(file.path(out, "G34RV_by_PDGFRA"), showWarnings = FALSE)
+
+bulk_samples %>%
+  filter(Group == "HGG-G34R/V") %>% 
+  select(ID, Nickname = Sample, Group = Genotype_PDGFRA, G34_batch, Genotype_G34) %>%
+  write_tsv(file.path(out, "G34RV_by_PDGFRA", "info.samples.tsv"))
+
+data.frame(Group = c("Mutant", "WT"),
+           Label = c("Mutant", "WT"),
+           Order = c(2, 1),
+           stringsAsFactors = FALSE) %>%
+  write_tsv(file.path(out, "G34RV_by_PDGFRA", "info.groups.tsv"))
+
+```
+
+The in-house RNAseq pipeline is then run on these inputs, generating
+normalized expression counts as well as the output of differential gene expression
+analysis using DESeq2.
+
+
+## Prepare inputs for RNAseq pipeline - cell lines
+
+
+
+## Plot gene expression
+
+Prepare colour palettes for visualization:
+
+```{r palettes}
+
+palette_groups <- c(
+  "G34R/V"            = "cyan4",
+  "G34R/V-PDGFRA mut" = "#26A27D",
+  "G34R/V-PDGFRA WT"  = "#145448",
+  "K27M-pons"         = "gold1",
+  "K27M-thal"         = "goldenrod3",
+  "IDH"               = "#883067",
+  "WT"                = "navy",
+  "HGNET-BCOR"        = "lavender")
+
+palette_pdgfra <- c("Mutant" = "red",
+                    "WT"     = "gray70")
+
+palette_g34    <- c("G34R"   = "#3d8a71",
+                    "G34V"   = "#6bbfad") 
+
+```
+
+
+
+Load normalized counts for genes of interest from the pipeline run:
+
+```{r load_counts}
+
+pipeline_path <- "../../../../../from_beluga/HGG/2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
+
+# Define genes which we'll plot in this document
+genes_of_interest <- c("GSX2", "DLX1", "DLX2", "PDGFRA", "MOXD1", "EOMES", "NEUROD2")
+
+# Load counts and convert to tidy format
+counts_subset <- extract_pipeline_counts(path = file.path(pipeline_path,
+                                                          "All_tumor_samples/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
+                                         goi = genes_of_interest) %>% 
+  left_join(bulk_samples, by = c("sample" = "Sample"))
+
+# Tidy up and simplify the names of the tumor groups
+counts_subset <- counts_subset %>%
+  mutate(Group2 = recode(Group,
+                         "HGG-G34R/V" = "G34R/V",
+                         "HGG-H3.3-K27M-pons" = "K27M-pons",
+                         "HGG-H3.3-K27M-thalamic" = "K27M-thal",
+                         "HGG-IDH" = "IDH",
+                         "HGG-WT" = "WT",
+                         "PNET-HGNET-BCOR" = "HGNET-BCOR")) %>%
+  mutate(Group3 = case_when(
+    Genotype_PDGFRA == "Mutant" ~ paste0(Group2, "-", "PDGFRA mut"),
+    Genotype_PDGFRA == "WT" ~ paste0(Group2, "-", "PDGFRA WT"),
+    TRUE ~ Group2
+  )) %>% 
+  mutate(Group3 = factor(Group3, levels = c(c("G34R/V-PDGFRA mut",
+                                              "G34R/V-PDGFRA WT",
+                                              "IDH",
+                                              "K27M-pons",
+                                              "K27M-thal",
+                                              "WT",
+                                              "HGNET-BCOR"))))
+
+```
+
+### PDGFRA
+
+Plot PDGFRA expression levels across tumor groups:
+
+```{r bulk_RNAseq_PDGFRA_expression, fig.width = 5, fig.height = 5, echo_fig = TRUE}
+
+# Plot PDGFRA expression and save source data alongside
+counts_subset %>% 
+  filter(gene_symbol == "PDGFRA") %>% 
+  select(sample, group = Group3, Pdgfra_normalized_expression = gene_expression) %>% 
+  rr_ggplot(plot_num = 1,
+            aes(x = group, y = Pdgfra_normalized_expression)) +
+  geom_boxplot(aes(fill = group), width = 0.5) +
+  scale_fill_manual(values = palette_groups) +
+  geom_point() +
+  scale_y_continuous(labels = comma) +
+  rotateX() +
+  ylab("Normalized expression") + xlab("Group") + ggtitle("PDGFRA") +
+  noLegend()
+
+```
+
+### Lineage specific TFs
+
+Plot expression levels of certain interneuron and excitatory neuron
+lineage specific TFs/genes:
+
+
+```{r bulk_RNAseq_TF_expression, fig.width = 10, fig.height = 8, echo_fig = TRUE}
+
+# Subset data to save as source data
+boxplot_genes <- c("MOXD1", "GSX2", "DLX1", "DLX2", "EOMES", "NEUROD2")
+
+counts_subset_boxplot <- counts_subset %>% 
+  filter(gene_symbol %in% boxplot_genes) %>% 
+  select(sample, gene_symbol, group = Group2, Normalized_expression = gene_expression)
+
+# Helper function
+boxplot_tumor_groups <- function(gene) {
+  
+  p1 <- counts_subset_boxplot %>%
+    # Specify the order of tumour groups along the x-axis
+    mutate(group = factor(group, levels = c(c("G34R/V", "IDH", "K27M-pons", "K27M-thal", "WT", "HGNET-BCOR")))) %>% 
+    filter(gene_symbol == gene) %>%
+    ggplot(aes(x = group, y = Normalized_expression)) +
+    geom_boxplot(aes(fill = group), outlier.shape = NA) +
+    geom_point(size = 1.5) +
+    scale_fill_manual(values = palette_groups) +
+    rotateX() +
+    ylab("Normalized expression") + xlab("Group") + ggtitle(gene) +
+    noLegend()
+  
+  p1
+  
+}
+
+# Loop over genes, generate boxplot, and assemble into one figure
+boxplots <- map(boxplot_genes, boxplot_tumor_groups)
+rr_plot_grid(df = counts_subset_boxplot, plot_num = 1, plotlist = boxplots, ncol = 3)
+
+```
+
+
+
+
+<!-- END MATTER, insert reproducibility info -->
+
+```{r footer, echo = FALSE, results = 'asis', warning = FALSE, cache = FALSE}
+
+# Knit child document with header
+res <- knitr::knit_child(here::here("include", "footer.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF END MATTER -->

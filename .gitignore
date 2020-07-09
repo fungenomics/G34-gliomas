@@ -27,3 +27,6 @@ figures/*/*.pdf
 output/*/*.Rda
 */output/*/*.Rda
 .Rproj.user
+
+# Exclude rendered HTML files
+*/analysis/*.html

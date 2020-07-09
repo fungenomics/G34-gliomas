@@ -21,7 +21,7 @@ message("Document index: ", doc_id)
 
 # Specify where to save outputs
 out        <- here(subdir, "output", doc_id); dir.create(out, recursive = TRUE)
-figout     <- here(subdir, "figures", subdir, doc_id, "/")
+figout     <- here(subdir, "figures", doc_id, "/"); dir.create(figout, recursive = TRUE)
 cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
 
 ```
@@ -54,7 +54,7 @@ message(path_from_here(figout))
 knitr::knit_hooks$set( echo_fig = function(before, options, envir) {
     if ( before ) {
         # Do nothing
-    } else sprintf('<br><span style="color:#0d00ff">~[figure @ *%s*]~</span>',
+    } else sprintf('<br><span style="color:#0d00ff">~[figure/source data @ *%s*]~</span>',
                    paste0(
                        path_from_here(figout),
                        options$label, "...") )
