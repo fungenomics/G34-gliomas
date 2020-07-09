@@ -837,7 +837,7 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_bcor.png"))
 This document was last rendered on:
 
 ```
-## 2020-07-09 08:18:16
+## 2020-07-09 08:21:28
 ```
 
 The git repository and last commit:
@@ -845,7 +845,7 @@ The git repository and last commit:
 ```
 ## Local:    master /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [c2ba647] 2020-06-30: Update rr infrastructure to handle analyses in subdirectories
+## Head:     [091580e] 2020-07-09: Initialize bulk RNAseq analysis
 ```
 
 The random seed was set with `set.seed(100)`
