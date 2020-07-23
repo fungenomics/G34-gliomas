@@ -1,0 +1,224 @@
+---
+title: "05 - Plot 4C contacts at GSX2 and PDGFRA"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    keep_md: true
+    theme: flatly
+    css: ../../include/style.css
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+    includes:
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
+---
+
+<!-- FRONT MATTER, insert configuration info -->
+
+```{r header, echo = FALSE, results = 'asis', warning = FALSE}
+
+# Index of the document
+# ...determines name of the subfolder of `outputs` and `figures`
+doc_id <- "05"
+subdir <- "bulk"
+
+suppressMessages(library(here))
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "header.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF FRONT MATTER -->
+
+
+# Overview
+
+In this document, we load a 4C quantification of the contacts between parts of the genome from Hi-C 
+data in tumors and normal brain, focusing on contacts anchored at PDGFRA or GSX2.
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+library(readxl)
+library(ggplot2)
+library(cowplot)
+library(tidyr)
+library(dplyr)
+
+# Theme
+ggplot2::theme_set(cytobox::theme_min(base_size = 13))
+
+# Custom
+source(here::here("bulk/analysis/functions.R"))
+
+```
+
+# Analysis
+
+## Anchored at PDGFRA
+
+Generate the plots for contacts anchored at the PDGFRA promoter:
+
+### Human
+
+```{r prep_human}
+
+data <- read_excel(here("data/bulk/PDGFRA_promoter_4C_human.xlsx"))
+
+# Convert to long format so that we have three columns in the data frame:
+# 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
+data_long <- data %>%
+    unite(G34,   Average_G34_pGBMs,   stdeva_G34_pGBMs) %>%
+    unite(Other, Average_Other_pGBMs, stdeva_other_pGBMs) %>%
+    gather(Group, Value, G34, Other) %>%
+    separate(Value, into = c("Average", "Stdev"), sep = "_")
+
+# Convert the missing values around PDGFRA to 0
+data_long$Average <- ifelse(data_long$Average == "NA", 0, data_long$Average)
+data_long$Stdev   <- ifelse(is.na(data_long$Stdev),    0, data_long$Stdev)
+
+# Make sure we have numeric columns for plotting
+data_long$Average <- as.numeric(data_long$Average)
+data_long$Stdev   <- as.numeric(data_long$Stdev)
+
+```
+
+
+```{r human_pdgfra_plot, fig.width = 7, fig.height = 3}
+
+# Colour palette
+palette_human <- c("red", "navy")
+
+# Write a plotting function
+plot_4c <- function(df, palette) {
+  
+  df %>%
+    rr_ggplot(aes(x = START, y = Average), plot_num = 1) +
+    # Plot the stdev as an area "ribbon"
+    geom_ribbon(aes(ymin = Average - Stdev, ymax = Average + Stdev, fill = Group), alpha = 0.3) +
+    # Plot the solid line for the average
+    geom_line(aes(colour = Group)) +
+    # Set the colours
+    scale_colour_manual(values = palette) +
+    scale_fill_manual(values = palette) +
+    # Add more breaks to the x-axis
+    scale_x_continuous(breaks = seq(from = min(data$START), to = max(data$START), by = 20000)) +
+    theme_cowplot() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = rel(0.7)))
+  
+}
+
+plot_4c(data_long, palette_human)
+
+```
+
+
+### Mouse
+
+```{r prep_mouse}
+
+data <- read_excel(here("data/bulk/PDGFRA_promoter_4C_mice.xlsx"))
+
+# Convert to long format so that we have three columns in the data frame:
+# 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
+data_long <- data %>%
+  unite(GE,     Average_GE, STDEVA_GE) %>%
+  unite(Cortex, Average_Cortex, STDEVA_Cortex) %>%
+  unite(ESC,    Average_ESC, STDEVA_ESC) %>%
+  gather(Group, Value, GE, Cortex, ESC) %>%
+  separate(Value, into = c("Average", "Stdev"), sep = "_")
+
+# Make sure we have numeric columns for plotting
+data_long$Average <- as.numeric(data_long$Average)
+data_long$Stdev   <- as.numeric(data_long$Stdev)
+
+```
+
+
+```{r mouse_pdgfra_plot, fig.width = 7, fig.height = 3}
+
+# Colour palette
+palette_mouse <- c("blue", "orange", "gray50")
+
+# Plot
+plot_4c(data_long, palette_mouse)
+
+```
+
+## Anchored at GSX2
+
+Generate the plots for contacts anchored at the GSX2 promoter:
+
+### Human
+
+```{r prep_human_gsx2}
+
+data <- read_excel(here("data/bulk/GSX2_promoter_4C_human.xlsx"))
+
+# Convert to long format so that we have three columns in the data frame:
+# 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
+data_long <- data %>%
+    unite(G34,   Average_G34, STDEVA_G34) %>%
+    unite(Other, Average_other_pGBMs, STDEVA_non_G34) %>%
+    gather(Group, Value, G34, Other) %>%
+    separate(Value, into = c("Average", "Stdev"), sep = "_")
+
+# Make sure we have numeric columns for plotting
+data_long$Average <- as.numeric(data_long$Average)
+data_long$Stdev   <- as.numeric(data_long$Stdev)
+
+```
+
+
+```{r human_gsx2_plot, fig.width = 7, fig.height = 3}
+
+plot_4c(data_long, palette_human)
+
+```
+
+
+### Mouse
+
+```{r prep_mouse_gsx2}
+
+data <- read_excel(here("data/bulk/GSX2_promoter_4C_mice.xlsx"))
+
+# Convert to long format so that we have three columns in the data frame:
+# 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
+data_long <- data %>%
+  unite(GE,     Average_GE, STDEVA_GE) %>%
+  unite(Cortex, Average_Cortex, STDEVA_Cortex) %>%
+  unite(ESC,    Average_ESC, STDEVA_ESC) %>%
+  gather(Group, Value, GE, Cortex, ESC) %>%
+  separate(Value, into = c("Average", "Stdev"), sep = "_")
+
+# Make sure we have numeric columns for plotting
+data_long$Average <- as.numeric(data_long$Average)
+data_long$Stdev   <- as.numeric(data_long$Stdev)
+
+```
+
+
+```{r mouse_gsx2_plot, fig.width = 7, fig.height = 3}
+
+plot_4c(data_long, palette_mouse)
+
+```
+
+
+<!-- END MATTER, insert reproducibility info -->
+
+```{r footer, echo = FALSE, results = 'asis', warning = FALSE, cache = FALSE}
+
+# Knit child document with header
+res <- knitr::knit_child(here::here("include", "footer.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF END MATTER -->
