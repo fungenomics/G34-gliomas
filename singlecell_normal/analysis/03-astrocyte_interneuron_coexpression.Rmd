@@ -1,0 +1,359 @@
+---
+title: "03 - Co-expression of astrocyte and interneuron programs in normal brain"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    keep_md: true
+    theme: flatly
+    css: ../../include/style.css
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+    includes:
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
+---
+
+<!-- FRONT MATTER, insert configuration info -->
+
+```{r header, echo = FALSE, results = 'asis', warning = FALSE}
+
+# Index of the document
+# ...determines name of the subfolder of `outputs` and `figures`
+doc_id <- "03"
+subdir <- "singlecell_normal"
+
+suppressMessages(library(here))
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "header.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF FRONT MATTER -->
+
+
+# Overview
+
+Given that we a dual neuronal-astrocytic gene expression program in the tumors,
+here we interrogate the expression of interneuron and astrocytic
+gene signatures in the normal brain, to understand if this is an
+aberrant state, or also observed under normal conditions.
+
+For each dataset:
+
+1. Take the mean expression each of an interneuron gene signature and an astrocyte signature
+2. Subset to cells which are astrocytes, interneurons, or radial glia
+3. Generate a scatterplot of cells based on their expression of the two signatures
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+# Load liraries here
+library(here)
+
+library(tidyverse)
+library(Seurat)
+
+```
+
+
+# Load data
+
+Human fetal brain (5-37 PCW, Nowakowski et al, Science, 2017):
+
+```{r load_nowakowski}
+
+load(here("singlecell_normal/data/Nowakowski2017_seurat.Rda"))
+
+```
+
+Prepare the palette for this dataset, so that astrocytes, internurons, and
+radial glial cells are distinct:
+
+```{r pal_nowakowski}
+
+palette_nowakowski <- read_csv(here("bulk/data/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+  select(Cluster = `Cluster Name`, colour = Colour) %>%
+  tibble::deframe()
+
+palette_nowakowski["Astrocyte"] <- "#FF3F38"
+palette_nowakowski[grepl("RG", names(palette_nowakowski))] <- "#ffcc00"
+
+```
+
+Mouse developing forebrain (E12-P6)
+
+```{r load_jc}
+
+load(here("singlecell_normal/data/Jessa2019_forebrain_seurat.Rda"))
+
+```
+
+Prepare palette:
+
+```{r pal_atlas}
+
+palette_atlas <- read_tsv(here("bulk/data/Jessa2019_Table_2a.tsv")) %>% 
+  select(Cluster, Colour) %>% 
+  mutate(Cluster = gsub("_", " ", Cluster)) %>% 
+  tibble::deframe()
+
+palette_atlas[grepl("ASTR",      names(palette_atlas))] <- "#FF3F38"
+palette_atlas[grepl("VRGC",      names(palette_atlas))] <- "#ffcc00"
+palette_atlas[grepl("MGIN|CINH", names(palette_atlas))] <- "#084081"
+
+```
+
+Mouse P9 striatum/SVZ:
+
+```{r load_str}
+
+seurat_anderson <- readRDS(here("singlecell_normal/data/Anderson2020_seurat.Rds"))
+
+```
+
+# Analysis
+
+## Get gene signatures
+
+Here, we'll get the leading edge genes from the GSEA analysis, for one human
+interneuron signature and one astrocyte signature, both enriched in G34R/V tumors.
+
+```{r get_le}
+
+dge_le <- read_tsv(here("bulk/output/02/fgsea_results_padj<0.01_IDH_top_le.tsv"))
+
+```
+
+
+```{r signatures}
+
+load(here("bulk/data/Nowakowski2017_signatures.Rda"))
+
+# Newborn interneuron signature
+interneuron_genes    <- nowakowski_signatures$hg_sym$nIN1 
+interneuron_genes_mm <- nowakowski_signatures$mm_sym$nIN1
+
+# Astrocyte signature
+astro_genes          <- nowakowski_signatures$hg_sym$Astrocyte
+astro_genes_mm       <- nowakowski_signatures$mm_sym$Astrocyte
+
+```
+
+
+## Human fetal telencephalon (Nowakowski et al, 2017)
+
+```{r nowakowski_prep}
+
+data_nowakowski <- data.frame(
+  interneuron_signature = cytobox::meanGeneExpression(nowa, interneuron_genes)$Mean_marker_expression,
+  astrocyte_signature   = cytobox::meanGeneExpression(nowa, astro_genes)$Mean_marker_expression,
+  cluster               = nowa@meta.data$WGCNAcluster,
+  celltype              = nowa@meta.data$Cell_type
+)
+
+# Filter to cell types of interest for this analysis: astrocytes, inhibitory neurons
+# and ganglionic eminence radial glia
+data_nowakowski <- data_nowakowski %>% 
+  filter(cluster %in% c("Astrocyte",
+                        "nIN1", "nIN2", "nIN3", "nIN4",
+                        "IN-CTX-CGE1", "IN-CTX-MGE1",
+                        "MGE-IPC1", "MGE-IPC2", "MGE-IPC3",
+                        "MGE-RG1", "MGE-RG2", "MGE-div"))
+
+```
+
+Generate the scatterplot:
+
+```{r nowakowski_scatterplot, fig.width = 6, fig.height = 5, echo_fig = TRUE}
+
+data_nowakowski %>% 
+  rr_ggplot(aes(x = interneuron_signature, y = astrocyte_signature, colour = cluster), plot_num = 1) +
+  geom_point(shape = 16, size = 1, alpha = 0.2) +
+  scale_color_manual(values = palette_nowakowski, name = "Cell type") +
+  geom_density_2d() +
+  ggtitle("Human fetal telencephalon")
+
+```
+
+
+<!-- Interrogating this dataset a bit more: -->
+
+<!-- ```{r} -->
+
+<!-- # We need a violin plot where the x axis is a cluster and the y axis is the mean -->
+<!-- # expression over a cluster, each point is a gene -->
+
+<!-- interneuron_meanexp <- meanClusterExpression(nowa, interneuron_genes) -->
+
+<!-- clusters_keep <- c("Astrocyte", -->
+<!--                         "nIN1", "nIN2", "nIN3", "nIN4", -->
+<!--                         "IN-CTX-CGE1", "IN-CTX-MGE1", -->
+<!--                         "MGE-IPC1", "MGE-IPC2", "MGE-IPC3") -->
+
+<!-- interneuron_data <- interneuron_meanexp[, clusters_keep] %>%  -->
+<!--   data.frame() %>%  -->
+<!--   tibble::rownames_to_column(var = "gene") %>%  -->
+<!--   gather(Cluster, Mean_expression, 2:ncol(.)) -->
+
+<!-- interneuron_data_lab <- interneuron_data %>%  -->
+<!--   filter(Mean_expression > 8) -->
+
+<!-- p1 <- interneuron_data %>%  -->
+<!--   ggplot(aes(x = Cluster, y = Mean_expression)) + -->
+<!--   geom_violin(aes(fill = Cluster)) + -->
+<!--   geom_point(alpha = 0.5) + -->
+<!--   rotateX() + -->
+<!--   # geom_text_repel(data = interneuron_data_lab, aes(label = gene)) + -->
+<!--   noLegend() + -->
+<!--   ggtitle("interneuron signature") -->
+
+<!-- astrocyte_meanexp <- meanClusterExpression(nowa, astro_genes) -->
+
+<!-- astrocyte_data <- astrocyte_meanexp[, clusters_keep] %>%  -->
+<!--   data.frame() %>%  -->
+<!--   tibble::rownames_to_column(var = "gene") %>%  -->
+<!--   gather(Cluster, Mean_expression, 2:ncol(.)) -->
+
+<!-- astrocyte_data_lab <- astrocyte_data %>%  -->
+<!--   filter(Mean_expression > 6) -->
+
+<!-- p2 <- astrocyte_data %>%  -->
+<!--   ggplot(aes(x = Cluster, y = Mean_expression)) + -->
+<!--   geom_violin(aes(fill = Cluster)) + -->
+<!--   geom_point(alpha = 0.5) + -->
+<!--   rotateX() + -->
+<!--   # geom_text_repel(data = astrocyte_data_lab, aes(label = gene)) + -->
+<!--   noLegend() + -->
+<!--   ggtitle("astrocyte signature") -->
+
+<!-- plot_grid(p1, p2) -->
+
+<!-- ``` -->
+
+## Developing mouse forebrain (Jessa et al, 2019)
+
+In the mouse atlas:
+
+```{r mouse_forebrain_prep}
+
+data_atlas <- data.frame(
+  interneuron_signature = cytobox::meanGeneExpression(joint_cortex_small, interneuron_genes_mm)$Mean_marker_expression,
+  astrocyte_signature   = cytobox::meanGeneExpression(joint_cortex_small, astro_genes_mm)$Mean_marker_expression,
+  cluster               = gsub("_", " ", joint_cortex_small@meta.data$ID_20190730_with_blacklist_and_refined)
+)
+
+# Filter to relevant cell tpyes
+data_atlas <- data_atlas %>% 
+  filter(grepl("ASTR|VRGC|MGIN|CINH|INIP", cluster) & !grepl("BLACKLIST", cluster))
+
+```
+
+Plot:
+
+```{r mouse_forebrain_scatter, fig.width = 6, fig.height = 5, echo_fig = TRUE}
+
+data_atlas %>% 
+  rr_ggplot(aes(x = interneuron_signature, y = astrocyte_signature, colour = cluster), plot_num = 1) +
+  geom_point(shape = 16, size = 1, alpha = 0.2) +
+  scale_color_manual(values = palette_atlas, name = "Cell type") +
+  geom_density_2d() +
+  ggtitle("Embryonal mouse brain")
+
+```
+
+<!-- ## Striatal SVZ -->
+
+<!-- In the mouse striatum: -->
+
+<!-- ```{r mouse_striatum_prep} -->
+
+<!-- data_striatum <- data.frame( -->
+<!--   interneuron_signature = cytobox::meanGeneExpression(seurat_anderson, interneuron_genes_mm)$Mean_marker_expression, -->
+<!--   astrocyte_signature   = cytobox::meanGeneExpression(seurat_anderson, astro_genes_mm)$Mean_marker_expression, -->
+<!--   cluster               = seurat_anderson@meta.data$Cluster -->
+<!-- ) -->
+
+<!-- # Filter to relevant cell tpyes -->
+<!-- data_striatum <- data_striatum %>%  -->
+<!--   filter(grepl("Astro|Interneuron|Neurogenic", cluster)) -->
+
+<!-- ``` -->
+
+<!-- Plot: -->
+
+<!-- ```{r mouse_forebrain_scatter, fig.width = 6, fig.height = 5, echo_fig = TRUE} -->
+
+<!-- data_striatum %>%  -->
+<!--   rr_ggplot(aes(x = interneuron_signature, y = astrocyte_signature, colour = cluster), plot_num = 1) + -->
+<!--   geom_point(shape = 16, size = 1, alpha = 0.2) + -->
+<!--   geom_density_2d() + -->
+<!--   ggtitle("Mouse striatal SVZ") -->
+
+<!-- ``` -->
+
+<!-- Interrogating this dataset a bit more: -->
+
+<!-- ```{r} -->
+
+<!-- # We need a violin plot where the x axis is a cluster and the y axis is the mean -->
+<!-- # expression over a cluster, each point is a gene -->
+
+<!-- interneuron_meanexp <- meanClusterExpression(seurat_anderson, interneuron_genes_mm) -->
+
+<!-- clusters_keep <- c("12-Astrocytes", "5-Neurogenic progenitor", "7-Neurogenic progenitor", "18-Interneurons", "28-SPN") -->
+
+<!-- interneuron_data <- interneuron_meanexp[, clusters_keep] %>%  -->
+<!--   data.frame() %>%  -->
+<!--   tibble::rownames_to_column(var = "gene") %>%  -->
+<!--   gather(Cluster, Mean_expression, 2:ncol(.)) -->
+
+<!-- interneuron_data_lab <- interneuron_data %>%  -->
+<!--   filter(Mean_expression > 2.5) -->
+
+<!-- p1 <- interneuron_data %>%  -->
+<!--   ggplot(aes(x = Cluster, y = Mean_expression)) + -->
+<!--   geom_violin(aes(fill = Cluster)) + -->
+<!--   # geom_point(alpha = 0.5) + -->
+<!--   rotateX() + -->
+<!--   geom_text_repel(data = interneuron_data_lab, aes(label = gene)) + -->
+<!--   noLegend() + -->
+<!--   ggtitle("interneuron signature") -->
+
+<!-- astrocyte_meanexp <- meanClusterExpression(seurat_anderson, astro_genes_mm) -->
+
+<!-- astrocyte_data <- astrocyte_meanexp[, clusters_keep] %>%  -->
+<!--   data.frame() %>%  -->
+<!--   tibble::rownames_to_column(var = "gene") %>%  -->
+<!--   gather(Cluster, Mean_expression, 2:ncol(.)) -->
+
+<!-- astrocyte_data_lab <- astrocyte_data %>%  -->
+<!--   filter(Mean_expression > 1.8) -->
+
+<!-- p2 <- astrocyte_data %>%  -->
+<!--   ggplot(aes(x = Cluster, y = Mean_expression)) + -->
+<!--   geom_violin(aes(fill = Cluster)) + -->
+<!--   # geom_point(alpha = 0.5) + -->
+<!--   rotateX() + -->
+<!--   geom_text_repel(data = astrocyte_data_lab, aes(label = gene)) + -->
+<!--   noLegend() + -->
+<!--   ggtitle("astrocyte signature") -->
+
+<!-- ``` -->
+
+
+<!-- END MATTER, insert reproducibility info -->
+
+```{r footer, echo = FALSE, results = 'asis', warning = FALSE, cache = FALSE}
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "footer.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF END MATTER -->

@@ -26,6 +26,9 @@ data
 # Exclude logs
 logs
 
+# Exclude exploratory
+exploratory
+
 # Exclude some output
 bulk/output/01
 

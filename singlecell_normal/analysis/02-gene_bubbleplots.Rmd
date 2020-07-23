@@ -1,0 +1,416 @@
+---
+title: "02 - Expression of individual genes during development"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    keep_md: true
+    theme: flatly
+    css: ../../include/style.css
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+    includes:
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
+---
+
+<!-- FRONT MATTER, insert configuration info -->
+
+```{r header, echo = FALSE, results = 'asis', warning = FALSE}
+
+# Index of the document
+# ...determines name of the subfolder of `outputs` and `figures`
+doc_id <- "02"
+subdir <- "singlecell_normal"
+
+suppressMessages(library(here))
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "header.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF FRONT MATTER -->
+
+
+# Overview
+
+Demonstrate the expression patterns of select genes during normal development / 
+under normal conditions, as a reference for expression patterns in the G34R/V tumors.
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+# Load liraries here
+library(here)
+
+library(tidyverse)
+library(Seurat)
+library(pvclust)
+library(dendextend)
+library(glue)
+
+source("../../../../misc/sjlib.R")
+source("functions.R")
+
+```
+
+# Analysis
+
+## Mouse developing forebrain
+
+Get expression & signatures:
+
+````{r load_atlas}
+
+atlas_signatures <- readRDS(here("bulk/output/02/atlas_signatures.Rds"))
+
+# Get genes for neuro-ectoderm mouse forebrain clusters
+atlas_signatures <- atlas_signatures$mm_sym[grepl("^F", names(atlas_signatures$mm_sym)) & !grepl("MGL|MAC|ENDO|PERI|MNG", names(atlas_signatures$mm_sym))]
+
+blacklist <- read_tsv(here("bulk/data/Jessa2019_Table_2a.tsv")) %>%
+  select(Cluster, Signature) %>%
+  filter(is.na(Signature)) %>%
+  pull(Cluster) %>%
+  {gsub("_", " ", .)}
+
+# Removed one mixed progenitor cluster which is not precisely labeled
+blacklist <- c(blacklist, "F-p6 MIXP-P")
+
+```
+
+Construct dendrogram by computing the correlations:
+
+```{r mouse_cor}
+
+load(here("singlecell_normal/data/Jessa2019_cluster_mean_expr_matrix.Rda"))
+
+# Only keep forebrain neuroectoderm clusters
+meanexp <- meanexp[, grepl("^F", colnames(meanexp)) & !grepl("MGL|MAC|ENDO|PERI|MNG", colnames(meanexp))]
+
+# Get the unique sig genes from mouse only
+atlas_unique_genes_mm <- atlas_signatures %>% unlist %>% unique
+
+# Subset to these genes, and filter out blacklist clusters
+meanexp_mm_uniq <- meanexp[atlas_unique_genes_mm,
+                           !(colnames(meanexp) %in% blacklist)]
+
+# Take correlations
+cor_mm <- cytokit::correlateExpression(meanexp_mm_uniq, meanexp_mm_uniq,
+                                       genes = atlas_unique_genes_mm,
+                                       from_sp = "mm",
+                                       to_sp = "mm")
+
+# Get matrix without NAs
+meanexp_mm_uniq_no_NA <- meanexp_mm_uniq
+meanexp_mm_uniq_no_NA[is.na(meanexp_mm_uniq_no_NA)] <- 0
+
+```
+
+Next we bootstrap hierarchical clustering over the correlations,
+using the `pvclust` package.
+
+```{r pvclust_complete}
+
+result <- pvclust(meanexp_mm_uniq_no_NA, method.dist = spearman,
+                  method.hclust = "complete", nboot = 100)
+
+dend_mm <- as.dendrogram(result)
+
+dendrogram_order_atlas <- colnames(cor_mm)[order.dendrogram(dend_mm)]
+
+rr_saveRDS(dendrogram_order_atlas,
+           file = glue("{out}/dendrogram_order_atlas.Rda"),
+           desc = "Order of clusters in dendrogram constructed based on gene expression correlation.")
+
+```
+
+
+```{r plot_pvclust_complete_atlas, fig.height = 7, fig.width = 15, echo_fig = TRUE}
+
+par(mar = c(20,2,2,2))
+plot(dend_mm)
+
+```
+
+Generate the plot by loading the mean expression per cluster for select
+genes, and the proportion of cells in each cluster expressing the gene.
+
+```{r atlas_bubbleplot, echo_fig = TRUE, fig.width = 13, fig.height = 3.5}
+
+genes <- c("Gapdh", "Pdgfra", "Gsx2", "Dlx1", "Dlx2")
+
+goi <- feather::read_feather(here("singlecell_normal/data/Jessa2019_mean_expression.feather"),
+                             c("Cluster", genes)) %>%
+  tibble::column_to_rownames(var = "Cluster") %>%
+  apply(2, scales::rescale) %>%
+  as.data.frame %>%
+  tibble::add_column(Cluster = rownames(.), .before = 1) %>%
+  gather(Gene, Expression, 2:ncol(.)) %>%
+  filter(Cluster %in% colnames(meanexp_mm_uniq_no_NA))
+
+pct1 <- feather::read_feather(here("singlecell_normal/data/Jessa2019_pct1.feather"),
+                              c("Cluster", genes)) %>%
+  gather(Gene, Pct1, 2:ncol(.)) %>%
+  filter(!is.na(Pct1)) %>%
+  filter(Cluster %in% colnames(meanexp_mm_uniq_no_NA))
+
+bubbleplot_data <- left_join(goi, pct1, by = c("Cluster", "Gene")) %>%
+  filter(Pct1 > 0) %>%
+  mutate(Cluster = factor(Cluster, levels = dendrogram_order_atlas)) %>%
+  mutate(Gene = factor(Gene, levels = rev(genes))) %>%
+  filter(!is.na(Cluster))
+
+bubbleplot_data %>%
+  rr_ggplot(aes(x = Cluster, y = Gene), plot_num = 1) +
+  geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) +
+  scale_radius() +
+  scale_color_gradientn(colours = tail(rdbu, 70)) +
+  theme_min() +
+  rotateX() +
+  theme(panel.grid.major.x = element_line(colour = "grey90"),
+        panel.border = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_text(size = 13))
+
+```
+
+
+## Human
+
+Construct the mean expression matrix and compute correlations for the human
+fetal brain dataset:
+
+```{r get_nowakowski}
+
+load(here("singlecell_normal/data/Nowakowski2017_seurat.Rda"))
+load(here("bulk/data/Nowakowski2017_signatures.Rda"))
+
+nowakowski_meanexp <- cytobox::meanClusterExpression(nowa, genes = c("GAPDH", unique(unlist(nowakowski_signatures$hg_sym))))
+
+# Remove unknown clusters
+nowakowski_meanexp <- nowakowski_meanexp[, !(colnames(nowakowski_meanexp) %in% c("Glyc", "U1", "U2", "U3", "U4", "None"))]
+
+cor_nowa <- cytokit::correlateExpression(nowakowski_meanexp, nowakowski_meanexp,
+                                         genes = unique(unlist(nowakowski_signatures$hg_sym)),
+                                         from_sp = "nowa",
+                                         to_sp = "nowa")
+
+# Get matrix without NAs
+meanexp_nowa_uniq_no_NA <- nowakowski_meanexp
+meanexp_nowa_uniq_no_NA[is.na(meanexp_nowa_uniq_no_NA)] <- 0
+```
+
+```{r pvclust_complete_nowakowski, dependson = 'get_nowakowski'}
+
+result_nowa <- pvclust(meanexp_nowa_uniq_no_NA, method.dist = spearman,
+                       method.hclust = "complete", nboot = 100)
+
+dend_nowa <- as.dendrogram(result_nowa)
+dendrogram_order_nowa <- colnames(cor_nowa)[order.dendrogram(dend_nowa)]
+
+rr_saveRDS(dendrogram_order_nowa,
+           file = glue("{out}/dendrogram_order_nowakowski.Rda"),
+           desc = "Order of clusters in dendrogram constructed based on gene expression correlation.")
+
+```
+
+
+```{r plot_pvclust_complete_nowakowski, fig.height = 7, fig.width = 10, dependson = 'get_nowakowski', echo_fig = TRUE}
+
+par(mar = c(20,2,2,2))
+plot(dend_nowa)
+
+```
+
+Calculate the inputs for the bubbleplot:
+
+```{r nowa_bubbleplot_prep, dependson = 'get_nowakowski'}
+
+nowa_pct1 <- calc_pct1(nowa, cluster_col = "WGCNAcluster",
+                       genes = c("GAPDH", "PDGFRA", "GSX2", "DLX1", "DLX2")) %>%
+  data.frame() %>%
+  gather(Gene, Pct1, 2:ncol(.))
+
+nowa_meanexp_goi <- nowakowski_meanexp[c("GAPDH", "PDGFRA", "DLX1", "DLX2"), ] %>%
+  t() %>%
+  apply(2, scales::rescale) %>%
+  data.frame() %>%
+  tibble::rownames_to_column(var = "Cluster") %>%
+  gather(Gene, Expression, 2:ncol(.))
+
+```
+
+Create bubbleplot:
+
+```{r nowakowski_bubbleplot, dependson = c('pvclust_complete2', 'nowa_bubbleplot_prep'), echo_fig = TRUE, fig.width = 10, fig.height = 3.5}
+
+genes <- c("GAPDH", "MOXD1", "PDGFRA", "DLX1", "DLX2")
+
+bubbleplot_data <- left_join(nowa_meanexp_goi, nowa_pct1, by = c("Cluster", "Gene")) %>%
+  filter(Pct1 > 0) %>%
+  mutate(Cluster = factor(Cluster, levels = dendrogram_order_nowa)) %>%
+  mutate(Gene = factor(Gene, levels = rev(genes))) %>%
+  filter(!is.na(Cluster))
+
+bubbleplot_data %>%
+  rr_ggplot(aes(x = Cluster, y = Gene), plot_num = 1) +
+  geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) +
+  scale_radius() +
+  scale_color_gradientn(colours = tail(rdbu, 70)) +
+  theme_min() +
+  rotateX() +
+  theme(panel.grid.major.x = element_line(colour = "grey90"),
+        panel.border = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_text(size = 13))
+
+```
+
+
+## Striatal SVZ
+
+Repeat the same analysis for the striatal SVZ dataset from Anderson et al:
+
+```{r prep_striatal}
+
+genes <- c("Gapdh", "Pdgfra", "Gsx2", "Dlx1", "Dlx2")
+
+seurat_anderson     <- readRDS(here("singlecell_normal/data/Anderson2020_seurat.Rds"))
+anderson_signatures <- readRDS(here("bulk/data/Anderson2020_signatures.Rds"))
+
+meanexp_anderson    <- cytobox::meanClusterExpression(seurat_anderson,
+                                                      genes = c(genes, unique(unlist(anderson_signatures$mm_sym))))
+
+cor_anderson <- cytokit::correlateExpression(meanexp_anderson, meanexp_anderson,
+                                             genes = unique(unlist(anderson_signatures$mm_sym)),
+                                             from_sp = "mm",
+                                             to_sp = "mm")
+
+# Get matrix without NAs
+meanexp_anderson_uniq_no_NA <- meanexp_anderson
+meanexp_anderson_uniq_no_NA[is.na(meanexp_anderson_uniq_no_NA)] <- 0
+
+```
+
+Create the dendrogram:
+
+```{r pvclust_complete_anderson, dependson = 'prep_striatal'}
+
+result_anderson <- pvclust(meanexp_anderson_uniq_no_NA, method.dist = spearman,
+                           method.hclust = "complete", nboot = 100)
+
+dend_anderson <- as.dendrogram(result_anderson)
+
+dendrogram_order_anderson <- colnames(cor_anderson)[order.dendrogram(dend_anderson)]
+
+rr_saveRDS(dendrogram_order_anderson,
+           file = glue("{out}/dendrogram_order_anderson.Rda"),
+           desc = "Order of clusters in dendrogram constructed based on gene expression correlation.")
+
+```
+
+Show the dendrogram:
+
+```{r plot_pvclust_complete_anderson, fig.height = 7, fig.width = 10, dependson = 'prep_anderson', echo_fig = TRUE}
+
+par(mar = c(20,2,2,2))
+plot(dend_anderson)
+
+```
+
+Construct the data for the bubbleplot, including the proportion of cells in each cluster
+where each gene is detected, and the mean expression of our genes of interest:
+
+```{r anderson_bubbleplot_prep, dependson = 'prep_striatal'}
+
+pct1_anderson <- calc_pct1(seurat_anderson, cluster_col = "Cluster",
+                           genes = genes) %>%
+  data.frame() %>%
+  gather(Gene, Pct1, 2:ncol(.))
+
+meanexp_anderson_goi <- meanexp_anderson[genes, ] %>%
+  t() %>%
+  apply(2, scales::rescale) %>%
+  data.frame() %>%
+  tibble::rownames_to_column(var = "Cluster") %>%
+  gather(Gene, Expression, 2:ncol(.))
+
+```
+
+Finally generate the bubbleplot in the same order as the dendrogram constructed above:
+
+```{r anderson_bubbleplot, dependson = c('pvclust_complete_anderson', 'andersons_bubbleplot_prep'), fig.width = 10, fig.height = 3.5, echo_fig = TRUE}
+
+bubbleplot_data <- left_join(meanexp_anderson_goi, pct1_anderson, by = c("Cluster", "Gene")) %>%
+  filter(Pct1 > 0) %>%
+  mutate(Cluster = factor(Cluster, levels = dendrogram_order_anderson)) %>%
+  mutate(Gene = factor(Gene, levels = rev(genes))) %>%
+  filter(!is.na(Cluster))
+
+bubbleplot_data %>%
+  rr_ggplot(aes(x = Cluster, y = Gene), plot_num = 1) +
+  geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) +
+  scale_radius() +
+  scale_color_gradientn(colours = tail(rdbu, 70)) +
+  theme_min() +
+  rotateX() +
+  theme(panel.grid.major.x = element_line(colour = "grey90"),
+        panel.border = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_text(size = 13))
+
+```
+
+Separately, generate a bubbleplot focused on clusters of interest:
+
+Finally generate the bubbleplot in the same order as the dendrogram constructed above:
+
+```{r anderson_bubbleplot_select, dependson = c('pvclust_complete_anderson', 'andersons_bubbleplot_prep'), fig.width = 5, fig.height = 3.5, echo_fig = TRUE}
+
+select_cluster_order <- c("15-OPCs", "31-OPCs", "4-OPCs", "16-OPCs",
+                          "33-Neurogenic progenitor",
+                          "7-Neurogenic progenitor",
+                          "5-Neurogenic progenitor", 
+                          "8-Neurogenic progenitor",
+                          "19-Neurogenic progenitor")
+
+bubbleplot_data <- left_join(meanexp_anderson_goi, pct1_anderson, by = c("Cluster", "Gene")) %>%
+  filter(Pct1 > 0) %>%
+  mutate(Cluster = factor(Cluster, levels = select_cluster_order)) %>%
+  mutate(Gene = factor(Gene, levels = rev(genes))) %>%
+  filter(!is.na(Cluster))
+
+bubbleplot_data %>%
+  rr_ggplot(aes(x = Cluster, y = Gene), plot_num = 1) +
+  geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) +
+  scale_radius() +
+  scale_color_gradientn(colours = tail(rdbu, 70)) +
+  theme_min() +
+  rotateX() +
+  theme(panel.grid.major.x = element_line(colour = "grey90"),
+        panel.border = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_text(size = 13))
+
+```
+
+
+<!-- END MATTER, insert reproducibility info -->
+
+```{r footer, echo = FALSE, results = 'asis', warning = FALSE, cache = FALSE}
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "footer.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF END MATTER -->
