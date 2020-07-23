@@ -1,0 +1,577 @@
+---
+title: "03 - GSEA with cell type gene sigantures"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    keep_md: true
+    theme: flatly
+    css: ../../include/style.css
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+    includes:
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
+---
+
+<!-- FRONT MATTER, insert configuration info -->
+
+```{r header, echo = FALSE, results = 'asis', warning = FALSE}
+
+# Index of the document
+# ...determines name of the subfolder of `outputs` and `figures`
+doc_id <- "03"
+subdir <- "bulk"
+
+suppressMessages(library(here))
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "header.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF FRONT MATTER -->
+
+
+# Overview
+
+In this document, we gather a reference of developmental gene signatures from several brain cell types and studies, and evaluate their enrichment in the differentially-expressed genes between G34 tumors and other groups. The enrichment analysis is performed with GSEA, using the package fgsea.
+
+We obtained reference datasets for the forebrain across species and the lifespan:
+
+* Jessa et al, 2019
+* Nowakowski et al, 2017
+* Mayer et al, 2018
+* Velmeshev et al, 2019
+
+We also obtained two reference datasets capturing the adult SVZ:
+
+* Anderson et al, 2020
+* Mizrak et al, 2019
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+# General
+library(tidyverse)
+library(magrittr)
+library(glue)
+
+# For analysis
+library(fgsea)
+
+# For plotting
+library(ggplot2)
+library(scales)
+library(cytobox)
+library(pheatmap)
+library(ggrepel)
+library(cowplot)
+ggplot2::theme_set(cytobox::theme_min(base_size = 13))
+
+# Custom
+source(here::here("bulk/analysis/functions.R"))
+
+```
+
+# Load data
+
+This sections loads the reference datasets, including cell-type specific gene
+signatures, corresponding palettes, and cluster annotations.
+
+## Fetal mouse brain
+
+Load signatures from our Nature Genetics paper:
+
+```{r load_atlas, message = FALSE}
+
+# Annotation
+jessa_table_2a <- read_tsv(here("bulk/data/Jessa2019_Table_2a.tsv")) %>% 
+  mutate(Cluster = gsub("_", " ", Cluster)) %>% 
+  mutate(Age = paste0("Mouse ", Age))
+
+# Get data from paper, filter to clusters with a valid signature, from mouse samples
+jessa_table_2a_mouse_noblacklist <- jessa_table_2a %>% 
+  filter(Species == "Mouse" & Structure == "Forebrain" & !is.na(Signature))
+
+# Parse the signature column to get gene signatures as vectors
+atlas_signatures <- list("mm_sym" = map(jessa_table_2a_mouse_noblacklist$Signature,
+                                        ~ stringr::str_split(.x, ", ") %>%
+                                          # Get the first element, otherwise we have
+                                          # a list of one-element lists
+                                          .[[1]]))
+names(atlas_signatures$mm_sym) <- jessa_table_2a_mouse_noblacklist$Cluster
+
+# Convert to human symbols / Ensembl IDs
+atlas_signatures$hg_sym <- map(atlas_signatures$mm_sym,
+                               # Filter out NAs and empty strings
+                               ~ .x %>% cytobox::mm2hg() %>% .[!is.na(.)] %>% .[. != ""])
+atlas_signatures$hg_ens <- map(atlas_signatures$hg_sym,
+                               ~ .x %>% cytobox::symbols2ensembl() %>% .[!is.na(.)] %>% .[. != ""])
+
+rr_saveRDS(object = atlas_signatures,
+           file = glue("{out}/atlas_signatures.Rds"),
+           desc = "List of gene signatures from Jessa et al 2019, with mouse and human gene symbols and ENSEMBL IDs")
+
+```
+
+## Fetal human brain
+
+We've previously extracted gene signatures from this study (provided in Table S5) and prepared them in a
+similar format:
+
+```{r load_nowakowski}
+
+# Annotation
+nowakowski_cluster_anno <- read_csv(here("bulk/data/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+  select(Cluster = `Cluster Name`,
+         Cell_type = `Cluster Interpretation`) %>% 
+  mutate(Cluster = paste0("HF ",  Cluster)) %>% 
+  mutate(Age = "Human fetal",
+         Sample = "Human fetal cortex/MGE")
+
+# Signatures
+load(here("bulk/data/Nowakowski2017_signatures.Rda"))
+
+# Denote as human fetal
+names(nowakowski_signatures$hg_ens) <- paste0("HF ", names(nowakowski_signatures$hg_ens))
+names(nowakowski_signatures$hg_sym) <- paste0("HF ", names(nowakowski_signatures$hg_sym))
+
+```
+
+
+## Pediatric/adult human brain
+
+```{r load_velmeshev}
+
+# Annotation
+velmeshev_anno <- read_tsv(here("bulk/data/Velmeshev2019_cluster_names.tsv")) %>% 
+  mutate(Age = "Human ped/adult",
+         Cluster = paste0("HP ", Cluster))
+
+# Signatures
+velmeshev_signatures <- readRDS(here("bulk/data/Velmeshev2019_signatures.Rda"))
+
+# Denote as human postnatal/pediatric
+names(velmeshev_signatures$hg_ens) <- paste0("HP ", names(velmeshev_signatures$hg_ens))
+names(velmeshev_signatures$hg_sym) <- paste0("HP ", names(velmeshev_signatures$hg_sym))
+
+```
+
+## Mouse ganglionic eminences
+
+```{r load_meyer}
+
+# Annotation
+mayer_anno <- bind_rows(
+  read_tsv(here("bulk/data/Mayer2018_10x_dataset_cluster_sample_labels.tsv"))     %>% mutate(Cluster2 = paste0("GEs_Ctx ", Cluster)),
+  read_tsv(here("bulk/data/Mayer2018_dropseq_dataset_cluster_sample_labels.tsv")) %>% mutate(Cluster2 = paste0("GEs ", Cluster))
+) %>% 
+  mutate(Cell_type = paste0(Sample, " ", Cluster),
+         Age = ifelse(is.na(Age), "Mouse E13-14", paste0("Mouse ", Age))) %>%
+  select(Cluster = Cluster2, Cell_type, Sample, Age)
+
+# Signatures
+mayer10x_signatures     <- readRDS(here("bulk/data/Mayer2018_10x_signatures.Rds"))
+mayerdropseq_signatures <- readRDS(here("bulk/data/Mayer2018_dropseq_signatures.Rds"))
+
+mayer10x_signatures     <- map(mayer10x_signatures, ~ .x %>% set_names(paste0("GEs_Ctx ", names(.x))))
+mayerdropseq_signatures <- map(mayerdropseq_signatures, ~ .x %>% set_names(paste0("GEs ", names(.x))))
+
+```
+
+
+## Adult V-SVZ
+
+```{r load_mizrak}
+
+# Signatures
+mizrak_rep1_signatures <- readRDS(here("bulk/data/Mizrak2019_Rep1_signatures.Rds"))
+mizrak_rep2_signatures <- readRDS(here("bulk/data/Mizrak2019_Rep2_signatures.Rds"))
+
+# Add a prefix to the cluster names
+mizrak_rep1_signatures <- map(mizrak_rep1_signatures, ~ .x %>% set_names(paste0("VSVZ-1 ", names(.x))))
+mizrak_rep2_signatures <- map(mizrak_rep2_signatures, ~ .x %>% set_names(paste0("VSVZ-2 ", names(.x))))
+
+mizrak_anno <- data.frame(Cluster   = c(names(mizrak_rep1_signatures$hg_sym),
+                                        names(mizrak_rep2_signatures$hg_sym)),
+                          Cell_type = c(names(mizrak_rep1_signatures$hg_sym),
+                                        names(mizrak_rep2_signatures$hg_sym)),
+                          Age = "Mouse adult",
+                          Sample = "V-SVZ")
+
+```
+
+
+## Striatal SVZ
+
+```{r load_anderson}
+
+# Signatures
+anderson_signatures <- readRDS(here("bulk/data/Anderson2020_signatures.Rds"))
+anderson_signatures <- map(anderson_signatures, ~ .x %>% set_names(paste0("Str/SVZ ", names(.x))))
+
+# Annotation
+anderson_anno <- data.frame(Cluster = names(anderson_signatures$hg_sym),
+                            Cell_type = names(anderson_signatures$hg_sym),
+                            Age = "Mouse P9",
+                            Sample = "Striatum")
+
+```
+
+## Gather all signatures
+
+```{r pathways}
+
+# Human gene symbols
+signatures_sym <- c(atlas_signatures$hg_sym,
+                    nowakowski_signatures$hg_sym,
+                    velmeshev_signatures$hg_sym,
+                    mayer10x_signatures$hg_sym,
+                    mayerdropseq_signatures$hg_sym,
+                    anderson_signatures$hg_sym,
+                    mizrak_rep1_signatures$hg_sym,
+                    mizrak_rep2_signatures$hg_sym)
+
+# Human Ensembl IDs
+signatures_ens <- c(atlas_signatures$hg_ens,
+                    nowakowski_signatures$hg_ens,
+                    velmeshev_signatures$hg_ens,
+                    mayer10x_signatures$hg_ens,
+                    mayerdropseq_signatures$hg_ens,
+                    anderson_signatures$hg_ens,
+                    mizrak_rep1_signatures$hg_ens,
+                    mizrak_rep2_signatures$hg_ens)
+
+rr_saveRDS(file = glue("{out}/signatures_ens.Rds"),
+           desc = "Cell type specific gene signatures from several forebrain references (list of vectors, using Ensemble gene IDs)",
+           signatures_ens)
+
+```
+
+
+## Assemble cluster annotations
+
+Put together the cell type annotations for each of the datasets, since they are often
+labelled by abbreviations. Create uniform dataframes, with at least four columns:
+Sample, Cluster, Cell_type, and Age. The Cluster column matches the names of
+the signatures in the `signatures_*` objects created above.
+
+```{r cluster_anno}
+
+cell_type_anno <- bind_rows(jessa_table_2a %>% select(Sample, Age, Cell_type, Cluster),
+                            nowakowski_cluster_anno,
+                            velmeshev_anno,
+                            mizrak_anno,
+                            mayer_anno,
+                            anderson_anno)
+
+```
+
+
+## Palettes
+
+Create colour palettes for each dataset, for visualization:
+
+```{r palettes}
+
+palette_atlas <- jessa_table_2a %>% select(Cluster, Colour) %>% deframe()
+
+palette_nowakowski <- read_csv(here("bulk/data/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+  mutate(Cluster = paste0("HF ", `Cluster Name`)) %>%
+  select(Cluster, colour = Colour) %>%
+  deframe()
+
+palette_type <- c("RGC" = "#ffcc00",
+                  "RGC (prolif.)" = "#e8a805",
+                  "Oligodendrocyte precursors" = "#e0de53",
+                  "Oligodendrocytes" = "#b4e04e",
+                  "Astrocytes" = "#00a385",
+                  "Neuronal progenitors" = "#ffbda3",
+                  "Prenatal inhib. neurons" = "#8798C8",
+                  "Pediatric/adult inhib. neurons" = "#135ca0",
+                  "Other neurons" = "darkred",
+                  "Other" = "gray90",
+                  "Immune" = "#aca2b2",
+                  "Glial progenitors" = "#d5d98b",
+                  "Choroid/ependymal" = "#8ee5cf",
+                  "Non-neuroectoderm" = "gray70")
+
+palette_age <- c("Human fetal" = "#458cde",
+                 "Mouse E12.5" = "#73a8e6",
+                 "Mouse E13-14" = "#4b7db8",
+                 "Mouse E13.5" = "#4b7db8",
+                 "Mouse E15.5" = "#a4c6ed",
+                 "Mouse E18.5" = "#6889b0",
+                 "Mouse P0" = "#f2b39d",
+                 "Mouse Embryonic/Postnatal" = "#eba288",
+                 "Mouse P3" = "tomato",
+                 "Mouse P6" = "red",
+                 "Mouse P9" = "#b01010",
+                 "Mouse P10" = "#b01010",
+                 "Human ped/adult" = "darkred",
+                 "Mouse adult" = "#4a0303")
+
+```
+
+# Analysis
+
+With the cell type signatures derived from the various scRNAseq studies, we can now
+use these as input to GSEA, and evaluate their enrichment in differentially expressed
+genes between G34R/V tumors vs. other pediatric brain tumor types.
+
+## Prep stats
+
+```{r prep_stats, message = FALSE, warning = FALSE}
+
+pipeline_path <- "../../../../../from_beluga/HGG/2019-09_bulk_RNAseq/2020-07_other_neuronal_tumors/"
+
+# Keep all the DGE analyses between tumor groups, accounting for batch
+comps <- list.files(pipeline_path, full.names = TRUE)
+names(comps) <- basename(comps)
+
+# Get the file with the DESeq2 DGE output, and create a vector with the Ensembl
+# gene IDs and stat for that gene, in each comparison
+stats <- map(comps, ~ read_tsv(Sys.glob(file.path(.x, "diff/Ensembl.ensGene.exon/*.tsv"))) %>%
+               filter(!is.na(stat)) %>%
+               separate(ID, into = c("Ens", "Sym"), sep = ":") %>%
+               select(Ens, stat) %>%
+               deframe())
+
+rr_saveRDS(file = glue("{out}/stats.Rds"),
+           desc = "List of DESeq2 stats from differential expression analyses between tumor groups, to use for GSEA",
+           stats)
+
+```
+
+## Run GSEA
+
+Running GSEA analysis for each differential expression comparison, using the GSVA package:
+
+```{r run_gsea, results = "hide", dependson = 'prep_stats'}
+
+bulk_fgsea <- map(stats, ~ fgsea(pathways = signatures_ens,
+                                 stats   = .x,
+                                 # Default params
+                                 minSize = 15,
+                                 maxSize = 500,
+                                 nperm   = 10000))
+
+rr_saveRDS(file = glue("{out}/bulk_fgsea.Rds"),
+           desc = "List of results from fgsea for enrichment of cell type signatures in tumor differential expression analyses",
+           object = bulk_fgsea)
+
+```
+
+## Filter gene signatures
+
+For the forebrain reference, remove clusters which are proliferating based on either labeled as such, or G2M score,
+as cell-cycle genes may confound GSEA enrichment scores particularly in these tumor comparisons.
+I am not removing any clusters from the striatum/SVZ reference.
+
+```{r filter_signatures, dependson = c('prep_stats', 'run_gsea'), fig.width = 20, fig.height = 4}
+
+# 1. Atlas
+# Load signatures with cell cycle scores, to quantitatively set a filter
+infosig_with_cc <- read_tsv(here("bulk/data/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
+  arrange(desc(Median_G2M))
+
+infosig_with_cc %>%
+  filter(Species == "Mouse") %>%
+  mutate(Cluster = factor(Cluster, levels = .$Cluster)) %>%
+  ggplot(aes(x = Cluster, y = Median_G2M)) +
+  geom_point(aes(colour = Cluster)) +
+  scale_colour_manual(values = palette_atlas) +
+  # Set an arbitrary threshold, where the G2M score starts tapering off
+  geom_hline(yintercept = 0.35) +
+  theme_min() +
+  rotateX() +
+  noLegend()
+
+atlas_sigs_drop <- infosig_with_cc %>%
+  # Remove anything with G2M scores above the threshold, OR which is labelled
+  # as proliferating, as indicated by a trailing "-P" in the cluster abbreviation
+  filter(Median_G2M > 0.35 | grepl("-P$", Cluster) |
+           # Remove anything labeled Other/Other neurons
+           (Cell_class %in% c("Other", "Other neurons")) |
+           # Filter to only forebrain signatures
+           (Structure != "Forebrain")) %>%
+  pull(Cluster)
+
+# 2. Nowakowski
+nowakowski_sigs_drop <- nowakowski_cluster_anno %>%
+  # Filter out proliferating clusters, 
+  filter(grepl("-P$|div|G2M/S|MGE-IPC1|MGE-IPC2|prolif", Cluster) |
+           # Filter out Unknown
+           grepl("Unknown", Cell_type)) %>%
+  pull(Cluster)
+
+bulk_fgsea_filt <- map(bulk_fgsea, ~ .x %>%
+                         filter(!(pathway %in% c(atlas_sigs_drop, nowakowski_sigs_drop))))
+
+```
+
+## Tidy output
+
+```{r tidy_df}
+
+# A function to convert the leading edge from ENSG id to symbols
+flatten_leading_edge <- function(x) {
+  
+  # Convert leading edge genes to gene symbols
+  for (i in 1:nrow(x)) {
+    
+    x[i, ]$leadingEdge <- x[i, ]$leadingEdge %>% ensembl2symbols_safe() %>% glue_collapse(sep = ", ")
+    
+  }
+  
+  x$leadingEdge <- as.character(x$leadingEdge)
+  x
+  
+}
+
+fgsea_df <- imap_dfr(bulk_fgsea_filt, ~ .x %>%
+                       as.data.frame() %>%
+                       flatten_leading_edge() %>%
+                       tibble::add_column(Comparison = .y, .before = 1) %>%
+                       arrange(desc(NES))) %>%
+  rename(Signature = pathway) %>%
+  left_join(cell_type_anno, by = c("Signature" = "Cluster")) %>%
+  select(Comparison, Signature, Sample, Age, Cell_type, everything())
+
+# Save output
+rr_write_tsv(df = fgsea_df,
+             path = glue("{out}/fgsea_df.tsv"),
+             desc = "Tidied dataframe with GSEA results for bulk tumor group comparisons")
+
+```
+
+
+## Heatmap across comparisons
+
+Helpers for creating the heatmaps:
+
+```{r gsea_helpers}
+
+load(here("bulk/output/02/signif_in_idh.Rda"))
+
+# Helper function to actually generate the heatmap
+hm_fun <- partial(pheatmap,
+                  border_color = NA,
+                  color = colorRampPalette(c("blue","white","red"))(100),
+                  cluster_rows = FALSE,
+                  cluster_cols = FALSE,
+                  cellwidth = 12,
+                  cellheight = 12,
+                  number_color = "white",
+                  # Prepare the cluster annotation tracks
+                  annotation_colors = list("Age"  = palette_age,
+                                           "Type" = palette_type,
+                                           "Species" = c("Human" = "black", "Mouse" = "gray70")))
+
+# Include only the high-grade gliomas at first
+row_order <- c("ETMR_vs_HGG-IDH",
+               "NB-FOXR2_vs_HGG-IDH",
+               "HGG-G34R.V_vs_ETMR",
+               "HGG-G34R.V_vs_NB-FOXR2")
+
+```
+
+### Forebrain reference
+
+```{r gsea_heatmap_hgg, echo_fig = TRUE, dependson = 'summarize_cell_types'}
+
+# Prep input
+heatmap_inputs_fb <- prep_gsea_heatmap(fgsea_df,
+                                       signatures = signif_in_idh,
+                                       filters = quos(!(Sample %in% c("Striatum", "V-SVZ"))),
+                                       row_order = row_order)
+
+# Generate heatmap
+hm_fun(mat = heatmap_inputs_fb$heatmap_data_wide,
+       annotation_col = heatmap_inputs_fb$col_anno,
+       display_number = heatmap_inputs_fb$signif_data_wide,
+       main = "Forebrain references",
+       filename = glue("{figout}/gsea_heatmap_hgg.pdf"))
+
+hm_fun(mat = heatmap_inputs_fb$heatmap_data_wide,
+       annotation_col = heatmap_inputs_fb$col_anno,
+       display_number = heatmap_inputs_fb$signif_data_wide,
+       main = "Forebrain references",
+       filename = glue("{figout}/gsea_heatmap_hgg.png"))
+
+knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg.png"))
+
+```
+
+
+
+### Striatal SVZ
+
+Generate one heatmap for the striatal SVZ signatures only:
+
+```{r gsea_heatmap_hgg_striatum, echo_fig = TRUE, dependson = 'summarize_cell_types'}
+
+heatmap_inputs_str <- prep_gsea_heatmap(fgsea_df,
+                                        signatures = signif_in_idh,
+                                        filters = quos(Sample == "Striatum"),
+                                        row_order = row_order)
+
+# Generate heatmap
+hm_fun(mat = heatmap_inputs_str$heatmap_data_wide,
+       annotation_col = heatmap_inputs_str$col_anno,
+       display_number = heatmap_inputs_str$signif_data_wide,
+       main = "P9 Striatum",
+       filename = glue("{figout}/gsea_heatmap_hgg_striatum.pdf"))
+
+hm_fun(mat = heatmap_inputs_str$heatmap_data_wide,
+       annotation_col = heatmap_inputs_str$col_anno,
+       display_number = heatmap_inputs_str$signif_data_wide,
+       main = "P9 Striatum",
+       filename = glue("{figout}/gsea_heatmap_hgg_striatum.png"))
+
+knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_striatum.png"))
+
+```
+
+### Adult V-SVZ
+
+Finally, generate one for the adult V-SVZ signatures only:
+
+```{r gsea_heatmap_hgg_svz, echo_fig = TRUE, dependson = 'summarize_cell_types'}
+
+heatmap_inputs_svz <- prep_gsea_heatmap(fgsea_df,
+                                        signatures = signif_in_idh,
+                                        filters = quos(Sample == "V-SVZ"),
+                                        row_order = row_order)
+# Generate heatmap
+hm_fun(mat = heatmap_inputs_svz$heatmap_data_wide,
+       annotation_col = heatmap_inputs_svz$col_anno,
+       display_number = heatmap_inputs_svz$signif_data_wide,
+       main = "Adult V-SVZ",
+       filename = glue("{figout}/gsea_heatmap_hgg_svz.pdf"))
+
+hm_fun(mat = heatmap_inputs_svz$heatmap_data_wide,
+       annotation_col = heatmap_inputs_svz$col_anno,
+       display_number = heatmap_inputs_svz$signif_data_wide,
+       main = "Adult V-SVZ",
+       filename = glue("{figout}/gsea_heatmap_hgg_svz.png"))
+
+knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_svz.png"))
+
+```
+
+<!-- END MATTER, insert reproducibility info -->
+
+```{r footer, echo = FALSE, results = 'asis', warning = FALSE, cache = FALSE}
+
+# Knit child document with header
+res <- knitr::knit_child(here::here("include", "footer.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF END MATTER -->
