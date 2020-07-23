@@ -26,6 +26,9 @@ data
 # Exclude logs
 logs
 
+# Exclude some output
+bulk/output/01
+
 # Exclude pdfs, which take up more space
 figures/*/*.pdf
 */figures/*/*.pdf
