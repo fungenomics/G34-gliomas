@@ -43,7 +43,6 @@ We obtained reference datasets for the forebrain across species and the lifespan
 
 * Jessa et al, 2019
 * Nowakowski et al, 2017
-* Mayer et al, 2018
 * Velmeshev et al, 2019
 
 We also obtained two reference datasets capturing the adult SVZ:
@@ -89,7 +88,7 @@ Load signatures from our Nature Genetics paper:
 ```{r load_atlas, message = FALSE}
 
 # Annotation
-jessa_table_2a <- read_tsv(here("bulk/data/Jessa2019_Table_2a.tsv")) %>% 
+jessa_table_2a <- read_tsv(here("data/reference/Jessa2019_Table_2a.tsv")) %>% 
   mutate(Cluster = gsub("_", " ", Cluster)) %>% 
   mutate(Age = paste0("Mouse ", Age),
          Dataset = "Jessa")
@@ -127,7 +126,7 @@ similar format:
 ```{r load_nowakowski}
 
 # Annotation
-nowakowski_cluster_anno <- read_csv(here("bulk/data/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+nowakowski_cluster_anno <- read_csv(here("data/reference/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
   select(Cluster = `Cluster Name`,
          Cell_type = `Cluster Interpretation`) %>% 
   mutate(Cluster = paste0("HF ",  Cluster)) %>% 
@@ -136,7 +135,7 @@ nowakowski_cluster_anno <- read_csv(here("bulk/data/Nowakowski2017_Table_4_clust
          Dataset = "Nowakowski")
 
 # Signatures
-load(here("bulk/data/Nowakowski2017_signatures.Rda"))
+load(here("data/reference/Nowakowski2017_signatures.Rda"))
 
 # Denote as human fetal
 names(nowakowski_signatures$hg_ens) <- paste0("HF ", names(nowakowski_signatures$hg_ens))
@@ -150,40 +149,17 @@ names(nowakowski_signatures$hg_sym) <- paste0("HF ", names(nowakowski_signatures
 ```{r load_velmeshev}
 
 # Annotation
-velmeshev_anno <- read_tsv(here("bulk/data/Velmeshev2019_cluster_names.tsv")) %>% 
+velmeshev_anno <- read_tsv(here("data/reference/Velmeshev2019_cluster_names.tsv")) %>% 
   mutate(Age = "Human ped/adult",
          Cluster = paste0("HP ", Cluster),
          Dataset = "Velmeshev")
 
 # Signatures
-velmeshev_signatures <- readRDS(here("bulk/data/Velmeshev2019_signatures.Rda"))
+velmeshev_signatures <- readRDS(here("data/reference/Velmeshev2019_signatures.Rda"))
 
 # Denote as human postnatal/pediatric
 names(velmeshev_signatures$hg_ens) <- paste0("HP ", names(velmeshev_signatures$hg_ens))
 names(velmeshev_signatures$hg_sym) <- paste0("HP ", names(velmeshev_signatures$hg_sym))
-
-```
-
-## Mouse ganglionic eminences
-
-```{r load_meyer}
-
-# Annotation
-mayer_anno <- bind_rows(
-  read_tsv(here("bulk/data/Mayer2018_10x_dataset_cluster_sample_labels.tsv"))     %>% mutate(Cluster2 = paste0("GEs_Ctx ", Cluster)),
-  read_tsv(here("bulk/data/Mayer2018_dropseq_dataset_cluster_sample_labels.tsv")) %>% mutate(Cluster2 = paste0("GEs ", Cluster))
-) %>% 
-  mutate(Cell_type = paste0(Sample, " ", Cluster),
-         Age = ifelse(is.na(Age), "Mouse E13-14", paste0("Mouse ", Age))) %>%
-  select(Cluster = Cluster2, Cell_type, Sample, Age) %>% 
-  mutate(Dataset = "Mayer")
-
-# Signatures
-mayer10x_signatures     <- readRDS(here("bulk/data/Mayer2018_10x_signatures.Rds"))
-mayerdropseq_signatures <- readRDS(here("bulk/data/Mayer2018_dropseq_signatures.Rds"))
-
-mayer10x_signatures     <- map(mayer10x_signatures, ~ .x %>% set_names(paste0("GEs_Ctx ", names(.x))))
-mayerdropseq_signatures <- map(mayerdropseq_signatures, ~ .x %>% set_names(paste0("GEs ", names(.x))))
 
 ```
 
@@ -193,8 +169,8 @@ mayerdropseq_signatures <- map(mayerdropseq_signatures, ~ .x %>% set_names(paste
 ```{r load_mizrak}
 
 # Signatures
-mizrak_rep1_signatures <- readRDS(here("bulk/data/Mizrak2019_Rep1_signatures.Rds"))
-mizrak_rep2_signatures <- readRDS(here("bulk/data/Mizrak2019_Rep2_signatures.Rds"))
+mizrak_rep1_signatures <- readRDS(here("data/reference/Mizrak2019_Rep1_signatures.Rds"))
+mizrak_rep2_signatures <- readRDS(here("data/reference/Mizrak2019_Rep2_signatures.Rds"))
 
 # Add a prefix to the cluster names
 mizrak_rep1_signatures <- map(mizrak_rep1_signatures, ~ .x %>% set_names(paste0("VSVZ-1 ", names(.x))))
@@ -216,7 +192,7 @@ mizrak_anno <- data.frame(Cluster   = c(names(mizrak_rep1_signatures$hg_sym),
 ```{r load_anderson}
 
 # Signatures
-anderson_signatures <- readRDS(here("data/Anderson2020_signatures.Rds"))
+anderson_signatures <- readRDS(here("data/reference/Anderson2020_signatures.Rds"))
 anderson_signatures <- map(anderson_signatures, ~ .x %>% set_names(paste0("Str/SVZ ", names(.x))))
 
 # Annotation
@@ -236,8 +212,6 @@ anderson_anno <- data.frame(Cluster = names(anderson_signatures$hg_sym),
 signatures_sym <- c(atlas_signatures$hg_sym,
                   nowakowski_signatures$hg_sym,
                   velmeshev_signatures$hg_sym,
-                  mayer10x_signatures$hg_sym,
-                  mayerdropseq_signatures$hg_sym,
                   anderson_signatures$hg_sym,
                   mizrak_rep1_signatures$hg_sym,
                   mizrak_rep2_signatures$hg_sym)
@@ -250,8 +224,6 @@ rr_saveRDS(file = glue("{out}/signatures_sym.Rds"),
 signatures_ens <- c(atlas_signatures$hg_ens,
                   nowakowski_signatures$hg_ens,
                   velmeshev_signatures$hg_ens,
-                  mayer10x_signatures$hg_ens,
-                  mayerdropseq_signatures$hg_ens,
                   anderson_signatures$hg_ens,
                   mizrak_rep1_signatures$hg_ens,
                   mizrak_rep2_signatures$hg_ens)
@@ -276,7 +248,6 @@ cell_type_anno <- bind_rows(jessa_table_2a %>% select(Sample, Age, Cell_type, Cl
                             nowakowski_cluster_anno,
                             velmeshev_anno,
                             mizrak_anno,
-                            mayer_anno,
                             anderson_anno)
 
 ```
@@ -290,7 +261,7 @@ Create colour palettes for each dataset, for visualization:
 
 palette_atlas <- jessa_table_2a %>% select(Cluster, Colour) %>% deframe()
 
-palette_nowakowski <- read_csv(here("bulk/data/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+palette_nowakowski <- read_csv(here("data/reference/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
   mutate(Cluster = paste0("HF ", `Cluster Name`)) %>%
   select(Cluster, colour = Colour) %>%
   deframe()
@@ -391,7 +362,7 @@ I am not removing any clusters from the striatum/SVZ reference.
 
 # 1. Atlas
 # Load signatures with cell cycle scores, to quantitatively set a filter
-infosig_with_cc <- read_tsv(here("bulk/data/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
+infosig_with_cc <- read_tsv(here("data/reference/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
   arrange(desc(Median_G2M))
 
 infosig_with_cc %>%
@@ -654,30 +625,7 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_bcor.png"))
 
 ```
 
-### GE datasets
 
-```{r gsea_heatmap_hgg_GEs, echo_fig = TRUE, dependson = 'summarize_cell_types'}
-
-# Prep input
-heatmap_inputs_ge <- prep_gsea_heatmap(fgsea_df,
-                                       signatures = signif_in_idh,
-                                       filters = quos(Dataset == "Mayer"),
-                                       row_order = row_order)
-
-# Generate heatmap
-hm_fun(mat = heatmap_inputs_ge$heatmap_data_wide,
-       annotation_col = heatmap_inputs_ge$col_anno,
-       main = "Forebrain references",
-       filename = glue("{figout}/gsea_heatmap_hgg.pdf"))
-
-hm_fun(mat = heatmap_inputs_ge$heatmap_data_wide,
-       annotation_col = heatmap_inputs_ge$col_anno,
-       main = "GE references",
-       filename = glue("{figout}/gsea_heatmap_hgg_ge.png"))
-
-knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_ge.png"))
-
-```
 
 ### Striatal SVZ
 

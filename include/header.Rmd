@@ -24,6 +24,8 @@ out        <- here(subdir, "output", doc_id); dir.create(out, recursive = TRUE)
 figout     <- here(subdir, "figures", doc_id, "/"); dir.create(figout, recursive = TRUE)
 cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
 
+message("Cache: ", cache)
+
 ```
 
 </details>

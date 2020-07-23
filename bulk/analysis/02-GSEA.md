@@ -1,6 +1,6 @@
 ---
 title: "02 - GSEA with cell type gene sigantures"
-date: "18 July, 2020"
+date: "23 July, 2020"
 output:
   html_document:
     keep_md: true
@@ -46,6 +46,12 @@ message("Document index: ", doc_id)
 out        <- here(subdir, "output", doc_id); dir.create(out, recursive = TRUE)
 figout     <- here(subdir, "figures", doc_id, "/"); dir.create(figout, recursive = TRUE)
 cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
+
+message("Cache: ", cache)
+```
+
+```
+## Cache: ~/tmp/G34-gliomas-repo/bulk/02/
 ```
 
 </details>
@@ -87,7 +93,6 @@ We obtained reference datasets for the forebrain across species and the lifespan
 
 * Jessa et al, 2019
 * Nowakowski et al, 2017
-* Mayer et al, 2018
 * Velmeshev et al, 2019
 
 We also obtained two reference datasets capturing the adult SVZ:
@@ -132,7 +137,7 @@ Load signatures from our Nature Genetics paper:
 
 ```r
 # Annotation
-jessa_table_2a <- read_tsv(here("bulk/data/Jessa2019_Table_2a.tsv")) %>% 
+jessa_table_2a <- read_tsv(here("data/reference/Jessa2019_Table_2a.tsv")) %>% 
   mutate(Cluster = gsub("_", " ", Cluster)) %>% 
   mutate(Age = paste0("Mouse ", Age),
          Dataset = "Jessa")
@@ -169,7 +174,7 @@ similar format:
 
 ```r
 # Annotation
-nowakowski_cluster_anno <- read_csv(here("bulk/data/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+nowakowski_cluster_anno <- read_csv(here("data/reference/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
   select(Cluster = `Cluster Name`,
          Cell_type = `Cluster Interpretation`) %>% 
   mutate(Cluster = paste0("HF ",  Cluster)) %>% 
@@ -190,7 +195,7 @@ nowakowski_cluster_anno <- read_csv(here("bulk/data/Nowakowski2017_Table_4_clust
 
 ```r
 # Signatures
-load(here("bulk/data/Nowakowski2017_signatures.Rda"))
+load(here("data/reference/Nowakowski2017_signatures.Rda"))
 
 # Denote as human fetal
 names(nowakowski_signatures$hg_ens) <- paste0("HF ", names(nowakowski_signatures$hg_ens))
@@ -203,7 +208,7 @@ names(nowakowski_signatures$hg_sym) <- paste0("HF ", names(nowakowski_signatures
 
 ```r
 # Annotation
-velmeshev_anno <- read_tsv(here("bulk/data/Velmeshev2019_cluster_names.tsv")) %>% 
+velmeshev_anno <- read_tsv(here("data/reference/Velmeshev2019_cluster_names.tsv")) %>% 
   mutate(Age = "Human ped/adult",
          Cluster = paste0("HP ", Cluster),
          Dataset = "Velmeshev")
@@ -219,52 +224,11 @@ velmeshev_anno <- read_tsv(here("bulk/data/Velmeshev2019_cluster_names.tsv")) %>
 
 ```r
 # Signatures
-velmeshev_signatures <- readRDS(here("bulk/data/Velmeshev2019_signatures.Rda"))
+velmeshev_signatures <- readRDS(here("data/reference/Velmeshev2019_signatures.Rda"))
 
 # Denote as human postnatal/pediatric
 names(velmeshev_signatures$hg_ens) <- paste0("HP ", names(velmeshev_signatures$hg_ens))
 names(velmeshev_signatures$hg_sym) <- paste0("HP ", names(velmeshev_signatures$hg_sym))
-```
-
-## Mouse ganglionic eminences
-
-
-```r
-# Annotation
-mayer_anno <- bind_rows(
-  read_tsv(here("bulk/data/Mayer2018_10x_dataset_cluster_sample_labels.tsv"))     %>% mutate(Cluster2 = paste0("GEs_Ctx ", Cluster)),
-  read_tsv(here("bulk/data/Mayer2018_dropseq_dataset_cluster_sample_labels.tsv")) %>% mutate(Cluster2 = paste0("GEs ", Cluster))
-) %>% 
-  mutate(Cell_type = paste0(Sample, " ", Cluster),
-         Age = ifelse(is.na(Age), "Mouse E13-14", paste0("Mouse ", Age))) %>%
-  select(Cluster = Cluster2, Cell_type, Sample, Age) %>% 
-  mutate(Dataset = "Mayer")
-```
-
-```
-## Parsed with column specification:
-## cols(
-##   Cluster = col_double(),
-##   Sample = col_character(),
-##   Age = col_character()
-## )
-```
-
-```
-## Parsed with column specification:
-## cols(
-##   Cluster = col_double(),
-##   Sample = col_character()
-## )
-```
-
-```r
-# Signatures
-mayer10x_signatures     <- readRDS(here("bulk/data/Mayer2018_10x_signatures.Rds"))
-mayerdropseq_signatures <- readRDS(here("bulk/data/Mayer2018_dropseq_signatures.Rds"))
-
-mayer10x_signatures     <- map(mayer10x_signatures, ~ .x %>% set_names(paste0("GEs_Ctx ", names(.x))))
-mayerdropseq_signatures <- map(mayerdropseq_signatures, ~ .x %>% set_names(paste0("GEs ", names(.x))))
 ```
 
 
@@ -273,8 +237,8 @@ mayerdropseq_signatures <- map(mayerdropseq_signatures, ~ .x %>% set_names(paste
 
 ```r
 # Signatures
-mizrak_rep1_signatures <- readRDS(here("bulk/data/Mizrak2019_Rep1_signatures.Rds"))
-mizrak_rep2_signatures <- readRDS(here("bulk/data/Mizrak2019_Rep2_signatures.Rds"))
+mizrak_rep1_signatures <- readRDS(here("data/reference/Mizrak2019_Rep1_signatures.Rds"))
+mizrak_rep2_signatures <- readRDS(here("data/reference/Mizrak2019_Rep2_signatures.Rds"))
 
 # Add a prefix to the cluster names
 mizrak_rep1_signatures <- map(mizrak_rep1_signatures, ~ .x %>% set_names(paste0("VSVZ-1 ", names(.x))))
@@ -295,7 +259,7 @@ mizrak_anno <- data.frame(Cluster   = c(names(mizrak_rep1_signatures$hg_sym),
 
 ```r
 # Signatures
-anderson_signatures <- readRDS(here("bulk/data/Anderson2020_signatures.Rds"))
+anderson_signatures <- readRDS(here("data/reference/Anderson2020_signatures.Rds"))
 anderson_signatures <- map(anderson_signatures, ~ .x %>% set_names(paste0("Str/SVZ ", names(.x))))
 
 # Annotation
@@ -314,8 +278,6 @@ anderson_anno <- data.frame(Cluster = names(anderson_signatures$hg_sym),
 signatures_sym <- c(atlas_signatures$hg_sym,
                   nowakowski_signatures$hg_sym,
                   velmeshev_signatures$hg_sym,
-                  mayer10x_signatures$hg_sym,
-                  mayerdropseq_signatures$hg_sym,
                   anderson_signatures$hg_sym,
                   mizrak_rep1_signatures$hg_sym,
                   mizrak_rep2_signatures$hg_sym)
@@ -334,8 +296,6 @@ rr_saveRDS(file = glue("{out}/signatures_sym.Rds"),
 signatures_ens <- c(atlas_signatures$hg_ens,
                   nowakowski_signatures$hg_ens,
                   velmeshev_signatures$hg_ens,
-                  mayer10x_signatures$hg_ens,
-                  mayerdropseq_signatures$hg_ens,
                   anderson_signatures$hg_ens,
                   mizrak_rep1_signatures$hg_ens,
                   mizrak_rep2_signatures$hg_ens)
@@ -363,7 +323,6 @@ cell_type_anno <- bind_rows(jessa_table_2a %>% select(Sample, Age, Cell_type, Cl
                             nowakowski_cluster_anno,
                             velmeshev_anno,
                             mizrak_anno,
-                            mayer_anno,
                             anderson_anno)
 ```
 
@@ -376,7 +335,7 @@ Create colour palettes for each dataset, for visualization:
 ```r
 palette_atlas <- jessa_table_2a %>% select(Cluster, Colour) %>% deframe()
 
-palette_nowakowski <- read_csv(here("bulk/data/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+palette_nowakowski <- read_csv(here("data/reference/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
   mutate(Cluster = paste0("HF ", `Cluster Name`)) %>%
   select(Cluster, colour = Colour) %>%
   deframe()
@@ -490,7 +449,7 @@ I am not removing any clusters from the striatum/SVZ reference.
 ```r
 # 1. Atlas
 # Load signatures with cell cycle scores, to quantitatively set a filter
-infosig_with_cc <- read_tsv(here("bulk/data/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
+infosig_with_cc <- read_tsv(here("data/reference/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
   arrange(desc(Median_G2M))
 ```
 
@@ -798,33 +757,9 @@ hm_fun(mat = heatmap_inputs_bcor$heatmap_data_wide,
 knitr::include_graphics(glue("{figout}/gsea_heatmap_bcor.png"))
 ```
 
-<img src="/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/02///gsea_heatmap_bcor.png" width="3856" /><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/02//gsea_heatmap_bcor...*]~</span>
-
-### GE datasets
+<img src="/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/02///gsea_heatmap_bcor.png" width="3606" /><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/02//gsea_heatmap_bcor...*]~</span>
 
 
-```r
-# Prep input
-heatmap_inputs_ge <- prep_gsea_heatmap(fgsea_df,
-                                       signatures = signif_in_idh,
-                                       filters = quos(Dataset == "Mayer"),
-                                       row_order = row_order)
-
-# Generate heatmap
-hm_fun(mat = heatmap_inputs_ge$heatmap_data_wide,
-       annotation_col = heatmap_inputs_ge$col_anno,
-       main = "Forebrain references",
-       filename = glue("{figout}/gsea_heatmap_hgg.pdf"))
-
-hm_fun(mat = heatmap_inputs_ge$heatmap_data_wide,
-       annotation_col = heatmap_inputs_ge$col_anno,
-       main = "GE references",
-       filename = glue("{figout}/gsea_heatmap_hgg_ge.png"))
-
-knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_ge.png"))
-```
-
-<img src="/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/02///gsea_heatmap_hgg_ge.png" width="2496" /><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/02//gsea_heatmap_hgg_GEs...*]~</span>
 
 ### Striatal SVZ
 
@@ -891,7 +826,7 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_svz.png"))
 This document was last rendered on:
 
 ```
-## 2020-07-18 21:34:32
+## 2020-07-23 17:21:17
 ```
 
 The git repository and last commit:
@@ -899,7 +834,7 @@ The git repository and last commit:
 ```
 ## Local:    master /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [2bc3284] 2020-07-09: Update README
+## Head:     [eaa7ce7] 2020-07-23: Initialize analysis of normal brain single cell data
 ```
 
 The random seed was set with `set.seed(100)`
@@ -954,28 +889,28 @@ The R session info:
 ##  [58] acepack_1.4.1       modeltools_0.2-22   ellipsis_0.2.0.1   
 ##  [61] Seurat_2.3.4        ica_1.0-2           pkgconfig_2.0.2    
 ##  [64] R.methodsS3_1.7.1   flexmix_2.3-14      nnet_7.3-12        
-##  [67] reshape2_1.4.3      tidyselect_1.1.0    rlang_0.4.6        
-##  [70] munsell_0.5.0       cellranger_1.1.0    tools_3.5.0        
-##  [73] cli_1.0.1           generics_0.0.2      broom_0.5.1        
-##  [76] ggridges_0.5.1      evaluate_0.12       yaml_2.2.0         
-##  [79] npsurv_0.4-0        knitr_1.21          bit64_0.9-7        
-##  [82] fitdistrplus_1.0-14 robustbase_0.93-2   caTools_1.17.1.1   
-##  [85] randomForest_4.6-14 RANN_2.6            pbapply_1.4-0      
-##  [88] nlme_3.1-137        R.oo_1.22.0         xml2_1.2.0         
-##  [91] hdf5r_1.0.0         compiler_3.5.0      rstudioapi_0.9.0   
-##  [94] png_0.1-7           lsei_1.2-0          stringi_1.2.4      
-##  [97] lattice_0.20-35     trimcluster_0.1-2.1 Matrix_1.2-14      
-## [100] vctrs_0.3.1         pillar_1.4.4        lifecycle_0.2.0    
-## [103] Rdpack_0.10-1       lmtest_0.9-36       data.table_1.12.0  
-## [106] bitops_1.0-6        irlba_2.3.3         gbRd_0.4-11        
-## [109] R6_2.3.0            latticeExtra_0.6-28 KernSmooth_2.23-15 
-## [112] gridExtra_2.3       codetools_0.2-15    MASS_7.3-49        
-## [115] gtools_3.8.1        assertthat_0.2.0    rprojroot_1.3-2    
-## [118] withr_2.1.2         diptest_0.75-7      parallel_3.5.0     
-## [121] doSNOW_1.0.16       hms_0.4.2           grid_3.5.0         
-## [124] rpart_4.1-13        class_7.3-14        rmarkdown_1.11     
-## [127] segmented_0.5-3.0   Rtsne_0.15          git2r_0.27.1       
-## [130] lubridate_1.7.4     base64enc_0.1-3
+##  [67] labeling_0.3        reshape2_1.4.3      tidyselect_1.1.0   
+##  [70] rlang_0.4.6         munsell_0.5.0       cellranger_1.1.0   
+##  [73] tools_3.5.0         cli_1.0.1           generics_0.0.2     
+##  [76] broom_0.5.1         ggridges_0.5.1      evaluate_0.12      
+##  [79] yaml_2.2.0          npsurv_0.4-0        knitr_1.21         
+##  [82] bit64_0.9-7         fitdistrplus_1.0-14 robustbase_0.93-2  
+##  [85] caTools_1.17.1.1    randomForest_4.6-14 RANN_2.6           
+##  [88] pbapply_1.4-0       nlme_3.1-137        R.oo_1.22.0        
+##  [91] xml2_1.2.0          hdf5r_1.0.0         compiler_3.5.0     
+##  [94] rstudioapi_0.9.0    png_0.1-7           lsei_1.2-0         
+##  [97] stringi_1.2.4       lattice_0.20-35     trimcluster_0.1-2.1
+## [100] Matrix_1.2-14       vctrs_0.3.1         pillar_1.4.4       
+## [103] lifecycle_0.2.0     Rdpack_0.10-1       lmtest_0.9-36      
+## [106] data.table_1.12.0   bitops_1.0-6        irlba_2.3.3        
+## [109] gbRd_0.4-11         R6_2.3.0            latticeExtra_0.6-28
+## [112] KernSmooth_2.23-15  gridExtra_2.3       codetools_0.2-15   
+## [115] MASS_7.3-49         gtools_3.8.1        assertthat_0.2.0   
+## [118] rprojroot_1.3-2     withr_2.1.2         diptest_0.75-7     
+## [121] parallel_3.5.0      doSNOW_1.0.16       hms_0.4.2          
+## [124] grid_3.5.0          rpart_4.1-13        class_7.3-14       
+## [127] rmarkdown_1.11      segmented_0.5-3.0   Rtsne_0.15         
+## [130] git2r_0.27.1        lubridate_1.7.4     base64enc_0.1-3
 ```
 
 </details>
