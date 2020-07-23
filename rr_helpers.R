@@ -50,20 +50,20 @@ rr_saveRDS <- function(file, desc, object) {
 #'     rr_write_tsv(path = here("output/01/mtcars.tsv),
 #'                  desc = "The mtcars dataset, verbatim")
 rr_write_tsv <- function(df, path, desc, verbose = TRUE) {
-    
-    # Need readr to simplify table writing
-    require(readr)
-    readr::write_tsv(df, path)
-    
-    # Create the path for the description file, swapping .tsv extension to .desc
-    desc_path <- gsub("tsv$", "desc", path)
-    
-    # Print the object description to the desc file
-    cat(desc, file = desc_path, sep = "\n")
-    
-    # Output a message with path to desc file
-    if (verbose) message("...writing description of ", basename(path), " to ", path_from_here(desc_path))
-    
+  
+  # Need readr to simplify table writing
+  require(readr)
+  readr::write_tsv(df, path)
+  
+  # Create the path for the description file, swapping .tsv extension to .desc
+  desc_path <- gsub("tsv$", "desc", path)
+  
+  # Print the object description to the desc file
+  cat(desc, file = desc_path, sep = "\n")
+  
+  # Output a message with path to desc file
+  if (verbose) message("...writing description of ", basename(path), " to ", path_from_here(desc_path))
+  
 }
 
 
@@ -92,12 +92,12 @@ rr_write_tsv <- function(df, path, desc, verbose = TRUE) {
 #'     rr_ggplot(1, aes(x = disp, y = wt)) +
 #'     geom_line() +
 #'     theme_bw()
-rr_ggplot <- function(df, plot_num, ...) {
-    
-    require(ggplot2)
-    require(readr)
-    
-    if (!interactive()) {
+rr_ggplot <- function(df, plot_num = 1, ...) {
+  
+  require(ggplot2)
+  require(readr)
+  
+  if (!interactive()) {
     
     # TODO: Currently, it's not possible to not specify plot_num, because
     # it messes up the dots (...) which are passed to ggplot, so this if statement
@@ -105,14 +105,14 @@ rr_ggplot <- function(df, plot_num, ...) {
     
     # If the plot # is not provided
     if (missing(plot_num)) {
-        
-        plot_num <- 1
-        # This is beacuse plots are named by their number in each chunk, but
-        # that number cannot be accessed by this function
-        warning("!! If more than one ggplot is generated in this chunk with rr_ggplot(),",
-                "only the source data for the first one will be saved.",
-                "Pass plot # explicitly to plot_num argument to correct this.")
-        
+      
+      plot_num <- 1
+      # This is beacuse plots are named by their number in each chunk, but
+      # that number cannot be accessed by this function
+      warning("!! If more than one ggplot is generated in this chunk with rr_ggplot(),",
+              "only the source data for the first one will be saved.",
+              "Pass plot # explicitly to plot_num argument to correct this.")
+      
     }
     
     # Get the figure path for the current chunk, without file extensions
@@ -128,17 +128,17 @@ rr_ggplot <- function(df, plot_num, ...) {
     # Output a message with path to source data file
     # message("...writing source data of ggplot to ", path_from_here(src_path))
     
-    } else {
-        
-        warning("!! This function is being run in an interactive session ",
-                "and the source data is NOT being saved. Render the document ",
-                "to save source data.")
-        
-    }
+  } else {
     
-    # Proceed with ggplot
-    ggplot(data = df, ...)
+    warning("!! This function is being run in an interactive session ",
+            "and the source data is NOT being saved. Render the document ",
+            "to save source data.")
     
+  }
+  
+  # Proceed with ggplot
+  ggplot(data = df, ...)
+  
 }
 
 
@@ -259,41 +259,41 @@ rr_readRDS <- function(path) {
 #'                  
 #' mtcars2 <- rr_read_tsv(path = here("output/01/mtcars.tsv))
 rr_read_tsv <- function(path, ...) {
-    
-    require(readr)
-    require(stringr)
-    
-    # Create the path for the description file, swapping .tsv extension to .desc
-    desc_path <- gsub("tsv$", "desc", path)
-    
-    if(!file.exists(desc_path)) warning("!! No description file (.desc) found. ",
-                                        "To automatically write a description file ",
-                                        "when saving a tsv, use rr_write_tsv().")
-    
-    # Get the number of the analysis, e.g. "01"
-    doc_idx <- stringr::str_extract(path, "(\\d)+")
-    
-    # Search analysis folder for .Rmd file matching doc_idx
-    script <- list.files(here("analysis"), pattern = glob2rx(paste0(doc_idx, "*.Rmd")))
-    
-    # Get the timestamp for when the file contents were last modified
-    timestamp <- file.info(path)$mtime
-    
-    # We use cat here because it returns to stdout, which will be picked
-    # up by the code folding js script (hideOutput.js). Otherwise, there will
-    # be one folding button per line of output
-    # https://stackoverflow.com/questions/36699272/why-is-message-a-better-choice-than-print-in-r-for-writing-a-package
-    cat(paste0(path_from_here(path), " info:\n",
-               "...description : ",   ifelse(file.exists(desc_path), readLines(desc_path), "NOT SPECIFIED"),
-               "\n...generated by: ", path_from_here(here("analysis", script)),
-               "\n...last updated: ", timestamp))
-    # e.g. output
-    # /Users/selinjessa/Repos/rr/output/01/mtcars.tsv info:
-    # ...description : The mtcars dataset, verbatim
-    # ...generated by: rr/analysis/01-first_step.Rmd
-    # ...last updated: 2020-05-23 22:31:53
-    
-    # Read the file and return as dataframe
-    suppressMessages(readr::read_tsv(path, ...))
-    
+  
+  require(readr)
+  require(stringr)
+  
+  # Create the path for the description file, swapping .tsv extension to .desc
+  desc_path <- gsub("tsv$", "desc", path)
+  
+  if(!file.exists(desc_path)) warning("!! No description file (.desc) found. ",
+                                      "To automatically write a description file ",
+                                      "when saving a tsv, use rr_write_tsv().")
+  
+  # Get the number of the analysis, e.g. "01"
+  doc_idx <- stringr::str_extract(path, "(\\d)+")
+  
+  # Search analysis folder for .Rmd file matching doc_idx
+  script <- list.files(here("analysis"), pattern = glob2rx(paste0(doc_idx, "*.Rmd")))
+  
+  # Get the timestamp for when the file contents were last modified
+  timestamp <- file.info(path)$mtime
+  
+  # We use cat here because it returns to stdout, which will be picked
+  # up by the code folding js script (hideOutput.js). Otherwise, there will
+  # be one folding button per line of output
+  # https://stackoverflow.com/questions/36699272/why-is-message-a-better-choice-than-print-in-r-for-writing-a-package
+  cat(paste0(path_from_here(path), " info:\n",
+             "...description : ",   ifelse(file.exists(desc_path), readLines(desc_path), "NOT SPECIFIED"),
+             "\n...generated by: ", path_from_here(here("analysis", script)),
+             "\n...last updated: ", timestamp))
+  # e.g. output
+  # /Users/selinjessa/Repos/rr/output/01/mtcars.tsv info:
+  # ...description : The mtcars dataset, verbatim
+  # ...generated by: rr/analysis/01-first_step.Rmd
+  # ...last updated: 2020-05-23 22:31:53
+  
+  # Read the file and return as dataframe
+  suppressMessages(readr::read_tsv(path, ...))
+  
 }

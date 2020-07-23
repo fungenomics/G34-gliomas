@@ -4,6 +4,7 @@ author: "Selin Jessa [[selin.jessa@mail.mcgill.ca](mailto:selin.jessa@mail.mcgil
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
+    keep_md: true
     theme: flatly
     css: ../../include/style.css
     toc: yes

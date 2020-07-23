@@ -49,6 +49,53 @@ ensembl2symbols_safe <- function(genes, ...) {
 }
 
 
+#' Define a function to summarize the cell types into broader "classes",
+#' distinguishing between different types of inhibitory neurons.
+#' 
+#' @param df Data frame where one column of cell type labels needs to be summarized
+#' into classes
+#' @param cluster_col Unquoted expression, name of the column containing
+#' the cluster cell type labels
+#' 
+#' @example 
+#' x <- data.frame(Celltype = c("Oligodendrocyte", "Astrocyte"),
+#'            Score    = c(100, 150))
+#' summarizeCellTypes3(x, Celltype)
+summarizeCellTypes3 <- function(df, cluster_col) {
+    
+    cc_quo <- enquo(cluster_col)
+    
+    df %>%
+        mutate(
+            # Define some broader cell type classes
+            Type = case_when(
+                grepl("RG|[Rr]adial|NSC|prog", !!cc_quo) & !grepl("NRGN", !!cc_quo) & !grepl("[Oo]lig", !!cc_quo) & !grepl("-P.{0,1}$|prolif", !!cc_quo) ~ "RGC",
+                grepl("EXIP|INIP|NEURP|IP|[Ii]ntermediate", !!cc_quo) & !grepl("VIP", !!cc_quo) ~ "Neuronal progenitors",
+                grepl("MGE|CGE|LGE|SST|PV|[Ii]nhib", !!cc_quo) ~ "Prenatal inhib. neurons",
+                grepl("PV|SST|VIP|SV2C|Somato|Parv", !!cc_quo) ~ "Pediatric/adult inhib. neurons",
+                grepl("CEX|PEX|[Ee]xcit|NRGN|[Nn]eu|[Cc]ortex|SPN", !!cc_quo) ~ "Other neurons",
+                grepl("OPC|Oligodendrocyte progenitor cell|Oligodendrocyte precurso|COP", !!cc_quo) ~ "Oligodendrocyte precursors",
+                grepl("NFOL|MOL|[Oo]ligo", !!cc_quo) ~ "Oligodendrocytes",
+                grepl("ASTR|Astr", !!cc_quo) ~ "Astrocytes",
+                grepl("T|Fibr|Mur|Micro|Mixed", !!cc_quo) ~ "Other",
+                TRUE ~ "Other")) %>%
+        mutate(Type = factor(Type, levels = c("RGC",
+                                              "RGC (prolif.)",
+                                              "Neuronal progenitors",
+                                              "Prenatal inhib. neurons",
+                                              "Pediatric/adult inhib. neurons",
+                                              "Other neurons",
+                                              "Glial progenitors",
+                                              "Oligodendrocyte precursors",
+                                              "Oligodendrocytes",
+                                              "Astrocytes",
+                                              "Choroid/ependymal",
+                                              "Immune",
+                                              "Non-neuroectoderm",
+                                              "Other")))
+    
+}
+
 # Helpers for GSEA analysis ----------------------------------------------------
 
 get_gene_ranks <- function(pathway, stats, direction = "enriched") {
@@ -64,5 +111,60 @@ get_gene_ranks <- function(pathway, stats, direction = "enriched") {
         arrange(rank)
     
     x
+    
+}
+
+
+prep_gsea_heatmap <- function(fgsea_df, signatures, filters, row_order) {
+    
+    heatmap_data_long <- fgsea_df %>%
+        filter(!!! filters) %>% 
+        filter(Signature %in% signatures) %>%
+        # Subset to relevant cell types
+        summarizeCellTypes3(Cell_type) %>%
+        filter(Type %in% c("RGC",
+                           "Prenatal inhib. neurons",
+                           "Pediatric/adult inhib. neurons",
+                           "Neuronal progenitors",
+                           "Other neurons",
+                           "Oligodendrocytes",
+                           "Oligodendrocyte precursors",
+                           "Astrocytes")) %>%
+        mutate(Cell_type = paste0(Age, " ", Cell_type))
+    
+    col_order <- heatmap_data_long %>%
+        distinct(Cell_type, Type) %>%
+        arrange(Type) %>%
+        pull(Cell_type)
+    
+    col_anno <- heatmap_data_long %>%
+        distinct(Cell_type, Age, Type) %>%
+        mutate(Species = ifelse(grepl("Mouse", Cell_type), "Mouse", "Human")) %>%
+        data.frame() %>%
+        tibble::column_to_rownames(var = "Cell_type")
+    
+    heatmap_data_wide <- heatmap_data_long %>%
+        select(Comparison, Cell_type, NES) %>%
+        tidyr::spread(Cell_type, NES) %>%
+        as.data.frame() %>%
+        tibble::column_to_rownames(var = "Comparison") %>%
+        .[row_order, col_order]
+    
+    signif_data_wide <- heatmap_data_long %>%
+        select(Comparison, Cell_type, padj) %>%
+        mutate(signif = case_when(
+            padj < 0.01 ~ "**",
+            padj < 0.05 ~ "*",
+            TRUE ~ ""
+        )) %>% 
+        select(-padj) %>% 
+        tidyr::spread(Cell_type, signif) %>%
+        as.data.frame() %>%
+        tibble::column_to_rownames(var = "Comparison") %>%
+        .[row_order, col_order]
+    
+    return(list("heatmap_data_wide" = heatmap_data_wide,
+                "col_anno" = col_anno,
+                "signif_data_wide" = signif_data_wide))
     
 }

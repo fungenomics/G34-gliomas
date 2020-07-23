@@ -1,7 +1,6 @@
 ---
 title: "01 - Bulk RNAseq"
-author: "Selin Jessa [[selin.jessa@mail.mcgill.ca](mailto:selin.jessa@mail.mcgill.ca)]"
-date: "09 July, 2020"
+date: "23 July, 2020"
 output:
   html_document:
     keep_md: true
@@ -125,7 +124,7 @@ Load sample metadata:
 
 ```r
 bulk_samples <- readxl::read_xlsx(
-  here::here("bulk", "data", "2020-02-25_bulkRNAseq_metadata.xlsx")) %>% 
+  here::here("data/bulk/2020-02-25_bulkRNAseq_metadata.xlsx")) %>% 
   mutate(G34_batch = ifelse(is.na(G34_batch), "Old", G34_batch))
 
 # Count number of samples per group
@@ -236,9 +235,15 @@ analysis using DESeq2.
 
 ## Prepare inputs for RNAseq pipeline - cell lines
 
+Load sample metadata for parental cell lines:
 
 
-## Plot gene expression
+```r
+cl_samples <- readxl::read_xlsx(here::here("data/bulk/2020-07-23_cellline_parental_metadata.xlsx"))
+```
+
+
+## Plot gene expression: tumours
 
 Prepare colour palettes for visualization:
 
@@ -317,8 +322,7 @@ Plot PDGFRA expression levels across tumor groups:
 counts_subset %>% 
   filter(gene_symbol == "PDGFRA") %>% 
   select(sample, group = Group3, Pdgfra_normalized_expression = gene_expression) %>% 
-  rr_ggplot(plot_num = 1,
-            aes(x = group, y = Pdgfra_normalized_expression)) +
+  rr_ggplot(aes(x = group, y = Pdgfra_normalized_expression), plot_num = 1) +
   geom_boxplot(aes(fill = group), width = 0.5) +
   scale_fill_manual(values = palette_groups) +
   geom_point() +
@@ -334,7 +338,6 @@ counts_subset %>%
 
 Plot expression levels of certain interneuron and excitatory neuron
 lineage specific TFs/genes:
-
 
 
 ```r
@@ -369,8 +372,108 @@ boxplots <- map(boxplot_genes, boxplot_tumor_groups)
 rr_plot_grid(df = counts_subset_boxplot, plot_num = 1, plotlist = boxplots, ncol = 3)
 ```
 
+```
+## Loading required package: cowplot
+```
+
+```
+## 
+## Attaching package: 'cowplot'
+```
+
+```
+## The following object is masked from 'package:ggplot2':
+## 
+##     ggsave
+```
+
 ![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/01//bulk_RNAseq_TF_expression-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/01//bulk_RNAseq_TF_expression...*]~</span>
 
+## PDGFRA vs. GSX2 correlation in tumours & cell lines
+
+Here we'll examine the correlation between PDGFRA and GSX2 expression in bulk RNAseq
+data for human tumours and patient-derived cell lines.
+
+
+```r
+goi <- c("GSX2", "PDGFRA")
+
+cor_df <- extract_pipeline_counts(file.path(pipeline_path, "G34RV_and_parental_cell_lines/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
+                                  goi)  %>% 
+  left_join(bind_rows(bulk_samples, cl_samples), by = c("sample" = "Sample")) %>%
+  mutate(Group2 = paste0(Source, " - ", Genotype_PDGFRA)) %>% 
+  select(sample, Group2, gene_symbol, gene_expression, Source) %>%
+  spread(gene_symbol, gene_expression)
+```
+
+```
+## Joining, by = "gene_symbol"
+```
+
+
+
+```r
+# Linear model for G34
+m <- lm(PDGFRA ~ GSX2, cor_df)
+
+# Check the model
+summary(m)
+```
+
+```
+## 
+## Call:
+## lm(formula = PDGFRA ~ GSX2, data = cor_df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -154320  -25556  -15324   32991  236256 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 26239.18   21681.00   1.210 0.239031    
+## GSX2           63.00      13.91   4.529 0.000166 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 80730 on 22 degrees of freedom
+## Multiple R-squared:  0.4825,	Adjusted R-squared:  0.459 
+## F-statistic: 20.51 on 1 and 22 DF,  p-value: 0.0001658
+```
+
+```r
+cor <- cor_df %>% select(PDGFRA, GSX2) %>% cor() %>% .[2,1] %>% round(2)
+rsq <- round(summary(m)$r.squared, 2)
+pv  <- round(summary(m)$coefficients[2,4], 4)
+
+# Generate the basic plot
+cor_df %>%
+  # To avoid errors on log-scale, add a small pseudocount for samples with no Gsx2 expression
+  mutate(GSX2 = ifelse(GSX2 == 0, 1, GSX2)) %>% 
+  rr_ggplot(aes(x = GSX2, y = PDGFRA), plot_num = 1) +
+  geom_point(aes(shape = Group2), size = 2, stroke = 1, colour = "cyan4", fill = "cyan4") +
+  # Set the shape to be able to distinguish sample groups
+  scale_shape_manual(values = c("Tumor - Mutant"     = "circle open",
+                                "Tumor - WT"         = "circle filled",
+                                "Cell line - Mutant" = "triangle open",
+                                "Cell line - WT"     = "triangle filled")) +
+  geom_smooth(data = cor_df, method = "lm", se = FALSE, colour = "cyan4", alpha = 0.5, size = 0.5) +
+  # Add the stats
+  annotate(geom = "text", label = glue("cor {cor}, R^2 {rsq}, p-value {pv}"), x = 10^2, y = 10^5.9) +
+  # Log-transform the scale
+  scale_x_log10(
+    breaks = scales::trans_breaks("log10", function(x) 10^x),
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),
+    limits = c(1, 10^4)) +
+  scale_y_log10(
+    breaks = scales::trans_breaks("log10", function(x) 10^x),
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),
+    limits = c(1, 10^6)) +
+  # Zoom into the area of the plot where data is contained
+  coord_cartesian(ylim = c(10^3, 10^6))
+```
+
+![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/01//gsx2_pdgfra_correlation-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/01//gsx2_pdgfra_correlation...*]~</span>
 
 
 
@@ -386,7 +489,7 @@ rr_plot_grid(df = counts_subset_boxplot, plot_num = 1, plotlist = boxplots, ncol
 This document was last rendered on:
 
 ```
-## 2020-07-09 08:18:52
+## 2020-07-23 12:12:33
 ```
 
 The git repository and last commit:
@@ -394,7 +497,7 @@ The git repository and last commit:
 ```
 ## Local:    master /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [c2ba647] 2020-06-30: Update rr infrastructure to handle analyses in subdirectories
+## Head:     [2bc3284] 2020-07-09: Update README
 ```
 
 The random seed was set with `set.seed(100)`
