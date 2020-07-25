@@ -1,6 +1,6 @@
 ---
 title: "02 - GSEA with cell type gene sigantures"
-date: "24 July, 2020"
+date: "25 July, 2020"
 output:
   html_document:
     keep_md: true
@@ -618,67 +618,9 @@ rr_write_tsv(fgsea_df_idh_filt,
 ## ...writing description of fgsea_results_padj<0.01_IDH_top_le.tsv to G34-gliomas-repo/bulk/output/02/fgsea_results_padj<0.01_IDH_top_le.desc
 ```
 
-<!-- # Visualization -->
+# Visualization
 
-<!-- ```{r palettes_tumors} -->
 
-<!-- palette_groups <- c("HGG-G34R/V"             = "#41a334", -->
-<!--                     "HGG-H3.3-K27M-pons"     = "#a30300", -->
-<!--                     "HGG-H3.3-K27M-thalamic" = "#f72d2a", -->
-<!--                     "HGG-IDH"                = "#da00f1", -->
-<!--                     "HGG-WT"                 = "#ada7a6", -->
-<!--                     "PNET-HGNET-BCOR"        = "#1b24d1") -->
-
-<!-- ``` -->
-
-<!-- ## GSEA enrichment plots -->
-
-<!-- The most enriched or depleted signature for each cell type: -->
-
-<!-- ```{r enrich_plots_simple, fig.width = 10, fig.height = 6, dependson = 'prep_stats', echo_label = TRUE} -->
-
-<!-- # A function to add the NES and adj p-value to the enrichment plot -->
-<!-- plot_enrich_with_stats <- function(sig, title, source, colour) { -->
-
-<!--   signatures = switch(source, -->
-<!--                       "nowakowski" = nowakowski_signatures$hg_ens, -->
-<!--                       "atlas" = atlas_signatures$hg_ens, -->
-<!--                       "velmeshev" = velmeshev_signatures$hg_ens) -->
-
-<!--   plotEnrichment2(signatures[[sig]], -->
-<!--                   stats$`HGG-G34R.V_vs_HGG-IDH`, -->
-<!--                   colour = colour) + -->
-<!--     labs(title = paste0(title, "\nNES: ", -->
-<!--                         fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2), -->
-<!--                         ", p_adj: ", -->
-<!--                         fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific())) -->
-<!-- } -->
-
-<!-- # Plot for select signatures -->
-<!-- p1 <- plot_enrich_with_stats("HF RG-early", "Fetal radial glia", "nowakowski", "red") -->
-
-<!-- p2 <- plot_enrich_with_stats("HF nIN1", "Newborn inhibitory neurons", "nowakowski", "red") -->
-
-<!-- p3 <- plot_enrich_with_stats("HP IN-PV", "Mature inhibitory neurons", "velmeshev", "blue") -->
-
-<!-- p4 <- plot_enrich_with_stats("F-p6 OPC", "Oligodendrocyte precursors", "atlas", "blue") -->
-
-<!-- p5 <- plot_enrich_with_stats("HF EN-PFC1", "Fetal excitatory neurons", "nowakowski", "blue") -->
-
-<!-- # Plot the enrichment of astrocytes against HGNET-BCOR -->
-<!-- p6 <- plotEnrichment2(atlas_signatures$hg_ens[["F-p0 ASTR2"]], -->
-<!--                       stats$`HGG-G34R.V_vs_PNET-HGNET-BCOR`, -->
-<!--                       colour = "red") + -->
-<!--   labs(title = paste0("Astrocytes", "\nNES: ", -->
-<!--                       fgsea_df %>% filter(Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR" & Signature == sig) %>% -->
-<!--                         pull(NES) %>% round(2), -->
-<!--                       ", p_adj: ", -->
-<!--                       fgsea_df %>% filter(Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR" & Signature == sig) %>% -->
-<!--                         pull(padj) %>% scales::scientific())) -->
-
-<!-- plot_grid(p1, p2, p6, p3, p4, p5, ncol = 3) -->
-
-<!-- ``` -->
 
 ## Heatmap across comparisons
 
@@ -823,6 +765,49 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_svz.png"))
 
 <img src="/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/02///gsea_heatmap_hgg_svz.png" width="2368" /><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/02//gsea_heatmap_hgg_svz...*]~</span>
 
+## GSEA enrichment plots
+
+The most enriched or depleted signature for each cell type:
+
+
+```r
+# A function to add the NES and adj p-value to the enrichment plot
+plot_enrich_with_stats <- function(sig, title, source, colour) {
+
+  signatures = switch(source,
+                      "nowakowski" = nowakowski_signatures$hg_ens,
+                      "atlas"      = atlas_signatures$hg_ens,
+                      "velmeshev"  = velmeshev_signatures$hg_ens,
+                      "anderson"   = anderson_signatures$hg_ens)
+
+  plotEnrichment2(signatures[[sig]],
+                  stats$`HGG-G34R.V_vs_HGG-IDH`,
+                  colour = colour) +
+    labs(title = paste0(title, "\nNES: ",
+                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2),
+                        ", p_adj: ",
+                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific()))
+}
+
+# Plot for select signatures
+p1 <- plot_enrich_with_stats("HF RG-early", "Fetal radial glia", "nowakowski", "red")
+
+p2 <- plot_enrich_with_stats("HF nIN1", "Newborn inhibitory neurons", "nowakowski", "red")
+
+p3 <- plot_enrich_with_stats("Str/SVZ 5-Neurogenic progenitor", "SVZ Gsx2+ progenitors", "anderson", "red")
+
+p4 <- plot_enrich_with_stats("HP IN-PV", "Mature inhibitory neurons", "velmeshev", "blue")
+
+p5 <- plot_enrich_with_stats("F-p6 OPC", "Oligodendrocyte precursors", "atlas", "blue")
+
+p6 <- plot_enrich_with_stats("HF EN-PFC1", "Fetal excitatory neurons", "nowakowski", "blue")
+
+plot_grid(p1, p2, p3, p4, p5, p6, ncol = 3)
+```
+
+![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/02//gsea_enrichment_plots-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/02//gsea_enrichment_plots...*]~</span>
+
+
 ## Prepare supplementary table
 
 Output results of gene set enrichment analysis (GSEA) for G34R/V compared to other tumour entities:
@@ -852,6 +837,7 @@ rr_write_tsv(table_gsea,
 
 
 
+
 <!-- END MATTER, insert reproducibility info -->
 
 
@@ -864,7 +850,7 @@ rr_write_tsv(table_gsea,
 This document was last rendered on:
 
 ```
-## 2020-07-24 12:36:48
+## 2020-07-25 09:16:54
 ```
 
 The git repository and last commit:
@@ -872,7 +858,7 @@ The git repository and last commit:
 ```
 ## Local:    master /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [9f8c3ec] 2020-07-23: Remove GE data from GSEA analysis
+## Head:     [1676108] 2020-07-24: Update GSEA analysis
 ```
 
 The random seed was set with `set.seed(100)`
@@ -927,28 +913,28 @@ The R session info:
 ##  [58] acepack_1.4.1       modeltools_0.2-22   ellipsis_0.2.0.1   
 ##  [61] Seurat_2.3.4        ica_1.0-2           pkgconfig_2.0.2    
 ##  [64] R.methodsS3_1.7.1   flexmix_2.3-14      nnet_7.3-12        
-##  [67] reshape2_1.4.3      tidyselect_1.1.0    rlang_0.4.6        
-##  [70] munsell_0.5.0       cellranger_1.1.0    tools_3.5.0        
-##  [73] cli_1.0.1           generics_0.0.2      broom_0.5.1        
-##  [76] ggridges_0.5.1      evaluate_0.12       yaml_2.2.0         
-##  [79] npsurv_0.4-0        knitr_1.21          bit64_0.9-7        
-##  [82] fitdistrplus_1.0-14 robustbase_0.93-2   caTools_1.17.1.1   
-##  [85] randomForest_4.6-14 RANN_2.6            pbapply_1.4-0      
-##  [88] nlme_3.1-137        R.oo_1.22.0         xml2_1.2.0         
-##  [91] hdf5r_1.0.0         compiler_3.5.0      rstudioapi_0.9.0   
-##  [94] png_0.1-7           lsei_1.2-0          stringi_1.2.4      
-##  [97] lattice_0.20-35     trimcluster_0.1-2.1 Matrix_1.2-14      
-## [100] vctrs_0.3.1         pillar_1.4.4        lifecycle_0.2.0    
-## [103] Rdpack_0.10-1       lmtest_0.9-36       data.table_1.12.0  
-## [106] bitops_1.0-6        irlba_2.3.3         gbRd_0.4-11        
-## [109] R6_2.3.0            latticeExtra_0.6-28 KernSmooth_2.23-15 
-## [112] gridExtra_2.3       codetools_0.2-15    MASS_7.3-49        
-## [115] gtools_3.8.1        assertthat_0.2.0    rprojroot_1.3-2    
-## [118] withr_2.1.2         diptest_0.75-7      parallel_3.5.0     
-## [121] doSNOW_1.0.16       hms_0.4.2           grid_3.5.0         
-## [124] rpart_4.1-13        class_7.3-14        rmarkdown_1.11     
-## [127] segmented_0.5-3.0   Rtsne_0.15          git2r_0.27.1       
-## [130] lubridate_1.7.4     base64enc_0.1-3
+##  [67] labeling_0.3        reshape2_1.4.3      tidyselect_1.1.0   
+##  [70] rlang_0.4.6         munsell_0.5.0       cellranger_1.1.0   
+##  [73] tools_3.5.0         cli_1.0.1           generics_0.0.2     
+##  [76] broom_0.5.1         ggridges_0.5.1      evaluate_0.12      
+##  [79] yaml_2.2.0          npsurv_0.4-0        knitr_1.21         
+##  [82] bit64_0.9-7         fitdistrplus_1.0-14 robustbase_0.93-2  
+##  [85] caTools_1.17.1.1    randomForest_4.6-14 RANN_2.6           
+##  [88] pbapply_1.4-0       nlme_3.1-137        R.oo_1.22.0        
+##  [91] xml2_1.2.0          hdf5r_1.0.0         compiler_3.5.0     
+##  [94] rstudioapi_0.9.0    png_0.1-7           lsei_1.2-0         
+##  [97] stringi_1.2.4       lattice_0.20-35     trimcluster_0.1-2.1
+## [100] Matrix_1.2-14       vctrs_0.3.1         pillar_1.4.4       
+## [103] lifecycle_0.2.0     Rdpack_0.10-1       lmtest_0.9-36      
+## [106] data.table_1.12.0   bitops_1.0-6        irlba_2.3.3        
+## [109] gbRd_0.4-11         R6_2.3.0            latticeExtra_0.6-28
+## [112] KernSmooth_2.23-15  gridExtra_2.3       codetools_0.2-15   
+## [115] MASS_7.3-49         gtools_3.8.1        assertthat_0.2.0   
+## [118] rprojroot_1.3-2     withr_2.1.2         diptest_0.75-7     
+## [121] parallel_3.5.0      doSNOW_1.0.16       hms_0.4.2          
+## [124] grid_3.5.0          rpart_4.1-13        class_7.3-14       
+## [127] rmarkdown_1.11      segmented_0.5-3.0   Rtsne_0.15         
+## [130] git2r_0.27.1        lubridate_1.7.4     base64enc_0.1-3
 ```
 
 </details>

@@ -481,67 +481,9 @@ rr_write_tsv(fgsea_df_idh_filt,
 
 ```
 
-<!-- # Visualization -->
+# Visualization
 
-<!-- ```{r palettes_tumors} -->
 
-<!-- palette_groups <- c("HGG-G34R/V"             = "#41a334", -->
-<!--                     "HGG-H3.3-K27M-pons"     = "#a30300", -->
-<!--                     "HGG-H3.3-K27M-thalamic" = "#f72d2a", -->
-<!--                     "HGG-IDH"                = "#da00f1", -->
-<!--                     "HGG-WT"                 = "#ada7a6", -->
-<!--                     "PNET-HGNET-BCOR"        = "#1b24d1") -->
-
-<!-- ``` -->
-
-<!-- ## GSEA enrichment plots -->
-
-<!-- The most enriched or depleted signature for each cell type: -->
-
-<!-- ```{r enrich_plots_simple, fig.width = 10, fig.height = 6, dependson = 'prep_stats', echo_label = TRUE} -->
-
-<!-- # A function to add the NES and adj p-value to the enrichment plot -->
-<!-- plot_enrich_with_stats <- function(sig, title, source, colour) { -->
-
-<!--   signatures = switch(source, -->
-<!--                       "nowakowski" = nowakowski_signatures$hg_ens, -->
-<!--                       "atlas" = atlas_signatures$hg_ens, -->
-<!--                       "velmeshev" = velmeshev_signatures$hg_ens) -->
-
-<!--   plotEnrichment2(signatures[[sig]], -->
-<!--                   stats$`HGG-G34R.V_vs_HGG-IDH`, -->
-<!--                   colour = colour) + -->
-<!--     labs(title = paste0(title, "\nNES: ", -->
-<!--                         fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2), -->
-<!--                         ", p_adj: ", -->
-<!--                         fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific())) -->
-<!-- } -->
-
-<!-- # Plot for select signatures -->
-<!-- p1 <- plot_enrich_with_stats("HF RG-early", "Fetal radial glia", "nowakowski", "red") -->
-
-<!-- p2 <- plot_enrich_with_stats("HF nIN1", "Newborn inhibitory neurons", "nowakowski", "red") -->
-
-<!-- p3 <- plot_enrich_with_stats("HP IN-PV", "Mature inhibitory neurons", "velmeshev", "blue") -->
-
-<!-- p4 <- plot_enrich_with_stats("F-p6 OPC", "Oligodendrocyte precursors", "atlas", "blue") -->
-
-<!-- p5 <- plot_enrich_with_stats("HF EN-PFC1", "Fetal excitatory neurons", "nowakowski", "blue") -->
-
-<!-- # Plot the enrichment of astrocytes against HGNET-BCOR -->
-<!-- p6 <- plotEnrichment2(atlas_signatures$hg_ens[["F-p0 ASTR2"]], -->
-<!--                       stats$`HGG-G34R.V_vs_PNET-HGNET-BCOR`, -->
-<!--                       colour = "red") + -->
-<!--   labs(title = paste0("Astrocytes", "\nNES: ", -->
-<!--                       fgsea_df %>% filter(Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR" & Signature == sig) %>% -->
-<!--                         pull(NES) %>% round(2), -->
-<!--                       ", p_adj: ", -->
-<!--                       fgsea_df %>% filter(Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR" & Signature == sig) %>% -->
-<!--                         pull(padj) %>% scales::scientific())) -->
-
-<!-- plot_grid(p1, p2, p6, p3, p4, p5, ncol = 3) -->
-
-<!-- ``` -->
 
 ## Heatmap across comparisons
 
@@ -683,6 +625,48 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_svz.png"))
 
 ```
 
+## GSEA enrichment plots
+
+The most enriched or depleted signature for each cell type:
+
+```{r gsea_enrichment_plots, fig.width = 10, fig.height = 6, dependson = 'prep_stats', echo_fig = TRUE}
+
+# A function to add the NES and adj p-value to the enrichment plot
+plot_enrich_with_stats <- function(sig, title, source, colour) {
+
+  signatures = switch(source,
+                      "nowakowski" = nowakowski_signatures$hg_ens,
+                      "atlas"      = atlas_signatures$hg_ens,
+                      "velmeshev"  = velmeshev_signatures$hg_ens,
+                      "anderson"   = anderson_signatures$hg_ens)
+
+  plotEnrichment2(signatures[[sig]],
+                  stats$`HGG-G34R.V_vs_HGG-IDH`,
+                  colour = colour) +
+    labs(title = paste0(title, "\nNES: ",
+                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2),
+                        ", p_adj: ",
+                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific()))
+}
+
+# Plot for select signatures
+p1 <- plot_enrich_with_stats("HF RG-early", "Fetal radial glia", "nowakowski", "red")
+
+p2 <- plot_enrich_with_stats("HF nIN1", "Newborn inhibitory neurons", "nowakowski", "red")
+
+p3 <- plot_enrich_with_stats("Str/SVZ 5-Neurogenic progenitor", "SVZ Gsx2+ progenitors", "anderson", "red")
+
+p4 <- plot_enrich_with_stats("HP IN-PV", "Mature inhibitory neurons", "velmeshev", "blue")
+
+p5 <- plot_enrich_with_stats("F-p6 OPC", "Oligodendrocyte precursors", "atlas", "blue")
+
+p6 <- plot_enrich_with_stats("HF EN-PFC1", "Fetal excitatory neurons", "nowakowski", "blue")
+
+plot_grid(p1, p2, p3, p4, p5, p6, ncol = 3)
+
+```
+
+
 ## Prepare supplementary table
 
 Output results of gene set enrichment analysis (GSEA) for G34R/V compared to other tumour entities:
@@ -706,6 +690,7 @@ rr_write_tsv(table_gsea,
              desc = "Output of GSEA analysis of tumor groups using several reference datasets, filtered to significant results")
 
 ```
+
 
 
 
