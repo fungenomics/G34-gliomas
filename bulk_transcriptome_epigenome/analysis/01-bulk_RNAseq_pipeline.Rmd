@@ -376,6 +376,18 @@ cor_df %>%
 ```
 
 
+## Extract DGE
+
+
+```{r dge}
+
+read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/Ensembl.ensGene.exon/HGG-IDHvsHGG-G34R.V.tsv"), header = T, sep = "\t", check.names = FALSE) %>%
+  filter(padj < 0.01 & baseMean > 100 & abs(log2FoldChange) > 2) %>%
+  arrange(desc(log2FoldChange)) %T>%
+  write_tsv(glue("{out}/DGE_HGG-IDHvsHGG-G34R.V_padj<0.01_baseMean>100_absLFC>2.tsv"))
+
+```
+
 
 <!-- END MATTER, insert reproducibility info -->
 
