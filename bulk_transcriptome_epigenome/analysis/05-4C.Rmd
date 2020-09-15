@@ -22,7 +22,7 @@ output:
 # Index of the document
 # ...determines name of the subfolder of `outputs` and `figures`
 doc_id <- "05"
-subdir <- "bulk"
+subdir <- "bulk_transcriptome_epigenome"
 
 suppressMessages(library(here))
 
@@ -51,10 +51,10 @@ library(tidyr)
 library(dplyr)
 
 # Theme
-ggplot2::theme_set(cytobox::theme_min(base_size = 13))
+ggplot2::theme_set(theme_min(base_size = 13))
 
 # Custom
-source(here::here("bulk/analysis/functions.R"))
+source(here::here(subdir, "analysis/functions.R"))
 
 ```
 
@@ -68,7 +68,7 @@ Generate the plots for contacts anchored at the PDGFRA promoter:
 
 ```{r prep_human}
 
-data <- read_excel(here("data/bulk/PDGFRA_promoter_4C_human.xlsx"))
+data <- read_excel(here(subdir, "data/PDGFRA_promoter_4C_human.xlsx"))
 
 # Convert to long format so that we have three columns in the data frame:
 # 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
@@ -122,7 +122,7 @@ plot_4c(data_long, palette_human)
 
 ```{r prep_mouse}
 
-data <- read_excel(here("data/bulk/PDGFRA_promoter_4C_mice.xlsx"))
+data <- read_excel(here(subdir, "data/PDGFRA_promoter_4C_mice.xlsx"))
 
 # Convert to long format so that we have three columns in the data frame:
 # 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
@@ -158,7 +158,7 @@ Generate the plots for contacts anchored at the GSX2 promoter:
 
 ```{r prep_human_gsx2}
 
-data <- read_excel(here("data/bulk/GSX2_promoter_4C_human.xlsx"))
+data <- read_excel(here(subdir, "data/GSX2_promoter_4C_human.xlsx"))
 
 # Convert to long format so that we have three columns in the data frame:
 # 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
@@ -186,7 +186,7 @@ plot_4c(data_long, palette_human)
 
 ```{r prep_mouse_gsx2}
 
-data <- read_excel(here("data/bulk/GSX2_promoter_4C_mice.xlsx"))
+data <- read_excel(here(subdir, "data/GSX2_promoter_4C_mice.xlsx"))
 
 # Convert to long format so that we have three columns in the data frame:
 # 1) Group (G34 or Other), 2) Average value, and 3) Standard deviation value
