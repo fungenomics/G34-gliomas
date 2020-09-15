@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 #SBATCH --time=01:00:00
+#SBATCH --output=logs/myproject-%j.out
 #SBATCH --account=rrg-jabado-ab
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=2G
