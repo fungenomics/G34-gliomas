@@ -187,7 +187,7 @@ prep_gsea_heatmap <- function(fgsea_df, signatures, filters, row_order) {
 #' }
 plotEnrichment2 <- function(pathway, stats,
                             gseaParam=1,
-                            ticksSize=0.2, return_df = FALSE, colour) {
+                            ticksSize=0.2, return_df = FALSE, colour, plot_num) {
     
     rnk <- rank(-stats)
     ord <- order(rnk)
@@ -216,7 +216,7 @@ plotEnrichment2 <- function(pathway, stats,
     
     # Getting rid of NOTEs
     x=y=NULL
-    g <- ggplot(toPlot, aes(x=x, y=y)) +
+    g <- rr_ggplot(toPlot, aes(x=x, y=y), plot_num = plot_num) +
         geom_point(color=colour, size=0.1) +
         geom_hline(yintercept=max(tops), colour="red", linetype="dashed") +
         geom_hline(yintercept=min(bottoms), colour="red", linetype="dashed") +

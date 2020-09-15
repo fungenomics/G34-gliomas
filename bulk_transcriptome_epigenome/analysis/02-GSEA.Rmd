@@ -22,7 +22,7 @@ output:
 # Index of the document
 # ...determines name of the subfolder of `outputs` and `figures`
 doc_id <- "02"
-subdir <- "bulk"
+subdir <- "bulk_transcriptome_epigenome"
 
 suppressMessages(library(here))
 
@@ -55,24 +55,28 @@ We also obtained two reference datasets capturing the adult SVZ:
 ```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
 
 # General
-library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(purrr)
 library(magrittr)
 library(glue)
+library(tibble)
 
 # For analysis
 library(fgsea)
+library(cytobox)
 
 # For plotting
 library(ggplot2)
 library(scales)
-library(cytobox)
 library(pheatmap)
 library(ggrepel)
 library(cowplot)
-ggplot2::theme_set(cytobox::theme_min(base_size = 13))
+ggplot2::theme_set(theme_min(base_size = 13))
 
 # Custom
-source(here::here("bulk/analysis/functions.R"))
+source(here::here(subdir, "analysis/functions.R"))
 
 ```
 
@@ -88,7 +92,7 @@ Load signatures from our Nature Genetics paper:
 ```{r load_atlas, message = FALSE}
 
 # Annotation
-jessa_table_2a <- read_tsv(here("data/reference/Jessa2019_Table_2a.tsv")) %>% 
+jessa_table_2a <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_Table_2a.tsv")) %>% 
     mutate(Cluster = gsub("_", " ", Cluster)) %>% 
     mutate(Age = paste0("Mouse ", Age),
            Dataset = "Jessa et al 2019")
@@ -126,7 +130,7 @@ similar format:
 ```{r load_nowakowski}
 
 # Annotation
-nowakowski_cluster_anno <- read_csv(here("data/reference/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+nowakowski_cluster_anno <- read_csv(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski2017_tableS4_cluster_labels_with_colours.csv")) %>%
     select(Cluster = `Cluster Name`,
            Cell_type = `Cluster Interpretation`) %>% 
     mutate(Cluster = paste0("HF ",  Cluster)) %>% 
@@ -135,7 +139,7 @@ nowakowski_cluster_anno <- read_csv(here("data/reference/Nowakowski2017_Table_4_
            Dataset = "Nowakowski et al 2017")
 
 # Signatures
-load(here("data/reference/Nowakowski2017_signatures.Rda"))
+load(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski_signatures.Rda"))
 
 # Denote as human fetal
 names(nowakowski_signatures$hg_ens) <- paste0("HF ", names(nowakowski_signatures$hg_ens))
@@ -149,13 +153,13 @@ names(nowakowski_signatures$hg_sym) <- paste0("HF ", names(nowakowski_signatures
 ```{r load_velmeshev}
 
 # Annotation
-velmeshev_anno <- read_tsv(here("data/reference/Velmeshev2019_cluster_names.tsv")) %>% 
+velmeshev_anno <- read_tsv(here("reference_datasets/2019_Velmeshev/processed_data/01-cluster_names.tsv")) %>% 
     mutate(Age = "Human ped/adult",
            Cluster = paste0("HP ", Cluster),
            Dataset = "Velmeshev et al 2019")
 
 # Signatures
-velmeshev_signatures <- readRDS(here("data/reference/Velmeshev2019_signatures.Rda"))
+velmeshev_signatures <- readRDS(here("reference_datasets/2019_Velmeshev/processed_data/01-cluster_gene_signatures.Rds"))
 
 # Denote as human postnatal/pediatric
 names(velmeshev_signatures$hg_ens) <- paste0("HP ", names(velmeshev_signatures$hg_ens))
@@ -169,8 +173,8 @@ names(velmeshev_signatures$hg_sym) <- paste0("HP ", names(velmeshev_signatures$h
 ```{r load_mizrak}
 
 # Signatures
-mizrak_rep1_signatures <- readRDS(here("data/reference/Mizrak2019_Rep1_signatures.Rds"))
-mizrak_rep2_signatures <- readRDS(here("data/reference/Mizrak2019_Rep2_signatures.Rds"))
+mizrak_rep1_signatures <- readRDS(here("reference_datasets/2019_Mizrak/processed_data/03-cluster_gene_signatures.Rds"))
+mizrak_rep2_signatures <- readRDS(here("reference_datasets/2019_Mizrak/processed_data/04-cluster_gene_signatures.Rds"))
 
 # Add a prefix to the cluster names
 mizrak_rep1_signatures <- map(mizrak_rep1_signatures, ~ .x %>% set_names(paste0("VSVZ-1 ", names(.x))))
@@ -192,7 +196,7 @@ mizrak_anno <- data.frame(Cluster   = c(names(mizrak_rep1_signatures$hg_sym),
 ```{r load_anderson}
 
 # Signatures
-anderson_signatures <- readRDS(here("data/reference/Anderson2020_signatures.Rds"))
+anderson_signatures <- readRDS(here("reference_datasets/2020_Anderson/processed_data/02-cluster_gene_signatures.Rds"))
 anderson_signatures <- map(anderson_signatures, ~ .x %>% set_names(paste0("Str/SVZ ", names(.x))))
 
 # Annotation
@@ -261,7 +265,7 @@ Create colour palettes for each dataset, for visualization:
 
 palette_atlas <- jessa_table_2a %>% select(Cluster, Colour) %>% deframe()
 
-palette_nowakowski <- read_csv(here("data/reference/Nowakowski2017_Table_4_cluster_labels_with_colours.csv")) %>%
+palette_nowakowski <- read_csv(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski2017_tableS4_cluster_labels_with_colours.csv")) %>%
     mutate(Cluster = paste0("HF ", `Cluster Name`)) %>%
     select(Cluster, colour = Colour) %>%
     deframe()
@@ -308,7 +312,7 @@ genes between G34R/V tumors vs. other pediatric brain tumor types.
 
 ```{r prep_stats, message = FALSE, warning = FALSE}
 
-pipeline_path <- "../../../../../from_beluga/HGG/2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
+pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
 
 # Keep all the DGE analyses between tumor groups, accounting for batch
 comps <- list.files(pipeline_path, full.names = TRUE)[
@@ -339,6 +343,7 @@ Running GSEA analysis for each differential expression comparison, using the GSV
 
 ```{r run_gsea, results = "hide", dependson = 'prep_stats'}
 
+# Run GSEA for each pathway, for each comparison
 bulk_fgsea <- map(stats, ~ fgsea(pathways = signatures_ens,
                                  stats   = .x,
                                  # Default params
@@ -362,7 +367,7 @@ I am not removing any clusters from the striatum/SVZ reference.
 
 # 1. Atlas
 # Load signatures with cell cycle scores, to quantitatively set a filter
-infosig_with_cc <- read_tsv(here("data/reference/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
+infosig_with_cc <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
     arrange(desc(Median_G2M)) %>% 
     full_join(jessa_table_2a)
 
@@ -403,9 +408,12 @@ bulk_fgsea_filt <- map(bulk_fgsea, ~ .x %>%
 
 ## Tidy output
 
+Here we transform the fgsea output into tidy format:
+
 ```{r tidy_df}
 
-# A function to convert the leading edge from ENSG id to symbols
+# A function to convert the leading edge from ENSG id to symbols, and from
+# a character vector a flat character string
 flatten_leading_edge <- function(x) {
     
     # Convert leading edge genes to gene symbols
@@ -461,7 +469,7 @@ fgsea_df_idh_filt$leadingEdge_top <- ""
 # Get the top-ranked leading edge genes
 for (i in 1:nrow(fgsea_df_idh_filt)) {
     
-    genes <- str_split(fgsea_df_idh_filt[i, ]$leadingEdge, ", ") %>% getElement(1)
+    genes <- stringr::str_split(fgsea_df_idh_filt[i, ]$leadingEdge, ", ") %>% getElement(1)
     sig <- fgsea_df_idh_filt[i, ]$Signature
     nes <- fgsea_df_idh_filt[i, ]$NES
     
@@ -544,7 +552,8 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg.png"))
 
 ```
 
-Generate a second for HGNET-BCOR:
+Generate a second heatma for HGNET-BCOR, which is a non-glioma entity used to have
+a comparator group for G34 gliomas that are not not glial in origin.
 
 ```{r gsea_heatmap_bcor, echo_fig = TRUE, dependson = 'summarize_cell_types'}
 
@@ -631,8 +640,9 @@ The most enriched or depleted signature for each cell type:
 
 ```{r gsea_enrichment_plots, fig.width = 10, fig.height = 6, dependson = 'prep_stats', echo_fig = TRUE}
 
-# A function to add the NES and adj p-value to the enrichment plot
-plot_enrich_with_stats <- function(sig, title, source, colour) {
+# A function to add the NES and adj p-value to the enrichment plot, based on
+# the functions included in the fgsea package
+plot_enrich_with_stats <- function(sig, title, source, colour, plot_num) {
 
   signatures = switch(source,
                       "nowakowski" = nowakowski_signatures$hg_ens,
@@ -642,7 +652,8 @@ plot_enrich_with_stats <- function(sig, title, source, colour) {
 
   plotEnrichment2(signatures[[sig]],
                   stats$`HGG-G34R.V_vs_HGG-IDH`,
-                  colour = colour) +
+                  colour = colour,
+                  plot_num = plot_num) +
     labs(title = paste0(title, "\nNES: ",
                         fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2),
                         ", p_adj: ",
@@ -650,17 +661,41 @@ plot_enrich_with_stats <- function(sig, title, source, colour) {
 }
 
 # Plot for select signatures
-p1 <- plot_enrich_with_stats("HF RG-early", "Fetal radial glia", "nowakowski", "red")
+p1 <- plot_enrich_with_stats("HF RG-early",
+                             "Fetal radial glia",
+                             "nowakowski",
+                             "red",
+                             plot_num = 1)
 
-p2 <- plot_enrich_with_stats("HF nIN1", "Newborn inhibitory neurons", "nowakowski", "red")
+p2 <- plot_enrich_with_stats("HF nIN1",
+                             "Newborn inhibitory neurons",
+                             "nowakowski",
+                             "red",
+                             plot_num = 2)
 
-p3 <- plot_enrich_with_stats("Str/SVZ 5-Neurogenic progenitor", "SVZ Gsx2+ progenitors", "anderson", "red")
+p3 <- plot_enrich_with_stats("Str/SVZ 5-Neurogenic progenitor",
+                             "SVZ Gsx2+ progenitors",
+                             "anderson",
+                             "red",
+                             plot_num = 3)
 
-p4 <- plot_enrich_with_stats("HP IN-PV", "Mature inhibitory neurons", "velmeshev", "blue")
+p4 <- plot_enrich_with_stats("HP IN-PV",
+                             "Mature inhibitory neurons",
+                             "velmeshev",
+                             "blue",
+                             plot_num = 4)
 
-p5 <- plot_enrich_with_stats("F-p6 OPC", "Oligodendrocyte precursors", "atlas", "blue")
+p5 <- plot_enrich_with_stats("F-p6 OPC",
+                             "Oligodendrocyte precursors",
+                             "atlas",
+                             "blue",
+                             plot_num = 5)
 
-p6 <- plot_enrich_with_stats("HF EN-PFC1", "Fetal excitatory neurons", "nowakowski", "blue")
+p6 <- plot_enrich_with_stats("HF EN-PFC1",
+                             "Fetal excitatory neurons",
+                             "nowakowski",
+                             "blue",
+                             plot_num = 6)
 
 plot_grid(p1, p2, p3, p4, p5, p6, ncol = 3)
 
@@ -669,7 +704,7 @@ plot_grid(p1, p2, p3, p4, p5, p6, ncol = 3)
 
 ## Prepare supplementary table
 
-Output results of gene set enrichment analysis (GSEA) for G34R/V compared to other tumour entities:
+Output results of gene set enrichment analysis (GSEA) for G34R/V compared to other tumor entities:
 
 ```{r table}
 
