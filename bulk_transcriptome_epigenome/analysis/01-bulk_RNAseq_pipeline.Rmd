@@ -22,7 +22,7 @@ output:
 # Index of the document
 # ...determines name of the subfolder of `outputs` and `figures`
 doc_id <- "01"
-subdir <- "bulk"
+subdir <- "bulk_transcriptome_epigenome"
 
 suppressMessages(library(here))
 
@@ -56,19 +56,21 @@ More complex downstream analysis is performed in subsequent documents.
 ```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
 
 # General
-library(tidyverse)
+library(tidyr)
+library(readr)
+library(dplyr)
 library(magrittr)
 library(glue)
+library(purrr)
 
 # For plotting
 library(ggplot2)
 library(scales)
 library(ggrepel)
-library(cytobox)
-ggplot2::theme_set(cytobox::theme_min(base_size = 13))
+ggplot2::theme_set(theme_min(base_size = 13))
 
 # Custom
-source(here::here("bulk/analysis/functions.R"))
+source(here::here(subdir, "analysis/functions.R"))
 
 ```
 
@@ -81,7 +83,7 @@ Load sample metadata:
 ```{r load_bulk_meta, message = FALSE}
 
 bulk_samples <- readxl::read_xlsx(
-  here::here("data/bulk/2020-02-25_bulkRNAseq_metadata.xlsx")) %>% 
+  here::here(subdir, "data/2020-02-25_bulkRNAseq_metadata.xlsx")) %>% 
   mutate(G34_batch = ifelse(is.na(G34_batch), "Old", G34_batch))
 
 # Count number of samples per group
@@ -184,7 +186,7 @@ Load sample metadata for parental cell lines:
 
 ```{r load_cl_meta, message = FALSE}
 
-cl_samples <- readxl::read_xlsx(here::here("data/bulk/2020-07-23_cellline_parental_metadata.xlsx"))
+cl_samples <- readxl::read_xlsx(here::here(subdir, "data/2020-07-23_cellline_parental_metadata.xlsx"))
 
 ```
 
@@ -219,7 +221,7 @@ Load normalized counts for genes of interest from the pipeline run:
 
 ```{r load_counts}
 
-pipeline_path <- "../../../../../from_beluga/HGG/2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
+pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
 
 # Define genes which we'll plot in this document
 genes_of_interest <- c("GSX2", "DLX1", "DLX2", "PDGFRA", "MOXD1", "EOMES", "NEUROD2")

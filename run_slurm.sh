@@ -1,9 +1,8 @@
 #!/usr/bin/bash
-#SBATCH --output=logs/G34-%j.out
-#SBATCH --time=00:10:00
+#SBATCH --time=01:00:00
 #SBATCH --account=rrg-jabado-ab
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=1G
+#SBATCH --mem=2G
 
 mkdir -p logs/
 

@@ -1,6 +1,6 @@
 ---
 title: "01 - Bulk RNAseq"
-date: "23 July, 2020"
+date: "14 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -46,6 +46,12 @@ message("Document index: ", doc_id)
 out        <- here(subdir, "output", doc_id); dir.create(out, recursive = TRUE)
 figout     <- here(subdir, "figures", doc_id, "/"); dir.create(figout, recursive = TRUE)
 cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
+
+message("Cache: ", cache)
+```
+
+```
+## Cache: ~/tmp/G34-gliomas/bulk_transcriptome_epigenome/01/
 ```
 
 </details>
@@ -53,17 +59,17 @@ cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
 The root directory of this project is:
 
 ```
-## /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
+## /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ```
 
 Outputs and figures will be saved at these paths, relative to project root:
 
 ```
-## G34-gliomas-repo/bulk/output/01
+## G34-gliomas/bulk_transcriptome_epigenome/output/01
 ```
 
 ```
-## G34-gliomas-repo/bulk/figures/01//
+## G34-gliomas/bulk_transcriptome_epigenome/figures/01//
 ```
 
 
@@ -100,19 +106,21 @@ More complex downstream analysis is performed in subsequent documents.
 
 ```r
 # General
-library(tidyverse)
+library(tidyr)
+library(readr)
+library(dplyr)
 library(magrittr)
 library(glue)
+library(purrr)
 
 # For plotting
 library(ggplot2)
 library(scales)
 library(ggrepel)
-library(cytobox)
-ggplot2::theme_set(cytobox::theme_min(base_size = 13))
+ggplot2::theme_set(theme_min(base_size = 13))
 
 # Custom
-source(here::here("bulk/analysis/functions.R"))
+source(here::here(subdir, "analysis/functions.R"))
 ```
 
 # Analysis
@@ -124,7 +132,7 @@ Load sample metadata:
 
 ```r
 bulk_samples <- readxl::read_xlsx(
-  here::here("data/bulk/2020-02-25_bulkRNAseq_metadata.xlsx")) %>% 
+  here::here(subdir, "data/2020-02-25_bulkRNAseq_metadata.xlsx")) %>% 
   mutate(G34_batch = ifelse(is.na(G34_batch), "Old", G34_batch))
 
 # Count number of samples per group
@@ -156,9 +164,8 @@ We perform differential gene expression analysis between G34 tumors and each oth
 ```
 
 ```
-## [1] "HGG-H3.3-K27M-pons"     "HGG-H3.3-K27M-thalamic"
-## [3] "HGG-IDH"                "HGG-WT"                
-## [5] "PNET-HGNET-BCOR"
+## [1] "HGG-H3.3-K27M-pons"     "HGG-H3.3-K27M-thalamic" "HGG-IDH"               
+## [4] "HGG-WT"                 "PNET-HGNET-BCOR"
 ```
 
 ```r
@@ -239,7 +246,7 @@ Load sample metadata for parental cell lines:
 
 
 ```r
-cl_samples <- readxl::read_xlsx(here::here("data/bulk/2020-07-23_cellline_parental_metadata.xlsx"))
+cl_samples <- readxl::read_xlsx(here::here(subdir, "data/2020-07-23_cellline_parental_metadata.xlsx"))
 ```
 
 
@@ -272,7 +279,7 @@ Load normalized counts for genes of interest from the pipeline run:
 
 
 ```r
-pipeline_path <- "../../../../../from_beluga/HGG/2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
+pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
 
 # Define genes which we'll plot in this document
 genes_of_interest <- c("GSX2", "DLX1", "DLX2", "PDGFRA", "MOXD1", "EOMES", "NEUROD2")
@@ -332,7 +339,7 @@ counts_subset %>%
   noLegend()
 ```
 
-![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/01//bulk_RNAseq_PDGFRA_expression-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/01//bulk_RNAseq_PDGFRA_expression...*]~</span>
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/01//bulk_RNAseq_PDGFRA_expression-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//bulk_RNAseq_PDGFRA_expression...*]~</span>
 
 ### Lineage specific TFs
 
@@ -387,7 +394,7 @@ rr_plot_grid(df = counts_subset_boxplot, plot_num = 1, plotlist = boxplots, ncol
 ##     ggsave
 ```
 
-![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/01//bulk_RNAseq_TF_expression-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/01//bulk_RNAseq_TF_expression...*]~</span>
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/01//bulk_RNAseq_TF_expression-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//bulk_RNAseq_TF_expression...*]~</span>
 
 ## PDGFRA vs. GSX2 correlation in tumours & cell lines
 
@@ -473,7 +480,7 @@ cor_df %>%
   coord_cartesian(ylim = c(10^3, 10^6))
 ```
 
-![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/bulk/figures/01//gsx2_pdgfra_correlation-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/bulk/figures/01//gsx2_pdgfra_correlation...*]~</span>
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation...*]~</span>
 
 
 
@@ -489,15 +496,15 @@ cor_df %>%
 This document was last rendered on:
 
 ```
-## 2020-07-23 12:12:33
+## 2020-09-14 21:38:19
 ```
 
 The git repository and last commit:
 
 ```
-## Local:    master /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
+## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [2bc3284] 2020-07-09: Update README
+## Head:     [87deb0b] 2020-09-15: Rename bulk folder to be more descriptive for tx/epi analyses
 ```
 
 The random seed was set with `set.seed(100)`
@@ -506,74 +513,44 @@ The R session info:
 <details>
 
 ```
-## R version 3.5.0 (2018-04-23)
-## Platform: x86_64-redhat-linux-gnu (64-bit)
+## R version 3.5.1 (2018-07-02)
+## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: CentOS Linux 7 (Core)
 ## 
 ## Matrix products: default
-## BLAS/LAPACK: /var/chroots/hydrars-centos-7/usr/lib64/R/lib/libRblas.so
+## BLAS/LAPACK: /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/imkl/2018.3.222/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/libmkl_gf_lp64.so
 ## 
 ## locale:
-##  [1] LC_CTYPE=en_US.UTF-8 LC_NUMERIC=C         LC_TIME=C           
-##  [4] LC_COLLATE=C         LC_MONETARY=C        LC_MESSAGES=C       
-##  [7] LC_PAPER=C           LC_NAME=C            LC_ADDRESS=C        
-## [10] LC_TELEPHONE=C       LC_MEASUREMENT=C     LC_IDENTIFICATION=C 
+##  [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8    
+##  [5] LC_MONETARY=en_CA.UTF-8    LC_MESSAGES=en_CA.UTF-8   
+##  [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## [1] stats     graphics  grDevices datasets  utils     methods   base     
 ## 
 ## other attached packages:
-##  [1] cowplot_0.9.4   bindrcpp_0.2.2  cytobox_0.6.1   ggrepel_0.8.0  
-##  [5] scales_1.0.0    glue_1.4.1      magrittr_1.5    forcats_0.3.0  
-##  [9] stringr_1.3.1   dplyr_0.7.7     purrr_0.3.4     readr_1.3.1    
-## [13] tidyr_0.8.2     tibble_3.0.1    ggplot2_3.1.0   tidyverse_1.2.1
-## [17] here_0.1       
+##  [1] cowplot_0.9.4 ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4  
+##  [6] glue_1.4.2    magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2  
+## [11] here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] readxl_1.2.0        snow_0.4-3          backports_1.1.3    
-##   [4] Hmisc_4.2-0         plyr_1.8.4          igraph_1.2.2       
-##   [7] lazyeval_0.2.1      splines_3.5.0       digest_0.6.16      
-##  [10] foreach_1.4.4       htmltools_0.3.6     viridis_0.5.1      
-##  [13] lars_1.2            gdata_2.18.0        checkmate_1.9.1    
-##  [16] cluster_2.0.7-1     mixtools_1.1.0      ROCR_1.0-7         
-##  [19] modelr_0.1.3        R.utils_2.7.0       colorspace_1.4-0   
-##  [22] rvest_0.3.2         haven_2.0.0         xfun_0.12          
-##  [25] crayon_1.3.4        jsonlite_1.6        bindr_0.1.1        
-##  [28] survival_2.41-3     zoo_1.8-4           iterators_1.0.10   
-##  [31] ape_5.2             gtable_0.2.0        kernlab_0.9-27     
-##  [34] prabclus_2.2-7      DEoptimR_1.0-8      mvtnorm_1.0-10     
-##  [37] bibtex_0.4.2        Rcpp_1.0.0          metap_1.1          
-##  [40] dtw_1.20-1          viridisLite_0.3.0   htmlTable_1.13.1   
-##  [43] reticulate_1.10     foreign_0.8-70      bit_1.1-14         
-##  [46] proxy_0.4-22        mclust_5.4.2        SDMTools_1.1-221   
-##  [49] Formula_1.2-3       tsne_0.1-3          stats4_3.5.0       
-##  [52] htmlwidgets_1.3     httr_1.4.0          gplots_3.0.1.1     
-##  [55] RColorBrewer_1.1-2  fpc_2.1-11.1        acepack_1.4.1      
-##  [58] modeltools_0.2-22   ellipsis_0.2.0.1    Seurat_2.3.4       
-##  [61] ica_1.0-2           pkgconfig_2.0.2     R.methodsS3_1.7.1  
-##  [64] flexmix_2.3-14      nnet_7.3-12         labeling_0.3       
-##  [67] reshape2_1.4.3      tidyselect_1.1.0    rlang_0.4.6        
-##  [70] munsell_0.5.0       cellranger_1.1.0    tools_3.5.0        
-##  [73] cli_1.0.1           generics_0.0.2      broom_0.5.1        
-##  [76] ggridges_0.5.1      evaluate_0.12       yaml_2.2.0         
-##  [79] npsurv_0.4-0        knitr_1.21          bit64_0.9-7        
-##  [82] fitdistrplus_1.0-14 robustbase_0.93-2   caTools_1.17.1.1   
-##  [85] randomForest_4.6-14 RANN_2.6            pbapply_1.4-0      
-##  [88] nlme_3.1-137        R.oo_1.22.0         xml2_1.2.0         
-##  [91] hdf5r_1.0.0         compiler_3.5.0      rstudioapi_0.9.0   
-##  [94] png_0.1-7           lsei_1.2-0          stringi_1.2.4      
-##  [97] lattice_0.20-35     trimcluster_0.1-2.1 Matrix_1.2-14      
-## [100] vctrs_0.3.1         pillar_1.4.4        lifecycle_0.2.0    
-## [103] Rdpack_0.10-1       lmtest_0.9-36       data.table_1.12.0  
-## [106] bitops_1.0-6        irlba_2.3.3         gbRd_0.4-11        
-## [109] R6_2.3.0            latticeExtra_0.6-28 KernSmooth_2.23-15 
-## [112] gridExtra_2.3       codetools_0.2-15    MASS_7.3-49        
-## [115] gtools_3.8.1        assertthat_0.2.0    rprojroot_1.3-2    
-## [118] withr_2.1.2         diptest_0.75-7      parallel_3.5.0     
-## [121] doSNOW_1.0.16       hms_0.4.2           grid_3.5.0         
-## [124] rpart_4.1-13        class_7.3-14        rmarkdown_1.11     
-## [127] segmented_0.5-3.0   Rtsne_0.15          git2r_0.27.1       
-## [130] lubridate_1.7.4     base64enc_0.1-3
+##  [1] Rcpp_1.0.5          git2r_0.27.1        pillar_1.4.6       
+##  [4] compiler_3.5.1      BiocManager_1.30.10 plyr_1.8.6         
+##  [7] tools_3.5.1         digest_0.6.25       evaluate_0.14      
+## [10] lifecycle_0.2.0     tibble_3.0.3        gtable_0.3.0       
+## [13] pkgconfig_2.0.3     rlang_0.4.7         yaml_2.2.1         
+## [16] xfun_0.17           withr_2.2.0         stringr_1.4.0      
+## [19] knitr_1.29          vctrs_0.3.4         hms_0.5.3          
+## [22] rprojroot_1.3-2     grid_3.5.1          tidyselect_1.1.0   
+## [25] R6_2.4.1            rmarkdown_1.11      reshape2_1.4.4     
+## [28] farver_2.0.3        codetools_0.2-15    backports_1.1.9    
+## [31] ellipsis_0.3.1      htmltools_0.5.0     assertthat_0.2.1   
+## [34] colorspace_1.4-1    renv_0.10.0         labeling_0.3       
+## [37] stringi_1.5.3       lazyeval_0.2.2      munsell_0.5.0      
+## [40] crayon_1.3.4
 ```
 
 </details>

@@ -34,7 +34,8 @@ The root directory of this project is:
 
 ```{r here, echo = FALSE, cache = FALSE}
 
-source(here("rr_helpers.R"))
+source(here("include/rr_helpers.R"))
+source(here("include/style.R"))
 message(here())
 
 ```
