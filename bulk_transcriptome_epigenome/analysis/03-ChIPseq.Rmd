@@ -168,7 +168,7 @@ goi <- dge_and_epi %>% filter(G34R.zK27ac > 0.9 | G34R.zK27m3 > 0.9) %>%
   pull(symbol)
 
 dge_and_epi %>% 
-  ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3)) +
+  rr_ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3), plot_num = 2) +
   geom_hline(yintercept = 0.5, size = 0.5, colour = "gray90") +
   geom_vline(xintercept = 0.5, size = 0.5, colour = "gray90") +
   geom_point(aes(colour = log2FoldChange, size = -log10(padj)), alpha = 0.8) +

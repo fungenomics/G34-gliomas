@@ -255,7 +255,7 @@ goi <- dge_and_epi %>% filter(G34R.zK27ac > 0.9 | G34R.zK27m3 > 0.9) %>%
   pull(symbol)
 
 dge_and_epi %>% 
-  ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3)) +
+  rr_ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3), plot_num = 2) +
   geom_hline(yintercept = 0.5, size = 0.5, colour = "gray90") +
   geom_vline(xintercept = 0.5, size = 0.5, colour = "gray90") +
   geom_point(aes(colour = log2FoldChange, size = -log10(padj)), alpha = 0.8) +
@@ -278,7 +278,7 @@ dge_and_epi %>%
 This document was last rendered on:
 
 ```
-## 2020-09-15 09:59:19
+## 2020-09-15 11:01:09
 ```
 
 The git repository and last commit:
@@ -286,7 +286,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [1c0f8a4] 2020-09-15: Regenerate Hi-C 4C plots
+## Head:     [31a366d] 2020-09-15: Output DGE from bulk RNA-seq tumor comparison
 ```
 
 The random seed was set with `set.seed(100)`

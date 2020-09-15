@@ -491,7 +491,12 @@ cor_df %>%
 read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/Ensembl.ensGene.exon/HGG-IDHvsHGG-G34R.V.tsv"), header = T, sep = "\t", check.names = FALSE) %>%
   filter(padj < 0.01 & baseMean > 100 & abs(log2FoldChange) > 2) %>%
   arrange(desc(log2FoldChange)) %T>%
-  write_tsv(glue("{out}/DGE_HGG-IDHvsHGG-G34R.V_padj<0.01_baseMean>100_absLFC>2.tsv"))
+  rr_write_tsv(path = glue("{out}/DGE_HGG-IDHvsHGG-G34R.V_padj<0.01_baseMean>100_absLFC>2.tsv"),
+               desc = "Differentially expressed genes for G34R/V vs IDH patient tumors, filtered to have adjusted p-val <0.01, expression baseMean >100, and absolute log2 fold change >2")
+```
+
+```
+## ...writing description of DGE_HGG-IDHvsHGG-G34R.V_padj<0.01_baseMean>100_absLFC>2.tsv to G34-gliomas/bulk_transcriptome_epigenome/output/01/DGE_HGG-IDHvsHGG-G34R.V_padj<0.01_baseMean>100_absLFC>2.desc
 ```
 
 <div data-pagedtable="false">
@@ -513,7 +518,7 @@ read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/
 This document was last rendered on:
 
 ```
-## 2020-09-15 09:55:20
+## 2020-09-15 11:00:51
 ```
 
 The git repository and last commit:
@@ -521,7 +526,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [1c0f8a4] 2020-09-15: Regenerate Hi-C 4C plots
+## Head:     [31a366d] 2020-09-15: Output DGE from bulk RNA-seq tumor comparison
 ```
 
 The random seed was set with `set.seed(100)`
