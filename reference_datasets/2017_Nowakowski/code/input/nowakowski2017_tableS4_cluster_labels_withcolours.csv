@@ -1,0 +1,48 @@
+Cluster Name,Cluster Number (Fig 1B),Cluster Interpretation,Colour
+Astrocyte,9,Astrocyte,#00a385
+IN-CTX-CGE1,45,CGE/LGE-derived inhibitory neurons,#4a1cc9
+IN-CTX-CGE2,46,CGE/LGE-derived inhibitory neurons,#4a1cc9
+Choroid,29,Choroid,#1ba02a
+IPC-div1,15,Dividing Intermediate Progenitor Cells RG-like,#f77750
+MGE-div,34,dividing MGE Progenitors,#8798C8
+RG-div1,14,Dividing Radial Glia (G2/M-phase),#ff8f00
+RG-div2,13,Dividing Radial Glia (S-phase),#ff8f00
+EN-PFC2,25,Early and Late Born Excitatory Neuron PFC,#c9110e
+EN-PFC3,26,Early and Late Born Excitatory Neuron PFC,#c9110e
+EN-V1-2,28,Early and Late Born Excitatory Neuron V1,#c9110e
+EN-PFC1,24,Early Born Deep Layer/subplate Excitatory Neuron PFC,#c9110e
+EN-V1-1,23,Early Born Deep Layer/subplate Excitatory Neuron V1,#c9110e
+RG-early,30,earlyRG,#ff8f00
+Endothelial,1,Endothelial,#636363
+EN-V1-3,27,Excitatory Neuron V1 - late born,#c9110e
+Glyc,31,Glycolysis,#636363
+IPC-nEN1,17,Intermediate Progenitor Cells EN-like,#ff937c
+IPC-nEN2,18,Intermediate Progenitor Cells EN-like,#ff937c
+IPC-nEN3,19,Intermediate Progenitor Cells EN-like,#ff937c
+IPC-div2,16,Intermediate Progenitor Cells RG-like,#f77750
+nIN1,38,MGE newborn neurons,#135ca0
+nIN2,39,MGE newborn neurons,#135ca0
+nIN3,40,MGE newborn neurons,#135ca0
+nIN4,41,MGE newborn neurons,#135ca0
+nIN5,42,MGE newborn neurons,#135ca0
+MGE-IPC1,35,MGE Progenitors,#8798C8
+MGE-IPC2,36,MGE Progenitors,#8798C8
+MGE-IPC3,37,MGE Progenitors,#8798C8
+MGE-RG1,32,MGE Radial Glia 1,#ff8f00
+MGE-RG2,33,MGE Radial Glia 2,#ff8f00
+IN-CTX-MGE2,44,"MGE-derived Ctx inhibitory neuron, Cortical Plate-enriched",#135ca0
+IN-CTX-MGE1,43,"MGE-derived Ctx inhibitory neuron, Germinal Zone Enriched",#135ca0
+Microglia,7,Micrgolia,#aca2b2
+Mural,2,Mural/Pericyte,#857e89
+nEN-early2,21,Newborn Excitatory Neuron - early born,#c9110e
+nEN-early1,20,Newborn Excitatory Neuron - early born,#c9110e
+nEN-late,22,Newborn Excitatory Neuron - late born,#c9110e
+OPC,8,Oligodendrocyte progenitor cell,#e0de53
+oRG,10,Outer Radial Glia,#ff8f00
+IN-STR,47,Striatal neurons,#734d87
+tRG,11,Truncated Radial Glia,#ff8f00
+U1,3,Unknown1,#cedbd8
+U2,4,Unknown2,#cedbd8
+U3,5,Unknown3,#cedbd8
+U4,6,Unknown4,#cedbd8
+vRG,12,Ventricular Radial Glia,#ff8f00

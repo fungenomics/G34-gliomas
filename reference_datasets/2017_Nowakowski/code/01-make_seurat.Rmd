@@ -1,0 +1,194 @@
+---
+title: "01: Make a Seurat V2 object from this data"
+author: "Selin Jessa"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: show
+    css: ../../../sjessa/from_hydra/misc/rmd_custom.css
+    theme: flatly
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+---
+
+```{r config, warning = FALSE}
+
+project_id <- "Nowakowski" # determines the name of the cache folder
+doc_id     <- "01" # determines name of the subfolder of `figures` where pngs/pdfs are saved
+out        <- paste0("../processed_data/", doc_id); dir.create(out, recursive = TRUE)
+figout     <- paste0("figures/", doc_id, "/")
+cache      <- paste0("~/tmp/", project_id, "/", doc_id, "/")
+
+```
+
+```{r setup, include = FALSE}
+
+# NO NEED TO MODIFY THIS CHUNK
+
+knitr::knit_hooks$set( echo_label = function(before, options, envir) {
+  if ( before ) {
+    # Do nothing
+  } else sprintf('<br><span style="color:#1abc9c">~[output @ *%s*]~</span>',
+                 paste0(options$fig.path, "/", options$label, "...") )
+})
+
+knitr::opts_chunk$set(message = TRUE,
+                      warning = FALSE,
+                      error = FALSE,
+                      cache = TRUE,
+                      cache.path = cache,
+                      fig.path = figout,
+                      fig.keep = "all",
+                      dev = c("png", "pdf"),
+                      cache.lazy = FALSE)
+
+options(knitr.table.format = "html") 
+knitr::opts_knit$set(width = 1600)
+
+```
+
+***
+
+# Overview
+
+Here I'm taking the data for the Nowakowski et al scRNAseq dataset of human
+fetal telencephalon and producing a Seurat object with the data thy've provided.
+
+# Set up
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+library(tidyverse)
+library(cytobox)
+library(glue)
+library(data.table)
+library(Seurat)
+
+source("../../../sjessa/from_hydra/misc/sjlib.R")
+
+```
+
+# Load data
+
+We have metadata for all cells for which we have TPM.
+
+```{r load}
+
+data_tpm <- data.table::fread("../data/exprMatrix.tsv.gz",
+                              data.table = FALSE) %>% 
+  tibble::column_to_rownames(var = "gene")
+
+data_raw <- data.table::fread("../data/geneMatrix.tsv", data.table = FALSE) %>% 
+  tibble::column_to_rownames(var = "geneId")
+
+meta <- data.table::fread("../data/meta.tsv", data.table = FALSE) %>% 
+  mutate(WGCNAcluster = ifelse(WGCNAcluster == "", "None", WGCNAcluster))
+
+rownames(meta) <- meta$`_id`
+meta <- meta[colnames(data_tpm), ]
+
+tsne <- data.table::fread("../data/tSNE_on_WGCNA.coords.tsv",
+                          data.table = FALSE)
+rownames(tsne) <- tsne$V1
+colnames(tsne) <- c("Cell", "tSNE_1", "tSNE_2")
+
+clusters <- read_csv("processed_data/nowakowski2017_tableS4_cluster_labels_with_colours.csv")
+
+clusters[48, ]$`Cluster Name` <- "None"
+clusters[48, ]$`Cluster Interpretation` <- "No cluster provided"
+clusters[48, ]$Colour <- "gray90"
+
+```
+
+Check our dimensions:
+
+```{r dim}
+
+dim(data_tpm)
+dim(data_raw)
+dim(meta)
+dim(tsne)
+
+```
+
+The data is provided as TPM so we will log-transform:
+
+```{r log_transform}
+
+data_tpm_log <- log2(as.matrix(data_tpm) + 1)
+
+```
+
+# Make Seurat object
+
+```{r seurat}
+
+# Populate object
+nowa <- CreateSeuratObject(raw.data = data_raw[, meta$`_id`],
+                           meta.data = meta,
+                           project = "Nowakowski human fetal telencephalon")
+
+# Add TPM as the normalized data
+nowa@data <- as(data_tpm_log, "dgCMatrix")
+
+# Add tSNE
+nowa <- SetDimReduction(
+  object = nowa,
+  reduction.type = "tsne",
+  slot = "cell.embeddings",
+  new.data = tsne[, c("tSNE_1", "tSNE_2")] %>%
+    as.matrix())
+
+nowa <- SetAllIdent(nowa, "WGCNAcluster")
+
+# Add full cell type name to metadata
+nowa@meta.data$Cell_type <- plyr::mapvalues(nowa@meta.data$WGCNAcluster,
+                                            from = clusters$`Cluster Name`,
+                                            to = clusters$`Cluster Interpretation`)
+
+head(nowa@meta.data)
+
+```
+
+Check it works... nice!
+
+```{r seurat_check, fig.width = 5, fig.height = 5}
+
+tsne(nowa)
+feature(nowa, "TTYH1", label = FALSE, legend = TRUE)
+
+```
+
+Set a palette -- I chose some meaningful colours manually, here, but there
+are not as many colours as clusters:
+
+```{r palette, fig.width = 8, fig.height = 4.5}
+
+nowa@misc$colours <- clusters %>%
+  select(`Cluster Name`, Colour) %>%
+  dfToNamedVector()
+
+tsne(nowa, colours = getClusterColours(nowa), label = FALSE, legend = TRUE)
+tsne(nowa, colours = nowa@misc$colours, label = FALSE, legend = TRUE)
+
+```
+
+
+# Save
+
+```{r save}
+
+save(nowa, file = glue("{out}/nowakowski_seurat.Rda"))
+
+```
+
+
+# Session info
+
+```{r sinfo, cache = FALSE}
+
+sessionInfo()
+
+```

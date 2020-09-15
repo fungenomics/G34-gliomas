@@ -1,0 +1,269 @@
+---
+title: "Anderson et al - process Foxp1 data"
+author: "Selin Jessa"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: show
+    css: ../../../sjessa/from_hydra/misc/rmd_custom.css
+    theme: flatly
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+---
+
+
+```{r config, warning = FALSE}
+
+# **MODIFY THIS CHUNK**
+
+project_id <- "anderson_data" # determines the name of the cache folder
+doc_id     <- "01" # determines name of the subfolder of `figures` where pngs/pdfs are saved
+out        <- paste0("../processed_data/", doc_id)
+figout     <- paste0("figures/", doc_id, "/")
+cache      <- paste0("~/tmp/", project_id, "/", doc_id, "/")
+
+```
+
+```{r setup, include = FALSE}
+
+# NO NEED TO MODIFY THIS CHUNK
+
+knitr::knit_hooks$set( echo_label = function(before, options, envir) {
+  if ( before ) {
+    # Do nothing
+  } else sprintf('<br><span style="color:#1abc9c">~[output @ *%s*]~</span>',
+                 paste0(options$fig.path, "/", options$label, "...") )
+})
+
+knitr::opts_chunk$set(message = TRUE,
+                      warning = FALSE,
+                      error = FALSE,
+                      cache = TRUE,
+                      cache.path = cache,
+                      fig.path = figout,
+                      fig.keep = "all",
+                      dev = c("png", "pdf"),
+                      cache.lazy = FALSE)
+
+grDevices::pdf.options(useDingbats = FALSE)
+
+options(knitr.table.format = "html") 
+knitr::opts_knit$set(width = 1600)
+
+```
+
+***
+
+# Overview
+
+Load Drop-seq expression matrix obtained from GEO, and create a Seurat object in order
+to run basic analyses (normalization, dimensionality reduction, clustering, derivation of cluster
+markers, etc).
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+library(tidyr)
+library(dplyr)
+library(readr)
+library(magrittr)
+library(glue)
+library(purrr)
+library(ggplot2)
+library(cytobox)
+library(cowplot)
+library(Seurat)
+
+source("../../../sjessa/from_hydra/HGG-G34/samples/functions.R")
+source("../../../sjessa/from_hydra/misc/sjlib.R")
+ggplot2::theme_set(cytobox::theme_min(border_colour = "black", border_size = 0.5))
+
+```
+
+# Read data
+
+```{r read_data}
+
+# Read in the data into sparse matrix format
+mat <- data.table::fread("../data/GSE125290_AAX_ALL_CLUST_RAW_COUNTS.txt.gz", data.table = FALSE)
+rownames(mat) <- mat$CellBarcode
+
+# Extract sample from cell ID (columns are cells with naming scheme {sample}_{cell barcode})
+metadata <- mat[, 1:9]
+mat <- mat[, -c(1:9)]
+mat <- as.matrix(mat)
+
+# Only keep cells in the CTL genotype
+mat <- mat[metadata$Genotype == "CTL", ]
+metadata <- metadata[metadata$Genotype == "CTL", ]
+
+# Get cluster labels
+cluster_lab <- readxl::read_xlsx("../data/Table_S2_cluster_labels_and_counts.xlsx") %>% 
+  dplyr::select(Cluster_num = Cluster, Label = `Cell-type Annotation`) %>% 
+  dplyr::mutate(Cluster = paste0(Cluster_num, "-", Label)) %>% 
+  select(-Label)
+metadata <- left_join(metadata %>% dplyr::rename(Cluster_num = Cluster), cluster_lab, by = "Cluster_num")
+rownames(metadata) <- metadata$CellBarcode
+
+# Sanity check
+dim(mat)
+dim(metadata)
+
+```
+
+# QC
+
+## Create the Seurat object
+
+```{r seurat}
+
+seurat <- CreateSeuratObject(raw.data = t(mat),
+                             min.cells = 3,
+                             min.genes = 0,
+                             is.expr = 0,
+                             project = "Anderson_Foxp1_striatum",
+                             names.field = 1,
+                             names.delim = "_",
+                             meta.data = metadata)
+
+# Add mitochondrial content to the metadata
+mito_genes <- grep("^mt-", rownames(seurat@data), value = TRUE)
+percent_mito <- Matrix::colSums(seurat@data[mito_genes, ])/Matrix::colSums(seurat@data) * 100
+seurat <- AddMetaData(seurat, percent_mito, "percent_mito")
+
+# Add cell cycle score
+seurat <- addCellCycle(seurat, species = "m_musculus")
+
+```
+
+## QC metrics
+
+```{r qc_before_filt, fig.width = 9, fig.height = 5}
+
+ngene_lim <- 10000
+numi_lim  <- 25000
+mito_lim  <- 10
+
+plot_grid(VlnPlot(seurat, c("nGenes"),   
+                  do.return = TRUE, point.size.use = -1, x.lab.rot = TRUE) + ylim(NA, ngene_lim),
+          VlnPlot(seurat, c("nUMI"),          
+                  do.return = TRUE, point.size.use = -1, x.lab.rot = TRUE) + ylim(NA, numi_lim),
+          VlnPlot(seurat, c("percent_mito"),
+                  do.return = TRUE, point.size.use = -1, x.lab.rot = TRUE) + ylim(NA, mito_lim),
+          ncol = 3)
+
+```
+
+# Dimensionality reduction and clustering
+
+```{r process1, results = "hide", dependson = 'thresholds'}
+
+(process_params <- data.frame(
+  n_pcs = 10,
+  resolution = 0.6,
+  seed = 100
+))
+
+seurat <- seurat %>%
+  NormalizeData(normalization.method = "LogNormalize", scale.factor = 10000) %>%
+  FindVariableGenes(mean.function = ExpMean, dispersion.function = LogVMR,
+                    x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.5) %>%
+  ScaleData(vars.to.regress = c("nUMI", "percent_mito")) %>%
+  RunPCA(pc.genes = .@var.genes, pcs.compute = 100, do.print = FALSE) %>%
+  RunTSNE(dims.use = 1:process_params$n_pcs, do.fast = TRUE, seed.use = process_params$seed) %>%
+  FindClusters(dims.use = 1:process_params$n_pcs, resolution = process_params$resolution, random.seed = process_params$seed)
+
+seurat <- set_qual_pal(seurat)
+seurat <- SetAllIdent(seurat, "Cluster")
+
+# Add in the UMAP coordinates from the paper
+seurat@dr$umap <- seurat@dr$tsne
+seurat@dr$umap@cell.embeddings[, 1] <- mat$UMAP_1
+seurat@dr$umap@cell.embeddings[, 2] <- mat$UMAP_2
+
+names(seurat@dr$umap@cell.embeddings) <- c("UMAP1", "UMAP2")
+
+saveRDS(seurat, glue("{out}-seurat.Rds"))
+write_tsv(process_params, glue("{out}-process_params.tsv"))
+
+```
+
+## Visualization and QC
+
+How many cells per cluster?
+
+```{r n_cells, dependson = 'process1'}
+
+table(seurat@ident)
+
+```
+
+```{r plot_tsne_qc1, fig.width = 11, fig.height = 9, dependson = 'process1'}
+
+plot_grid(cytobox::pca(seurat, title = "PCA", legend = TRUE),
+          tsne(seurat, title = "tSNE", legend = TRUE),
+          tsne(seurat, title = "nGenes", colour_by = "nGenes", colours = rdbu, colour_by_type = "continuous", label = FALSE),
+          tsne(seurat, title = "nUMI", colour_by = "nUMI", colours = rdbu, colour_by_type = "continuous", label = FALSE),
+          tsne(seurat, title = "percent_mito", colour_by = "percent_mito", colours = rdbu, colour_by_type = "continuous", label = FALSE),
+          tsne(seurat, title = "G1_S_score", colour_by = "G1_S_score", colours = ylrd, colour_by_type = "continuous", label = FALSE),
+          tsne(seurat, title = "G2_M_score", colour_by = "G2_M_score", colours = ylrd, colour_by_type = "continuous", label = FALSE))
+
+```
+
+
+<!-- ## PCA -->
+
+<!-- ```{r viz_pca, fig.width = 12, fig.height = 4, dependson = 'process1'} -->
+
+<!-- plot_grid(cytobox::pca(seurat, dim1 = 1, dim2 = 2), -->
+<!--           cytobox::pca(seurat, dim1 = 1, dim2 = 3), -->
+<!--           cytobox::pca(seurat, dim1 = 1, dim2 = 4), ncol = 3) -->
+
+<!-- VizPCA(seurat, 1:4, nCol = 4, font.size = 0.9) -->
+
+<!-- getVarianceExplained(seurat) -->
+
+<!-- ``` -->
+
+<!-- # Markers -->
+
+<!-- ```{r seurat_markers, dependson = 'process1', eval = TRUE} -->
+
+<!-- seurat_markers <- FindAllMarkers(seurat) -->
+
+<!-- write_tsv(seurat_markers, glue("{out}-cluster_markers.tsv")) -->
+
+<!-- ``` -->
+
+<!-- Plot them: -->
+
+<!-- ```{r seurat_markers_heatmap, fig.width = 7, fig.height = 18, dependson = 'process1'} -->
+
+<!-- seurat_markers <- readr::read_tsv(glue("{out}-cluster_markers.tsv")) -->
+
+<!-- DT::datatable(seurat_markers %>% -->
+<!--                 group_by(cluster) %>% -->
+<!--                 top_n(100, avg_logFC), filter = "top") -->
+
+<!-- top15 <- seurat_markers %>% group_by(cluster) %>% top_n(15, avg_logFC) -->
+
+<!-- DoHeatmap(object = seurat, genes.use = top15$gene, -->
+<!--           slim.col.label = TRUE, remove.key = TRUE, -->
+<!--           col.low = "#2166AC", -->
+<!--           col.mid = "#E5E0DC", -->
+<!--           col.high = "#B2182B") -->
+
+<!-- rownames(seurat_markers) <- NULL -->
+
+<!-- ``` -->
+
+# Session info
+
+```{r sinfo, cache = FALSE}
+
+sessionInfo()
+
+```
