@@ -1,0 +1,358 @@
+---
+title: "01 - Bulk RNAseq"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    keep_md: true
+    theme: flatly
+    css: ../../include/style.css
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+    includes:
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
+---
+
+<!-- FRONT MATTER, insert configuration info -->
+
+```{r header, echo = FALSE, results = 'asis', warning = FALSE}
+
+# Index of the document
+# ...determines name of the subfolder of `outputs` and `figures`
+doc_id <- "04"
+subdir <- "bulk_transcriptome_epigenome"
+
+suppressMessages(library(here))
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "header.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF FRONT MATTER -->
+
+
+# Overview
+
+In this document, we analyze bulk RNA-seq data from the G34-mutant patient-derived cell line GMB002 and isogenic matches, in which CRISPR editing was used to remove the mutation. Cell lines were also subjected to a differentiation protocol.
+
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+# General
+library(tidyr)
+library(readr)
+library(dplyr)
+library(magrittr)
+library(glue)
+library(purrr)
+
+# For plotting
+library(ggplot2)
+library(scales)
+library(ggrepel)
+library(cowplot)
+ggplot2::theme_set(theme_min(base_size = 13))
+
+# Custom
+source(here::here(subdir, "analysis/functions.R"))
+source(here::here(subdir, "analysis/ssgsea.R"))
+
+```
+
+# Analysis
+
+## Prep bulk RNAseq analysis
+
+### Sample metadata
+
+Load in the metadata table for all bulk RNAseq samples to be included
+in the analysis:
+
+```{r bulk_samples}
+
+(cell_line_meta <- readxl::read_xlsx(here(subdir, "data/20200219-cell_line_metadata.xlsx")) %>% 
+   mutate(Group_broad = paste0(Genotype_broad, "_", Media)) %>% 
+   mutate(Group_broad = gsub("/", "", Group_broad)))
+
+# Number of samples per group
+table(cell_line_meta$Group)
+
+```
+
+### Prepare bulk RNA-seq pipeline input
+
+Palettes for groups:
+
+```{r palette}
+
+palette_groups <- c("G34R_ser" = "cyan4",
+                    "G34R_nsm" = "cyan1",
+                    "G34V_ser" = "cyan4",
+                    "G34V_nsm" = "cyan1",
+                    "KORepair_ser" = "navy",
+                    "KORepair_nsm" = "blue")
+
+save(palette_groups, file = glue("{out}/cl_palettes.Rda"))
+
+```
+
+We will need one version with all samples together, since normalization
+is dataset-dependent, and we may want to compare expression levels across groups.
+
+```{r info_samples_comp, dependson = 'palette'}
+
+dir.create(file.path(out, "All_cell_line_data"), showWarnings = FALSE)
+
+cell_line_meta %>%
+  select(ID, Nickname, Group = Group_broad) %>%
+  write_tsv(file.path(out, "All_cell_line_data", "info.samples.tsv"))
+
+data.frame(Group = unique(cell_line_meta$Group_broad),
+           Label = unique(cell_line_meta$Group_broad),
+           Order = seq_along(unique(cell_line_meta$Group_broad)),
+           Color = palette_groups[unique(cell_line_meta$Group_broad)],
+           stringsAsFactors = FALSE) %>%
+  write_tsv(file.path(out, "All_cell_line_data", "info.groups.tsv"))
+
+```
+
+
+## Run pipeline on Beluga
+
+In order to run the in-house DESeq2/expression analysis pipeline, the inputs
+created above are synced to the pipeline folder, and then
+the following outputs are loaded for further analysis below and in the subsequent analyses:
+
+- Alignment stats
+- Differential gene expession analysis output
+- Counts
+
+```{r rp}
+
+pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/Cell_lines3/"
+
+```
+
+## Alignment stats
+
+```{r align_stats}
+
+align_stats <- read_tsv(file.path(pipeline_path, "All_cell_line_data", "alignment.statistics.tsv")) %>%
+  separate(mitochondrialPercentage, sep = "%", into = "mitochondrialPercentage") %>%
+  mutate(mitochondrialPercentage = as.numeric(mitochondrialPercentage))
+
+# DT::datatable(align_stats, filter = "top", class = 'white-space: nowrap')
+
+left_join(cell_line_meta, align_stats, by = c("Nickname" = "name")) %>%
+  write_tsv(glue("{out}/cell_line_metadata_with_align_stats.tsv"))
+
+```
+
+## G34R vs KO / repair in serum
+
+### Load DGE
+
+```{r dge_serum}
+
+dge_serum <- read_tsv(file.path(pipeline_path, "GBM002_ser/diff/Ensembl.ensGene.exon/G34R_servsKORepair_ser.tsv")) %>% 
+  separate(ID, into = c("ENSID", "gene_symbol"), sep = ":") %>% 
+  mutate(log10p = -log10(padj))
+
+dge_serum %>% 
+  filter(baseMean > 100 & padj < 0.05) %>% 
+  rr_ggplot(aes(x = log2FoldChange, y = log10p, label = gene_symbol), alpha = 0.8, plot_num = 1) +
+  geom_point()
+
+dge_stem <- read_tsv(file.path(pipeline_path, "GBM002_nsm/diff/Ensembl.ensGene.exon/G34R_nsmvsKORepair_nsm.tsv")) %>% 
+  separate(ID, into = c("ENSID", "gene_symbol"), sep = ":") %>% 
+  mutate(log10p = -log10(padj))
+
+```
+
+
+### Targeted DGE, for serum condition - GBM002
+
+Note that I have taken care, here, to use the counts normalized
+for the serum samples together only.
+
+```{r targeted_dge_serum only, fig.width = 14, fig.height = 7}
+
+goi <- c("DLX1", "DLX2", "DLX5", "DLX6")
+
+gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
+                                       goi = goi) %>%
+  left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
+  left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID")) %>% 
+  filter(baseMean > 100)
+
+```
+
+For the DLXs only
+
+```{r dlx_serum_boxplot, width = 5, height = 3}
+
+dlx_limits <- list("DLX1" = c(0, 21000),
+                   "DLX2" = c(0, 21000),
+                   "DLX5" = c(0, 1600),
+                   "DLX6" = c(0, 1600))
+
+cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm",
+                                                      "G34R_ser", "KORepair_ser")) {
+  
+  counts %>%
+    filter(gene_symbol == gene) %>% 
+    mutate(Group_broad = factor(Group_broad,
+                                levels = levels)) %>% 
+    rr_ggplot(aes(x = Group_broad, y = gene_expression), plot_num = 1) +
+    geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
+    scale_colour_manual(values = c("cyan4", "midnightblue")) +
+    stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+                 geom = "crossbar", width = 0.2) +
+    theme_min(border_colour = "black") +
+    ylim(lims) +
+    ggtitle(gene) +
+    rotateX() +
+    noLegend()
+  
+}
+
+imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts)) %>% 
+  {plot_grid(plotlist = ., ncol = 4)}
+
+```
+
+
+### Targeted DGE, for stem condition - GBM002
+
+```{r targeted_dge_nsm, fig.width = 14, fig.height = 7}
+
+gbm002_counts_nsm <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_nsm/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
+                                           goi = goi) %>%
+  left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
+  left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID")) %>% 
+  filter(baseMean > 100)
+
+```
+
+```{r dlx_stem_boxplot, width = 5, height = 3}
+
+dlx_limits <- list("DLX1" = c(0, 4000),
+                   "DLX2" = c(0, 5300),
+                   "DLX5" = c(0, 400),
+                   "DLX6" = c(0, 500))
+
+imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts_nsm)) %>% 
+  {plot_grid(plotlist = ., ncol = 4)}
+
+```
+
+
+## ssGSEA
+
+### Prep counts
+
+```{r raw_counts}
+
+raw_counts <- file.path(pipeline_path, "All_GBM002_new/counts/Ensembl.ensGene.exon.raw.tsv.gz") %>%
+  read.table(header = T, row.names = 1, check.names = F, sep = "\t")
+
+head(rownames(raw_counts) %<>% strsplit(":") %>% sapply(getElement, 1))
+raw_counts <- as.matrix(raw_counts)
+
+raw_counts[1:5, 1:5]
+save(raw_counts, file = glue("{out}/cl_raw_counts.Rda"))
+
+dim(raw_counts)
+
+```
+
+
+### Load signatures
+
+Loading the cell type gene signatures prepared previously for GSEA, and selecting
+some representative signatures for relevant cell types:
+
+```{r load_sigs}
+
+signatures <- readRDS(here(subdir, "output/02/signatures_ens.Rds"))
+
+# Select pathways of interest
+poi <- list("newborn_inhib_neuron" = signatures$`HF nIN1`,
+            "mature_inhib_neuron" = signatures$`HP IN-PV`,
+            "opc" = signatures$`F-p6 OPC`,
+            "astrocyte" = signatures$`F-p0 ASTR2`,
+            "rgc" = signatures$`HF RG-early`,
+            "fetal_excit_neurons" = signatures$`HF EN-PFC1`)
+
+```
+
+### Run ssGSEA
+
+```{r run_ssgsea, results = "hide", eval = TRUE}
+
+cl_ssgsea <- ssgsea_le(expr_mat = raw_counts,
+                       gene_sets = poi,
+                       # Following exactly the same parameters as we used
+                       # in the NG bulk analysis
+                       alpha = 0.75,
+                       normalize = FALSE)
+
+cl_ssgsea$enrichment_scores %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "Signature") %>%
+  write_tsv(glue("{out}/bulk_ssgsea_scores.tsv"))
+
+leading_edge <- cl_ssgsea$leading_edge
+save(leading_edge, file = glue("{out}/cl_ssgsea_le.Rda"))
+
+```
+
+### Visualize results
+
+```{r viz_ssgsea, width = 2.5, height = 3}
+
+cl_ssgsea_tidy <- cl_ssgsea$enrichment_scores %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "Signature") %>%
+  gather(Sample, Score, 2:ncol(.)) %>%
+  left_join(cell_line_meta, by = c("Sample" = "Nickname"))
+
+cl_ssgsea_tidy %>%
+  filter(Signature %in% c("newborn_inhib_neuron", "rgc")) %>%
+  mutate(Signature = factor(Signature, levels = c("rgc", "newborn_inhib_neuron"))) %>%
+  filter(Media == "ser") %>%
+  mutate(Group_broad = factor(Group_broad,
+                              levels = c("G34R_nsm", "KORepair_nsm",
+                                         "G34R_ser", "KORepair_ser"))) %>%
+  rr_ggplot(aes(x = Group_broad, y = Score), plot_num = 1) +
+  geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
+  scale_colour_manual(values = c("cyan4", "midnightblue")) +
+  stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+               geom = "crossbar", width = 0.2) +
+  theme_min(border_colour = "black") +
+  facet_wrap(~ Signature) +
+  rotateX() +
+  noLegend() +
+  ylim(c(22400, 24000))
+
+```
+
+
+
+<!-- END MATTER, insert reproducibility info -->
+
+```{r footer, echo = FALSE, results = 'asis', warning = FALSE, cache = FALSE}
+
+# Knit child document with header
+res <- knitr::knit_child(here::here("include", "footer.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF END MATTER -->
