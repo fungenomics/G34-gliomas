@@ -31,7 +31,7 @@ logs
 exploratory
 
 # Exclude some output
-bulk/output/01
+bulk_transcriptome_epigenome/output/01
 
 # Exclude pdfs, which take up more space
 figures/*/*.pdf
