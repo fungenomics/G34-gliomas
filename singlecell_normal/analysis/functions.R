@@ -1,6 +1,20 @@
 
 
 
+
+#' A distance function for Spearman rank correlation
+#' Copied from https://davetang.org/muse/2010/11/26/hierarchical-clustering-with-p-values-using-spearman/
+spearman <- function(x, ...) {
+  x <- as.matrix(x)
+  res <- as.dist(1 - cor(x, method = "spearman", use = "everything"))
+  res <- as.dist(res)
+  attr(res, "method") <- "spearman"
+  return(res)
+}
+
+
+
+
 prop <- function(x) {
     
     sum(x)/length(x)

@@ -1,6 +1,6 @@
 ---
 title: "02 - Expression of individual genes during development"
-date: "20 July, 2020"
+date: "16 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -46,6 +46,12 @@ message("Document index: ", doc_id)
 out        <- here(subdir, "output", doc_id); dir.create(out, recursive = TRUE)
 figout     <- here(subdir, "figures", doc_id, "/"); dir.create(figout, recursive = TRUE)
 cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
+
+message("Cache: ", cache)
+```
+
+```
+## Cache: ~/tmp/G34-gliomas/singlecell_normal/02/
 ```
 
 </details>
@@ -53,17 +59,17 @@ cache      <- paste0("~/tmp/", basename(here()), "/", subdir, "/", doc_id, "/")
 The root directory of this project is:
 
 ```
-## /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
+## /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ```
 
 Outputs and figures will be saved at these paths, relative to project root:
 
 ```
-## G34-gliomas-repo/singlecell_normal/output/02
+## G34-gliomas/singlecell_normal/output/02
 ```
 
 ```
-## G34-gliomas-repo/singlecell_normal/figures/02//
+## G34-gliomas/singlecell_normal/figures/02//
 ```
 
 
@@ -88,17 +94,17 @@ under normal conditions, as a reference for expression patterns in the G34R/V tu
 
 
 ```r
-# Load liraries here
-library(here)
-
-library(tidyverse)
+# Load libraries here
+library(tidyr)
+library(dplyr)
+library(readr)
 library(Seurat)
 library(pvclust)
 library(dendextend)
 library(glue)
+library(feather)
 
-source("../../../../misc/sjlib.R")
-source("functions.R")
+source(here(subdir, "analysis/functions.R"))
 ```
 
 # Analysis
@@ -109,12 +115,12 @@ Get expression & signatures:
 
 
 ```r
-atlas_signatures <- readRDS(here("bulk/output/02/atlas_signatures.Rds"))
+atlas_signatures <- readRDS(here("bulk_transcriptome_epigenome/output/02/atlas_signatures.Rds"))
 
 # Get genes for neuro-ectoderm mouse forebrain clusters
 atlas_signatures <- atlas_signatures$mm_sym[grepl("^F", names(atlas_signatures$mm_sym)) & !grepl("MGL|MAC|ENDO|PERI|MNG", names(atlas_signatures$mm_sym))]
 
-blacklist <- read_tsv(here("bulk/data/Jessa2019_Table_2a.tsv")) %>%
+blacklist <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_Table_2a.tsv")) %>%
   select(Cluster, Signature) %>%
   filter(is.na(Signature)) %>%
   pull(Cluster) %>%
@@ -157,7 +163,7 @@ Construct dendrogram by computing the correlations:
 
 
 ```r
-load(here("singlecell_normal/data/Jessa2019_cluster_mean_expr_matrix.Rda"))
+load(here("reference_datasets/2019_Jessa/Jessa2019_cluster_mean_expr_matrix.Rda"))
 
 # Only keep forebrain neuroectoderm clusters
 meanexp <- meanexp[, grepl("^F", colnames(meanexp)) & !grepl("MGL|MAC|ENDO|PERI|MNG", colnames(meanexp))]
@@ -170,7 +176,7 @@ meanexp_mm_uniq <- meanexp[atlas_unique_genes_mm,
                            !(colnames(meanexp) %in% blacklist)]
 
 # Take correlations
-cor_mm <- cytokit::correlateExpression(meanexp_mm_uniq, meanexp_mm_uniq,
+cor_mm <- cytobox::correlateExpression(meanexp_mm_uniq, meanexp_mm_uniq,
                                        genes = atlas_unique_genes_mm,
                                        from_sp = "mm",
                                        to_sp = "mm")
@@ -191,6 +197,7 @@ using the `pvclust` package.
 
 
 ```r
+# Run pvclust
 result <- pvclust(meanexp_mm_uniq_no_NA, method.dist = spearman,
                   method.hclust = "complete", nboot = 100)
 ```
@@ -209,17 +216,19 @@ result <- pvclust(meanexp_mm_uniq_no_NA, method.dist = spearman,
 ```
 
 ```r
+# Convert to a dendrogram
 dend_mm <- as.dendrogram(result)
 
 dendrogram_order_atlas <- colnames(cor_mm)[order.dendrogram(dend_mm)]
 
+# Save the leaf order to use for plotting
 rr_saveRDS(dendrogram_order_atlas,
            file = glue("{out}/dendrogram_order_atlas.Rda"),
            desc = "Order of clusters in dendrogram constructed based on gene expression correlation.")
 ```
 
 ```
-## ...writing description of dendrogram_order_atlas.Rda to G34-gliomas-repo/singlecell_normal/output/02/dendrogram_order_atlas.Rda
+## ...writing description of dendrogram_order_atlas.Rda to G34-gliomas/singlecell_normal/output/02/dendrogram_order_atlas.Rda
 ```
 
 
@@ -229,16 +238,20 @@ par(mar = c(20,2,2,2))
 plot(dend_mm)
 ```
 
-![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/singlecell_normal/figures/02//plot_pvclust_complete_atlas-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/singlecell_normal/figures/02//plot_pvclust_complete_atlas...*]~</span>
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/singlecell_normal/figures/02//plot_pvclust_complete_atlas-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/singlecell_normal/figures/02//plot_pvclust_complete_atlas...*]~</span>
 
 Generate the plot by loading the mean expression per cluster for select
 genes, and the proportion of cells in each cluster expressing the gene.
 
 
 ```r
+# The reason we include Gapdh here is because it's expressed in all clusters,
+# and hence will force plotting all clusters, even if they don't express the other
+# genes of interest which are actually cell-type specific
 genes <- c("Gapdh", "Pdgfra", "Gsx2", "Dlx1", "Dlx2")
 
-goi <- feather::read_feather(here("singlecell_normal/data/Jessa2019_mean_expression.feather"),
+# Mean expression per cluster
+goi <- feather::read_feather(here("reference_datasets/2019_Jessa/Jessa2019_mean_expression.feather"),
                              c("Cluster", genes)) %>%
   tibble::column_to_rownames(var = "Cluster") %>%
   apply(2, scales::rescale) %>%
@@ -247,15 +260,170 @@ goi <- feather::read_feather(here("singlecell_normal/data/Jessa2019_mean_express
   gather(Gene, Expression, 2:ncol(.)) %>%
   filter(Cluster %in% colnames(meanexp_mm_uniq_no_NA))
 
-pct1 <- feather::read_feather(here("singlecell_normal/data/Jessa2019_pct1.feather"),
+# pct1 = proportion of cells in each cluster in which each gene is detected
+pct1 <- feather::read_feather(here("reference_datasets/2019_Jessa/Jessa2019_pct1.feather"),
                               c("Cluster", genes)) %>%
   gather(Gene, Pct1, 2:ncol(.)) %>%
   filter(!is.na(Pct1)) %>%
   filter(Cluster %in% colnames(meanexp_mm_uniq_no_NA))
 
+# Combine to generate a table with both values
 bubbleplot_data <- left_join(goi, pct1, by = c("Cluster", "Gene")) %>%
   filter(Pct1 > 0) %>%
   mutate(Cluster = factor(Cluster, levels = dendrogram_order_atlas)) %>%
+  mutate(Gene = factor(Gene, levels = rev(genes))) %>%
+  filter(!is.na(Cluster))
+
+# Generate bubbleplot, using dendrogram order as computed
+bubbleplot_data %>%
+  rr_ggplot(aes(x = Cluster, y = Gene), plot_num = 1) +
+  geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) +
+  scale_radius() +
+  scale_color_gradientn(colours = tail(rdbu, 70)) +
+  theme_min() +
+  rotateX() +
+  theme(panel.grid.major.x = element_line(colour = "grey90"),
+        panel.border = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_text(size = 13))
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/singlecell_normal/figures/02//atlas_bubbleplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/singlecell_normal/figures/02//atlas_bubbleplot...*]~</span>
+
+
+## Human
+
+Construct the mean expression matrix and compute correlations for the human
+fetal brain dataset:
+
+
+```r
+load(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski_seurat.Rda"))
+load(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski_signatures.Rda"))
+
+nowakowski_meanexp <- cytobox::meanClusterExpression(nowa, genes = c("GAPDH", unique(unlist(nowakowski_signatures$hg_sym))))
+```
+
+```
+## Computing cluster means for Nowakowski human fetal telencephalon...
+```
+
+```r
+# Remove unknown clusters
+nowakowski_meanexp <- nowakowski_meanexp[, !(colnames(nowakowski_meanexp) %in% c("Glyc", "U1", "U2", "U3", "U4", "None"))]
+
+cor_nowa <- cytobox::correlateExpression(nowakowski_meanexp, nowakowski_meanexp,
+                                         genes = unique(unlist(nowakowski_signatures$hg_sym)),
+                                         from_sp = "nowa",
+                                         to_sp = "nowa")
+```
+
+```
+## Computing correlations...
+```
+
+```r
+# Get matrix without NAs
+meanexp_nowa_uniq_no_NA <- nowakowski_meanexp
+meanexp_nowa_uniq_no_NA[is.na(meanexp_nowa_uniq_no_NA)] <- 0
+```
+
+
+```r
+result_nowa <- pvclust(meanexp_nowa_uniq_no_NA, method.dist = spearman,
+                       method.hclust = "complete", nboot = 100)
+```
+
+```
+## Bootstrap (r = 0.5)... Done.
+## Bootstrap (r = 0.6)... Done.
+## Bootstrap (r = 0.7)... Done.
+## Bootstrap (r = 0.8)... Done.
+## Bootstrap (r = 0.9)... Done.
+## Bootstrap (r = 1.0)... Done.
+## Bootstrap (r = 1.1)... Done.
+## Bootstrap (r = 1.2)... Done.
+## Bootstrap (r = 1.3)... Done.
+## Bootstrap (r = 1.4)... Done.
+```
+
+```r
+dend_nowa <- as.dendrogram(result_nowa)
+dendrogram_order_nowa <- colnames(cor_nowa)[order.dendrogram(dend_nowa)]
+
+rr_saveRDS(dendrogram_order_nowa,
+           file = glue("{out}/dendrogram_order_nowakowski.Rda"),
+           desc = "Order of clusters in dendrogram constructed based on gene expression correlation.")
+```
+
+```
+## ...writing description of dendrogram_order_nowakowski.Rda to G34-gliomas/singlecell_normal/output/02/dendrogram_order_nowakowski.Rda
+```
+
+
+
+```r
+par(mar = c(20,2,2,2))
+plot(dend_nowa)
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/singlecell_normal/figures/02//plot_pvclust_complete_nowakowski-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/singlecell_normal/figures/02//plot_pvclust_complete_nowakowski...*]~</span>
+
+Calculate the inputs for the bubbleplot:
+
+
+```r
+nowa_pct1 <- calc_pct1(nowa, cluster_col = "WGCNAcluster",
+                       genes = c("GAPDH", "PDGFRA", "GSX2", "DLX1", "DLX2")) %>%
+  data.frame() %>%
+  gather(Gene, Pct1, 2:ncol(.))
+```
+
+```
+## Loading required package: data.table
+```
+
+```
+## 
+## Attaching package: 'data.table'
+```
+
+```
+## The following object is masked from 'package:dendextend':
+## 
+##     set
+```
+
+```
+## The following objects are masked from 'package:dplyr':
+## 
+##     between, first, last
+```
+
+```
+## ## Processing Nowakowski human fetal telencephalon
+```
+
+```r
+# Scaling expression to [0,1]
+nowa_meanexp_goi <- nowakowski_meanexp[c("GAPDH", "PDGFRA", "DLX1", "DLX2"), ] %>%
+  t() %>%
+  apply(2, scales::rescale) %>%
+  data.frame() %>%
+  tibble::rownames_to_column(var = "Cluster") %>%
+  gather(Gene, Expression, 2:ncol(.))
+```
+
+Create bubbleplot:
+
+
+```r
+genes <- c("GAPDH", "MOXD1", "PDGFRA", "DLX1", "DLX2")
+
+bubbleplot_data <- left_join(nowa_meanexp_goi, nowa_pct1, by = c("Cluster", "Gene")) %>%
+  filter(Pct1 > 0) %>%
+  mutate(Cluster = factor(Cluster, levels = dendrogram_order_nowa)) %>%
   mutate(Gene = factor(Gene, levels = rev(genes))) %>%
   filter(!is.na(Cluster))
 
@@ -273,131 +441,7 @@ bubbleplot_data %>%
         axis.text.y = element_text(size = 13))
 ```
 
-![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/singlecell_normal/figures/02//atlas_bubbleplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/singlecell_normal/figures/02//atlas_bubbleplot...*]~</span>
-
-
-<!-- ## Human -->
-
-<!-- ### Get expression / signatures -->
-
-<!-- ```{r get_nowakowski} -->
-
-<!-- load("../../../../ext_datasets/2017-nowakowski_human_fetal_cortex/20191016-processing_SJ/output/01/nowakowski_seurat.Rda") -->
-<!-- load("output/02/atlas_signatures_formatted.Rda") -->
-
-<!-- nowakowski_meanexp <- cytobox::meanClusterExpression(nowa, genes = c("GAPDH", unique(unlist(nowakowski_signatures$hg_sym)))) -->
-
-<!-- nowakowski_meanexp <- nowakowski_meanexp[, !(colnames(nowakowski_meanexp) %in% c("Glyc", "U1", "U2", "U3", "U4", "None"))] -->
-
-<!-- cor_nowa <- cytokit::correlateExpression(nowakowski_meanexp, nowakowski_meanexp, -->
-<!--                                          genes = unique(unlist(nowakowski_signatures$hg_sym)), -->
-<!--                                          from_sp = "nowa", -->
-<!--                                          to_sp = "nowa") -->
-
-<!-- # Get matrix without NAs -->
-<!-- meanexp_nowa_uniq_no_NA <- nowakowski_meanexp -->
-<!-- meanexp_nowa_uniq_no_NA[is.na(meanexp_nowa_uniq_no_NA)] <- 0 -->
-
-<!-- # Save inputs -->
-<!-- save(meanexp_nowa_uniq_no_NA, cor_nowa, file = glue("{out}/pvclust_inputs_nowakowski.Rda")) -->
-
-<!-- ``` -->
-
-<!-- ```{r pvclust_complete2, dependson = 'get_nowakowski'} -->
-
-<!-- result_nowa <- pvclust(meanexp_nowa_uniq_no_NA, method.dist = spearman, -->
-<!--                        method.hclust = "complete", nboot = 100) -->
-
-<!-- dend_nowa <- as.dendrogram(result_nowa) -->
-<!-- labels_colors(dend_nowa) <- nowa@misc$colours[colnames(meanexp_nowa_uniq_no_NA)][order.dendrogram(dend_nowa)] -->
-
-<!-- dendrogram_order_nowa <- colnames(cor_nowa)[order.dendrogram(dend_nowa)] -->
-<!-- save(dendrogram_order_nowa, file = glue("{out}/complete_dendrogram_order_nowa.Rda")) -->
-
-<!-- ``` -->
-
-
-<!-- ```{r plot_pvclust_complete2, fig.height = 7, fig.width = 10, dependson = 'get_nowakowski'} -->
-
-<!-- par(mar = c(20,2,2,2)) -->
-<!-- plot(dend_nowa) -->
-
-<!-- ``` -->
-
-<!-- ### Bubbleplot -->
-
-<!-- ```{r nowa_bubbleplot_prep, dependson = 'get_nowakowski'} -->
-
-<!-- prop <- function(x) { -->
-
-<!--   sum(x)/length(x) -->
-
-<!-- } -->
-
-<!-- calc_pct1 <- function(seurat, -->
-<!--                       cluster_col, -->
-<!--                       goi) { -->
-
-<!--   require(data.table) -->
-
-<!--   message("## Processing ", seurat@project.name) -->
-
-<!--   seurat <- SetAllIdent(seurat, cluster_col) -->
-
-<!--   x <- as.matrix(seurat@data)[goi, ] -->
-<!--   # Binarize -->
-<!--   x[x > 0] <- 1 -->
-<!--   x <- as.data.table(t(x)) -->
-<!--   # Add cluster info for cells -->
-<!--   x[, Cluster := as.character(seurat@ident)] -->
-<!--   # Get prop of cells expressing a gene, within each cluster -->
-<!--   x[, lapply(.SD, prop), by = Cluster] -->
-
-<!-- } -->
-
-<!-- nowa_pct1 <- calc_pct1(nowa, cluster_col = "WGCNAcluster", -->
-<!--                        goi = c("GAPDH", "MOXD1", "PDGFRA", -->
-<!--                                "GSX2", "DLX1", "DLX2", -->
-<!--                                "EOMES", "NEUROD2")) %>%  -->
-<!--   data.frame() %>%  -->
-<!--   gather(Gene, Pct1, 2:ncol(.)) -->
-
-<!-- nowa_meanexp_goi <- nowakowski_meanexp[c("GAPDH", "MOXD1", "PDGFRA", "DLX1", "DLX2", "EOMES", "NEUROD2"), ] %>%  -->
-<!--   t() %>%  -->
-<!--   apply(2, scales::rescale) %>%  -->
-<!--   data.frame() %>%  -->
-<!--   tibble::rownames_to_column(var = "Cluster") %>%  -->
-<!--   gather(Gene, Expression, 2:ncol(.)) -->
-
-<!-- ``` -->
-
-<!-- ```{r nowakowski_bubbleplot, dependson = c('pvclust_complete2', 'nowa_bubbleplot_prep'), fig.width = 10, fig.height = 3.5} -->
-
-<!-- genes <- c("GAPDH", "MOXD1", "PDGFRA", "DLX1", "DLX2", "EOMES", "NEUROD2") -->
-
-<!-- bubbleplot_data <- left_join(nowa_meanexp_goi, nowa_pct1, by = c("Cluster", "Gene")) %>% -->
-<!--   filter(Pct1 > 0) %>% -->
-<!--   mutate(Cluster = factor(Cluster, levels = dendrogram_order_nowa)) %>% -->
-<!--   mutate(Gene = factor(Gene, levels = rev(genes))) %>% -->
-<!--   filter(!is.na(Cluster)) %T>% -->
-<!--   write_tsv(glue("{out}/bubbleplot_data_nowakowski.tsv")) -->
-
-<!-- bubbleplot_data %>% -->
-<!--   ggplot(aes(x = Cluster, y = Gene)) + -->
-<!--   geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) + -->
-<!--   scale_radius() + -->
-<!--   scale_color_gradientn(colours = tail(rdbu, 70)) + -->
-<!--   theme_min() + -->
-<!--   rotateX() + -->
-<!--   theme(panel.grid.major.x = element_line(colour = "grey90"), -->
-<!--         panel.border = element_blank(), -->
-<!--         axis.ticks.x = element_blank(), -->
-<!--         axis.ticks.y = element_blank(), -->
-<!--         axis.text.y = element_text(size = 13)) -->
-
-<!-- ``` -->
-
-
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/singlecell_normal/figures/02//nowakowski_bubbleplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/singlecell_normal/figures/02//nowakowski_bubbleplot...*]~</span>
 
 
 ## Striatal SVZ
@@ -406,8 +450,10 @@ Repeat the same analysis for the striatal SVZ dataset from Anderson et al:
 
 
 ```r
-seurat_anderson     <- readRDS(here("singlecell_normal/data/Anderson2020_seurat.Rds"))
-anderson_signatures <- readRDS(here("bulk/data/Anderson2020_signatures.Rds"))
+genes <- c("Gapdh", "Pdgfra", "Gsx2", "Dlx1", "Dlx2")
+
+seurat_anderson     <- readRDS(here("reference_datasets/2020_Anderson/processed_data/01-seurat.Rds"))
+anderson_signatures <- readRDS(here("reference_datasets/2020_Anderson/processed_data/02-cluster_gene_signatures.Rds"))
 
 meanexp_anderson    <- cytobox::meanClusterExpression(seurat_anderson,
                                                       genes = c(genes, unique(unlist(anderson_signatures$mm_sym))))
@@ -418,7 +464,7 @@ meanexp_anderson    <- cytobox::meanClusterExpression(seurat_anderson,
 ```
 
 ```r
-cor_anderson <- cytokit::correlateExpression(meanexp_anderson, meanexp_anderson,
+cor_anderson <- cytobox::correlateExpression(meanexp_anderson, meanexp_anderson,
                                              genes = unique(unlist(anderson_signatures$mm_sym)),
                                              from_sp = "mm",
                                              to_sp = "mm")
@@ -466,7 +512,7 @@ rr_saveRDS(dendrogram_order_anderson,
 ```
 
 ```
-## ...writing description of dendrogram_order_anderson.Rda to G34-gliomas-repo/singlecell_normal/output/02/dendrogram_order_anderson.Rda
+## ...writing description of dendrogram_order_anderson.Rda to G34-gliomas/singlecell_normal/output/02/dendrogram_order_anderson.Rda
 ```
 
 Show the dendrogram:
@@ -477,7 +523,7 @@ par(mar = c(20,2,2,2))
 plot(dend_anderson)
 ```
 
-![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/singlecell_normal/figures/02//plot_pvclust_complete_anderson-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas-repo/singlecell_normal/figures/02//plot_pvclust_complete_anderson...*]~</span>
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/singlecell_normal/figures/02//plot_pvclust_complete_anderson-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/singlecell_normal/figures/02//plot_pvclust_complete_anderson...*]~</span>
 
 Construct the data for the bubbleplot, including the proportion of cells in each cluster
 where each gene is detected, and the mean expression of our genes of interest:
@@ -488,33 +534,6 @@ pct1_anderson <- calc_pct1(seurat_anderson, cluster_col = "Cluster",
                            genes = genes) %>%
   data.frame() %>%
   gather(Gene, Pct1, 2:ncol(.))
-```
-
-```
-## Loading required package: data.table
-```
-
-```
-## 
-## Attaching package: 'data.table'
-```
-
-```
-## The following object is masked from 'package:dendextend':
-## 
-##     set
-```
-
-```
-## The following objects are masked from 'package:dplyr':
-## 
-##     between, first, last
-```
-
-```
-## The following object is masked from 'package:purrr':
-## 
-##     transpose
 ```
 
 ```
@@ -530,6 +549,7 @@ meanexp_anderson_goi <- meanexp_anderson[genes, ] %>%
   gather(Gene, Expression, 2:ncol(.))
 ```
 
+Finally generate the bubbleplot in the same order as the dendrogram constructed above:
 
 
 ```r
@@ -553,7 +573,42 @@ bubbleplot_data %>%
         axis.text.y = element_text(size = 13))
 ```
 
-![](/mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo/singlecell_normal/figures/02//anderson_bubbleplot-1.png)<!-- -->
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/singlecell_normal/figures/02//anderson_bubbleplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/singlecell_normal/figures/02//anderson_bubbleplot...*]~</span>
+
+Separately, generate a bubbleplot focused on clusters of interest:
+
+Finally generate the bubbleplot in the same order as the dendrogram constructed above:
+
+
+```r
+select_cluster_order <- c("15-OPCs", "31-OPCs", "4-OPCs", "16-OPCs",
+                          "33-Neurogenic progenitor",
+                          "7-Neurogenic progenitor",
+                          "5-Neurogenic progenitor", 
+                          "8-Neurogenic progenitor",
+                          "19-Neurogenic progenitor")
+
+bubbleplot_data <- left_join(meanexp_anderson_goi, pct1_anderson, by = c("Cluster", "Gene")) %>%
+  filter(Pct1 > 0) %>%
+  mutate(Cluster = factor(Cluster, levels = select_cluster_order)) %>%
+  mutate(Gene = factor(Gene, levels = rev(genes))) %>%
+  filter(!is.na(Cluster))
+
+bubbleplot_data %>%
+  rr_ggplot(aes(x = Cluster, y = Gene), plot_num = 1) +
+  geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) +
+  scale_radius() +
+  scale_color_gradientn(colours = tail(rdbu, 70)) +
+  theme_min() +
+  rotateX() +
+  theme(panel.grid.major.x = element_line(colour = "grey90"),
+        panel.border = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_text(size = 13))
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/singlecell_normal/figures/02//anderson_bubbleplot_select-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/singlecell_normal/figures/02//anderson_bubbleplot_select...*]~</span>
 
 
 <!-- END MATTER, insert reproducibility info -->
@@ -568,15 +623,15 @@ bubbleplot_data %>%
 This document was last rendered on:
 
 ```
-## 2020-07-20 15:09:00
+## 2020-09-16 07:39:53
 ```
 
 The git repository and last commit:
 
 ```
-## Local:    master /mnt/KLEINMAN_JBOD1/SCRATCH/projects/sjessa/from_hydra/HGG-G34/G34-gliomas-repo
+## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [2bc3284] 2020-07-09: Update README
+## Head:     [73f10e6] 2020-09-16: Regenerate HTMLs for bulk analysis
 ```
 
 The random seed was set with `set.seed(100)`
@@ -585,72 +640,76 @@ The R session info:
 <details>
 
 ```
-## R version 3.5.0 (2018-04-23)
-## Platform: x86_64-redhat-linux-gnu (64-bit)
+## R version 3.5.1 (2018-07-02)
+## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: CentOS Linux 7 (Core)
 ## 
 ## Matrix products: default
-## BLAS/LAPACK: /var/chroots/hydraex-centos-7/usr/lib64/R/lib/libRblas.so
+## BLAS/LAPACK: /cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/imkl/2018.3.222/compilers_and_libraries_2018.3.222/linux/mkl/lib/intel64_lin/libmkl_gf_lp64.so
 ## 
 ## locale:
-## [1] C
+##  [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8    
+##  [5] LC_MONETARY=en_CA.UTF-8    LC_MESSAGES=en_CA.UTF-8   
+##  [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices datasets  utils     methods   base     
 ## 
 ## other attached packages:
-##  [1] data.table_1.12.0 bindrcpp_0.2.2    glue_1.4.1       
-##  [4] dendextend_1.9.0  pvclust_2.0-0     Seurat_2.3.4     
-##  [7] Matrix_1.2-14     cowplot_0.9.4     forcats_0.3.0    
-## [10] stringr_1.3.1     dplyr_0.7.7       purrr_0.3.4      
-## [13] readr_1.3.1       tidyr_0.8.2       tibble_3.0.1     
-## [16] ggplot2_3.1.0     tidyverse_1.2.1   here_0.1         
+##  [1] data.table_1.13.0 feather_0.3.5     glue_1.4.2        dendextend_1.14.0
+##  [5] pvclust_2.2-0     Seurat_2.3.4      Matrix_1.2-14     cowplot_0.9.4    
+##  [9] ggplot2_3.1.0     readr_1.3.1       dplyr_0.8.0       tidyr_0.8.2      
+## [13] here_0.1         
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] readxl_1.2.0        snow_0.4-3          backports_1.1.3    
-##   [4] Hmisc_4.2-0         plyr_1.8.4          igraph_1.2.2       
-##   [7] lazyeval_0.2.1      splines_3.5.0       digest_0.6.16      
-##  [10] foreach_1.4.4       htmltools_0.3.6     viridis_0.5.1      
-##  [13] lars_1.2            gdata_2.18.0        magrittr_1.5       
-##  [16] checkmate_1.9.1     cluster_2.0.7-1     mixtools_1.1.0     
-##  [19] ROCR_1.0-7          modelr_0.1.3        R.utils_2.7.0      
-##  [22] colorspace_1.4-0    rvest_0.3.2         haven_2.0.0        
-##  [25] xfun_0.12           crayon_1.3.4        jsonlite_1.6       
-##  [28] bindr_0.1.1         survival_2.41-3     zoo_1.8-4          
-##  [31] iterators_1.0.10    ape_5.2             gtable_0.2.0       
-##  [34] kernlab_0.9-27      prabclus_2.2-7      DEoptimR_1.0-8     
-##  [37] scales_1.0.0        mvtnorm_1.0-10      bibtex_0.4.2       
-##  [40] Rcpp_1.0.0          metap_1.1           dtw_1.20-1         
-##  [43] viridisLite_0.3.0   htmlTable_1.13.1    reticulate_1.10    
-##  [46] foreign_0.8-70      bit_1.1-14          proxy_0.4-22       
-##  [49] mclust_5.4.2        SDMTools_1.1-221    Formula_1.2-3      
-##  [52] tsne_0.1-3          stats4_3.5.0        htmlwidgets_1.3    
-##  [55] httr_1.4.0          gplots_3.0.1.1      RColorBrewer_1.1-2 
-##  [58] fpc_2.1-11.1        acepack_1.4.1       modeltools_0.2-22  
-##  [61] ellipsis_0.2.0.1    ica_1.0-2           pkgconfig_2.0.2    
-##  [64] R.methodsS3_1.7.1   flexmix_2.3-14      nnet_7.3-12        
-##  [67] labeling_0.3        reshape2_1.4.3      tidyselect_1.1.0   
-##  [70] rlang_0.4.6         munsell_0.5.0       cellranger_1.1.0   
-##  [73] tools_3.5.0         cli_1.0.1           generics_0.0.2     
-##  [76] broom_0.5.1         ggridges_0.5.1      evaluate_0.12      
-##  [79] yaml_2.2.0          npsurv_0.4-0        knitr_1.21         
-##  [82] bit64_0.9-7         fitdistrplus_1.0-14 robustbase_0.93-2  
-##  [85] caTools_1.17.1.1    RANN_2.6            pbapply_1.4-0      
-##  [88] nlme_3.1-137        whisker_0.3-2       R.oo_1.22.0        
-##  [91] xml2_1.2.0          hdf5r_1.0.0         compiler_3.5.0     
-##  [94] rstudioapi_0.9.0    png_0.1-7           lsei_1.2-0         
-##  [97] stringi_1.2.4       lattice_0.20-35     trimcluster_0.1-2.1
-## [100] vctrs_0.3.1         pillar_1.4.4        lifecycle_0.2.0    
-## [103] BiocManager_1.30.10 Rdpack_0.10-1       lmtest_0.9-36      
+##   [1] snow_0.4-3          backports_1.1.9     Hmisc_4.2-0        
+##   [4] sn_1.6-2            plyr_1.8.6          igraph_1.2.5       
+##   [7] lazyeval_0.2.2      splines_3.5.1       TH.data_1.0-10     
+##  [10] digest_0.6.25       foreach_1.5.0       htmltools_0.5.0    
+##  [13] viridis_0.5.1       lars_1.2            gdata_2.18.0       
+##  [16] magrittr_1.5        checkmate_2.0.0     cluster_2.0.7-1    
+##  [19] mixtools_1.2.0      ROCR_1.0-7          R.utils_2.10.1     
+##  [22] sandwich_2.5-1      colorspace_1.4-1    xfun_0.17          
+##  [25] jsonlite_1.7.1      crayon_1.3.4        survival_2.41-3    
+##  [28] zoo_1.8-8           iterators_1.0.12    ape_5.4-1          
+##  [31] gtable_0.3.0        kernlab_0.9-29      prabclus_2.3-2     
+##  [34] BiocGenerics_0.28.0 DEoptimR_1.0-8      scales_1.1.1       
+##  [37] mvtnorm_1.1-1       bibtex_0.4.2.2      Rcpp_1.0.5         
+##  [40] metap_1.4           dtw_1.21-3          plotrix_3.7-8      
+##  [43] viridisLite_0.3.0   htmlTable_2.0.1     tmvnsim_1.0-2      
+##  [46] reticulate_1.16     foreign_0.8-70      bit_4.0.4          
+##  [49] proxy_0.4-24        mclust_5.4.6        SDMTools_1.1-221.2 
+##  [52] Formula_1.2-3       tsne_0.1-3          stats4_3.5.1       
+##  [55] htmlwidgets_1.5.1   httr_1.4.2          gplots_3.0.1.1     
+##  [58] RColorBrewer_1.1-2  fpc_2.2-7           acepack_1.4.1      
+##  [61] TFisher_0.2.0       modeltools_0.2-23   ellipsis_0.3.1     
+##  [64] ica_1.0-2           farver_2.0.3        pkgconfig_2.0.3    
+##  [67] R.methodsS3_1.8.1   flexmix_2.3-15      nnet_7.3-12        
+##  [70] labeling_0.3        tidyselect_1.1.0    rlang_0.4.7        
+##  [73] reshape2_1.4.4      munsell_0.5.0       tools_3.5.1        
+##  [76] mathjaxr_1.0-1      ggridges_0.5.2      evaluate_0.14      
+##  [79] stringr_1.4.0       yaml_2.2.1          knitr_1.29         
+##  [82] bit64_4.0.5         fitdistrplus_1.1-1  robustbase_0.93-6  
+##  [85] caTools_1.17.1.1    purrr_0.3.4         RANN_2.6.1         
+##  [88] pbapply_1.4-3       nlme_3.1-137        R.oo_1.24.0        
+##  [91] hdf5r_1.3.3         compiler_3.5.1      rstudioapi_0.11    
+##  [94] png_0.1-7           tibble_3.0.3        stringi_1.5.3      
+##  [97] lattice_0.20-35     multtest_2.38.0     vctrs_0.3.4        
+## [100] mutoss_0.1-12       pillar_1.4.6        lifecycle_0.2.0    
+## [103] BiocManager_1.30.10 Rdpack_1.0.0        lmtest_0.9-38      
 ## [106] bitops_1.0-6        irlba_2.3.3         gbRd_0.4-11        
-## [109] R6_2.3.0            latticeExtra_0.6-28 renv_0.10.0        
+## [109] R6_2.4.1            latticeExtra_0.6-28 renv_0.10.0        
 ## [112] KernSmooth_2.23-15  gridExtra_2.3       codetools_0.2-15   
-## [115] MASS_7.3-49         gtools_3.8.1        assertthat_0.2.0   
-## [118] rprojroot_1.3-2     withr_2.1.2         diptest_0.75-7     
-## [121] parallel_3.5.0      doSNOW_1.0.16       hms_0.4.2          
-## [124] grid_3.5.0          rpart_4.1-13        class_7.3-14       
-## [127] rmarkdown_1.11      segmented_0.5-3.0   Rtsne_0.15         
-## [130] git2r_0.27.1        lubridate_1.7.4     base64enc_0.1-3
+## [115] MASS_7.3-50         gtools_3.8.2        assertthat_0.2.1   
+## [118] rprojroot_1.3-2     withr_2.2.0         mnormt_2.0.2       
+## [121] multcomp_1.4-13     diptest_0.75-7      parallel_3.5.1     
+## [124] doSNOW_1.0.18       hms_0.5.3           grid_3.5.1         
+## [127] rpart_4.1-13        class_7.3-14        rmarkdown_1.11     
+## [130] segmented_1.2-0     Rtsne_0.15          git2r_0.27.1       
+## [133] numDeriv_2016.8-1.1 Biobase_2.42.0      base64enc_0.1-3
 ```
 
 </details>

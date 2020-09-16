@@ -44,17 +44,17 @@ under normal conditions, as a reference for expression patterns in the G34R/V tu
 
 ```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
 
-# Load liraries here
-library(here)
-
-library(tidyverse)
+# Load libraries here
+library(tidyr)
+library(dplyr)
+library(readr)
 library(Seurat)
 library(pvclust)
 library(dendextend)
 library(glue)
+library(feather)
 
-source("../../../../misc/sjlib.R")
-source("functions.R")
+source(here(subdir, "analysis/functions.R"))
 
 ```
 
@@ -66,12 +66,12 @@ Get expression & signatures:
 
 ````{r load_atlas}
 
-atlas_signatures <- readRDS(here("bulk/output/02/atlas_signatures.Rds"))
+atlas_signatures <- readRDS(here("bulk_transcriptome_epigenome/output/02/atlas_signatures.Rds"))
 
 # Get genes for neuro-ectoderm mouse forebrain clusters
 atlas_signatures <- atlas_signatures$mm_sym[grepl("^F", names(atlas_signatures$mm_sym)) & !grepl("MGL|MAC|ENDO|PERI|MNG", names(atlas_signatures$mm_sym))]
 
-blacklist <- read_tsv(here("bulk/data/Jessa2019_Table_2a.tsv")) %>%
+blacklist <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_Table_2a.tsv")) %>%
   select(Cluster, Signature) %>%
   filter(is.na(Signature)) %>%
   pull(Cluster) %>%
@@ -86,7 +86,7 @@ Construct dendrogram by computing the correlations:
 
 ```{r mouse_cor}
 
-load(here("singlecell_normal/data/Jessa2019_cluster_mean_expr_matrix.Rda"))
+load(here("reference_datasets/2019_Jessa/Jessa2019_cluster_mean_expr_matrix.Rda"))
 
 # Only keep forebrain neuroectoderm clusters
 meanexp <- meanexp[, grepl("^F", colnames(meanexp)) & !grepl("MGL|MAC|ENDO|PERI|MNG", colnames(meanexp))]
@@ -99,7 +99,7 @@ meanexp_mm_uniq <- meanexp[atlas_unique_genes_mm,
                            !(colnames(meanexp) %in% blacklist)]
 
 # Take correlations
-cor_mm <- cytokit::correlateExpression(meanexp_mm_uniq, meanexp_mm_uniq,
+cor_mm <- cytobox::correlateExpression(meanexp_mm_uniq, meanexp_mm_uniq,
                                        genes = atlas_unique_genes_mm,
                                        from_sp = "mm",
                                        to_sp = "mm")
@@ -115,13 +115,16 @@ using the `pvclust` package.
 
 ```{r pvclust_complete}
 
+# Run pvclust
 result <- pvclust(meanexp_mm_uniq_no_NA, method.dist = spearman,
                   method.hclust = "complete", nboot = 100)
 
+# Convert to a dendrogram
 dend_mm <- as.dendrogram(result)
 
 dendrogram_order_atlas <- colnames(cor_mm)[order.dendrogram(dend_mm)]
 
+# Save the leaf order to use for plotting
 rr_saveRDS(dendrogram_order_atlas,
            file = glue("{out}/dendrogram_order_atlas.Rda"),
            desc = "Order of clusters in dendrogram constructed based on gene expression correlation.")
@@ -141,9 +144,13 @@ genes, and the proportion of cells in each cluster expressing the gene.
 
 ```{r atlas_bubbleplot, echo_fig = TRUE, fig.width = 13, fig.height = 3.5}
 
+# The reason we include Gapdh here is because it's expressed in all clusters,
+# and hence will force plotting all clusters, even if they don't express the other
+# genes of interest which are actually cell-type specific
 genes <- c("Gapdh", "Pdgfra", "Gsx2", "Dlx1", "Dlx2")
 
-goi <- feather::read_feather(here("singlecell_normal/data/Jessa2019_mean_expression.feather"),
+# Mean expression per cluster
+goi <- feather::read_feather(here("reference_datasets/2019_Jessa/Jessa2019_mean_expression.feather"),
                              c("Cluster", genes)) %>%
   tibble::column_to_rownames(var = "Cluster") %>%
   apply(2, scales::rescale) %>%
@@ -152,18 +159,21 @@ goi <- feather::read_feather(here("singlecell_normal/data/Jessa2019_mean_express
   gather(Gene, Expression, 2:ncol(.)) %>%
   filter(Cluster %in% colnames(meanexp_mm_uniq_no_NA))
 
-pct1 <- feather::read_feather(here("singlecell_normal/data/Jessa2019_pct1.feather"),
+# pct1 = proportion of cells in each cluster in which each gene is detected
+pct1 <- feather::read_feather(here("reference_datasets/2019_Jessa/Jessa2019_pct1.feather"),
                               c("Cluster", genes)) %>%
   gather(Gene, Pct1, 2:ncol(.)) %>%
   filter(!is.na(Pct1)) %>%
   filter(Cluster %in% colnames(meanexp_mm_uniq_no_NA))
 
+# Combine to generate a table with both values
 bubbleplot_data <- left_join(goi, pct1, by = c("Cluster", "Gene")) %>%
   filter(Pct1 > 0) %>%
   mutate(Cluster = factor(Cluster, levels = dendrogram_order_atlas)) %>%
   mutate(Gene = factor(Gene, levels = rev(genes))) %>%
   filter(!is.na(Cluster))
 
+# Generate bubbleplot, using dendrogram order as computed
 bubbleplot_data %>%
   rr_ggplot(aes(x = Cluster, y = Gene), plot_num = 1) +
   geom_point(aes(size = Pct1, colour = Expression), alpha = 0.8) +
@@ -187,15 +197,15 @@ fetal brain dataset:
 
 ```{r get_nowakowski}
 
-load(here("singlecell_normal/data/Nowakowski2017_seurat.Rda"))
-load(here("bulk/data/Nowakowski2017_signatures.Rda"))
+load(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski_seurat.Rda"))
+load(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski_signatures.Rda"))
 
 nowakowski_meanexp <- cytobox::meanClusterExpression(nowa, genes = c("GAPDH", unique(unlist(nowakowski_signatures$hg_sym))))
 
 # Remove unknown clusters
 nowakowski_meanexp <- nowakowski_meanexp[, !(colnames(nowakowski_meanexp) %in% c("Glyc", "U1", "U2", "U3", "U4", "None"))]
 
-cor_nowa <- cytokit::correlateExpression(nowakowski_meanexp, nowakowski_meanexp,
+cor_nowa <- cytobox::correlateExpression(nowakowski_meanexp, nowakowski_meanexp,
                                          genes = unique(unlist(nowakowski_signatures$hg_sym)),
                                          from_sp = "nowa",
                                          to_sp = "nowa")
@@ -203,6 +213,7 @@ cor_nowa <- cytokit::correlateExpression(nowakowski_meanexp, nowakowski_meanexp,
 # Get matrix without NAs
 meanexp_nowa_uniq_no_NA <- nowakowski_meanexp
 meanexp_nowa_uniq_no_NA[is.na(meanexp_nowa_uniq_no_NA)] <- 0
+
 ```
 
 ```{r pvclust_complete_nowakowski, dependson = 'get_nowakowski'}
@@ -236,6 +247,7 @@ nowa_pct1 <- calc_pct1(nowa, cluster_col = "WGCNAcluster",
   data.frame() %>%
   gather(Gene, Pct1, 2:ncol(.))
 
+# Scaling expression to [0,1]
 nowa_meanexp_goi <- nowakowski_meanexp[c("GAPDH", "PDGFRA", "DLX1", "DLX2"), ] %>%
   t() %>%
   apply(2, scales::rescale) %>%
@@ -281,13 +293,13 @@ Repeat the same analysis for the striatal SVZ dataset from Anderson et al:
 
 genes <- c("Gapdh", "Pdgfra", "Gsx2", "Dlx1", "Dlx2")
 
-seurat_anderson     <- readRDS(here("singlecell_normal/data/Anderson2020_seurat.Rds"))
-anderson_signatures <- readRDS(here("bulk/data/Anderson2020_signatures.Rds"))
+seurat_anderson     <- readRDS(here("reference_datasets/2020_Anderson/processed_data/01-seurat.Rds"))
+anderson_signatures <- readRDS(here("reference_datasets/2020_Anderson/processed_data/02-cluster_gene_signatures.Rds"))
 
 meanexp_anderson    <- cytobox::meanClusterExpression(seurat_anderson,
                                                       genes = c(genes, unique(unlist(anderson_signatures$mm_sym))))
 
-cor_anderson <- cytokit::correlateExpression(meanexp_anderson, meanexp_anderson,
+cor_anderson <- cytobox::correlateExpression(meanexp_anderson, meanexp_anderson,
                                              genes = unique(unlist(anderson_signatures$mm_sym)),
                                              from_sp = "mm",
                                              to_sp = "mm")

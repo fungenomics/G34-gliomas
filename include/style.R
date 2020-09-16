@@ -1,5 +1,9 @@
 
 
+# palettes
+ylrd <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "OrRd"))(n = 100)
+rdbu <- rev(grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(n = 100))
+
 
 #' Apply a clean theme to a ggplot2 object
 #'
