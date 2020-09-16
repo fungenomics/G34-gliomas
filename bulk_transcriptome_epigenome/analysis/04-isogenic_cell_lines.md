@@ -1,6 +1,6 @@
 ---
 title: "01 - Bulk RNAseq"
-date: "15 September, 2020"
+date: "16 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -299,27 +299,38 @@ for the serum samples together only.
 
 
 ```r
-goi <- c("DLX1", "DLX2", "DLX5", "DLX6")
+goi <- c("DLX1", "DLX2", "DLX5", "DLX6", "PDGFRA", "GSX2")
 
 gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                        goi = goi) %>%
   left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
-  left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID")) %>% 
-  filter(baseMean > 100)
+  left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
 ```
 
 ```
 ## Joining, by = "gene_symbol"
 ```
 
+```r
+dge_serum %>% filter(gene_symbol %in% goi)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ENSID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["gene_symbol"],"name":[2],"type":["chr"],"align":["left"]},{"label":["baseMean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["log2FoldChange"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["lfcSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["stat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pvalue"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["padj"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["log10p"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"ENSG00000105880","2":"DLX5","3":"658.09433","4":"1.5905839","5":"0.3301889","6":"4.8171945","7":"1.455907e-06","8":"0.0001727677","9":"3.76253756"},{"1":"ENSG00000144355","2":"DLX1","3":"15755.71196","4":"0.5199826","5":"0.1370992","6":"3.7927471","7":"1.489899e-04","8":"0.0066446211","9":"2.17752978"},{"1":"ENSG00000134853","2":"PDGFRA","3":"15148.73844","4":"-0.6204999","5":"0.1868425","6":"-3.3209778","7":"8.970267e-04","8":"0.0246858090","9":"1.60755264"},{"1":"ENSG00000115844","2":"DLX2","3":"18568.20544","4":"0.3318288","5":"0.1283568","6":"2.5852057","7":"9.732091e-03","8":"0.1303521990","9":"0.88488164"},{"1":"ENSG00000006377","2":"DLX6","3":"713.25248","4":"1.3350848","5":"0.6551704","6":"2.0377672","7":"4.157322e-02","8":"0.3330453073","9":"0.47749668"},{"1":"ENSG00000180613","2":"GSX2","3":"79.72791","4":"0.4182405","5":"0.5458985","6":"0.7661508","7":"4.435866e-01","8":"0.8930264147","9":"0.04913569"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
 For the DLXs only
 
 
 ```r
-dlx_limits <- list("DLX1" = c(0, 21000),
-                   "DLX2" = c(0, 21000),
-                   "DLX5" = c(0, 1600),
-                   "DLX6" = c(0, 1600))
+dlx_limits <- list("DLX1"   = c(0, 21000),
+                   "DLX2"   = c(0, 21000),
+                   "DLX5"   = c(0, 1600),
+                   "DLX6"   = c(0, 1600),
+                   "PDGFRA" = c(0, 22000),
+                   "GSX2"   = c(0, 200))
 
 cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm",
                                                       "G34R_ser", "KORepair_ser")) {
@@ -328,7 +339,7 @@ cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm"
     filter(gene_symbol == gene) %>% 
     mutate(Group_broad = factor(Group_broad,
                                 levels = levels)) %>% 
-    rr_ggplot(aes(x = Group_broad, y = gene_expression), plot_num = 1) +
+    ggplot(aes(x = Group_broad, y = gene_expression)) +
     geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
     scale_colour_manual(values = c("cyan4", "midnightblue")) +
     stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
@@ -341,11 +352,15 @@ cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm"
   
 }
 
+gbm002_counts %>% 
+  select(sample, gene_symbol, gene_expression, Group_broad) %>% 
+  write_tsv(glue("{figout}/dlx_serum_boxplot-1.source_data.tsv"))
+
 imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts)) %>% 
-  {plot_grid(plotlist = ., ncol = 4)}
+  {plot_grid(plotlist = ., ncol = 6)}
 ```
 
-![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_serum_boxplot-1.png)<!-- -->
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_serum_boxplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_serum_boxplot...*]~</span>
 
 
 ### Targeted DGE, for stem condition - GBM002
@@ -355,26 +370,41 @@ imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts)) %>%
 gbm002_counts_nsm <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_nsm/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                            goi = goi) %>%
   left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
-  left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID")) %>% 
-  filter(baseMean > 100)
+  left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
 ```
 
 ```
 ## Joining, by = "gene_symbol"
 ```
 
-
 ```r
-dlx_limits <- list("DLX1" = c(0, 4000),
-                   "DLX2" = c(0, 5300),
-                   "DLX5" = c(0, 400),
-                   "DLX6" = c(0, 500))
-
-imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts_nsm)) %>% 
-  {plot_grid(plotlist = ., ncol = 4)}
+dge_stem %>% filter(gene_symbol %in% goi)
 ```
 
-![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_stem_boxplot-1.png)<!-- -->
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ENSID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["gene_symbol"],"name":[2],"type":["chr"],"align":["left"]},{"label":["baseMean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["log2FoldChange"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["lfcSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["stat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pvalue"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["padj"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["log10p"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"ENSG00000006377","2":"DLX6","3":"284.06987","4":"0.542042546","5":"0.16101295","6":"3.36645312","7":"0.0007614152","8":"0.04816356","9":"1.3172813866"},{"1":"ENSG00000105880","2":"DLX5","3":"247.82526","4":"0.514908241","5":"0.25068774","6":"2.05398255","7":"0.0399773806","8":"0.45437972","9":"0.3425810605"},{"1":"ENSG00000134853","2":"PDGFRA","3":"20045.91584","4":"0.214689417","5":"0.16504960","6":"1.30075700","7":"0.1933416441","8":"0.80481776","9":"0.0943024495"},{"1":"ENSG00000115844","2":"DLX2","3":"4129.20301","4":"0.085125191","5":"0.12504680","6":"0.68074669","7":"0.4960317901","8":"0.97508622","9":"0.0109569832"},{"1":"ENSG00000180613","2":"GSX2","3":"16.66248","4":"0.278731316","5":"0.41677302","6":"0.66878446","7":"0.5036329829","8":"0.97670982","9":"0.0102344449"},{"1":"ENSG00000144355","2":"DLX1","3":"3380.09662","4":"0.004416948","5":"0.09802634","6":"0.04505879","7":"0.9640604498","8":"0.99902440","9":"0.0004239044"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+
+```r
+dlx_limits <- list("DLX1"   = c(0, 4000),
+                   "DLX2"   = c(0, 5300),
+                   "DLX5"   = c(0, 400),
+                   "DLX6"   = c(0, 500),
+                   "PDGFRA" = c(0, 30000),
+                   "GSX2"   = c(0, 30))
+
+gbm002_counts_nsm %>% 
+  select(sample, gene_symbol, gene_expression, Group_broad) %>% 
+  write_tsv(glue("{figout}/dlx_stem_boxplot-1.source_data.tsv"))
+
+imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts_nsm)) %>% 
+  {plot_grid(plotlist = ., ncol = 6)}
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_stem_boxplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_stem_boxplot...*]~</span>
 
 
 ## ssGSEA
@@ -509,7 +539,7 @@ cl_ssgsea_tidy %>%
 This document was last rendered on:
 
 ```
-## 2020-09-15 22:56:55
+## 2020-09-16 18:25:59
 ```
 
 The git repository and last commit:
@@ -517,7 +547,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [93596e5] 2020-09-15: Re-generate GSEA bulk RNA-seq analysis
+## Head:     [250bd7d] 2020-09-16: Actually update lockfile, with monocle this time...
 ```
 
 The random seed was set with `set.seed(100)`
@@ -550,19 +580,20 @@ The R session info:
 ## [11] tidyr_0.8.2   here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5          git2r_0.27.1        pillar_1.4.6       
-##  [4] compiler_3.5.1      BiocManager_1.30.10 plyr_1.8.6         
-##  [7] tools_3.5.1         digest_0.6.25       evaluate_0.14      
-## [10] lifecycle_0.2.0     tibble_3.0.3        gtable_0.3.0       
-## [13] pkgconfig_2.0.3     rlang_0.4.7         parallel_3.5.1     
-## [16] yaml_2.2.1          xfun_0.17           withr_2.2.0        
-## [19] stringr_1.4.0       knitr_1.29          vctrs_0.3.4        
-## [22] hms_0.5.3           rprojroot_1.3-2     grid_3.5.1         
-## [25] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
-## [28] backports_1.1.9     ellipsis_0.3.1      htmltools_0.5.0    
-## [31] assertthat_0.2.1    colorspace_1.4-1    renv_0.10.0        
-## [34] stringi_1.5.3       lazyeval_0.2.2      munsell_0.5.0      
-## [37] crayon_1.3.4
+##  [1] Rcpp_1.0.5          git2r_0.27.1        plyr_1.8.6         
+##  [4] pillar_1.4.6        compiler_3.5.1      RColorBrewer_1.1-2 
+##  [7] BiocManager_1.30.10 tools_3.5.1         digest_0.6.25      
+## [10] evaluate_0.14       lifecycle_0.2.0     tibble_3.0.3       
+## [13] gtable_0.3.0        pkgconfig_2.0.3     rlang_0.4.7        
+## [16] parallel_3.5.1      yaml_2.2.1          xfun_0.17          
+## [19] withr_2.2.0         stringr_1.4.0       knitr_1.29         
+## [22] vctrs_0.3.4         hms_0.5.3           rprojroot_1.3-2    
+## [25] grid_3.5.1          tidyselect_1.1.0    R6_2.4.1           
+## [28] rmarkdown_1.11      farver_2.0.3        codetools_0.2-15   
+## [31] backports_1.1.9     ellipsis_0.3.1      htmltools_0.5.0    
+## [34] assertthat_0.2.1    colorspace_1.4-1    renv_0.10.0        
+## [37] labeling_0.3        stringi_1.5.3       lazyeval_0.2.2     
+## [40] munsell_0.5.0       crayon_1.3.4
 ```
 
 </details>

@@ -181,26 +181,29 @@ dge_stem <- read_tsv(file.path(pipeline_path, "GBM002_nsm/diff/Ensembl.ensGene.e
 Note that I have taken care, here, to use the counts normalized
 for the serum samples together only.
 
-```{r targeted_dge_serum only, fig.width = 14, fig.height = 7}
+```{r targeted_dge_serum only, fig.width = 14, fig.height = 5}
 
-goi <- c("DLX1", "DLX2", "DLX5", "DLX6")
+goi <- c("DLX1", "DLX2", "DLX5", "DLX6", "PDGFRA", "GSX2")
 
 gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                        goi = goi) %>%
   left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
-  left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID")) %>% 
-  filter(baseMean > 100)
+  left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
+
+dge_serum %>% filter(gene_symbol %in% goi)
 
 ```
 
 For the DLXs only
 
-```{r dlx_serum_boxplot, width = 5, height = 3}
+```{r dlx_serum_boxplot, fig.width = 14, fig.height = 5, echo_fig = TRUE}
 
-dlx_limits <- list("DLX1" = c(0, 21000),
-                   "DLX2" = c(0, 21000),
-                   "DLX5" = c(0, 1600),
-                   "DLX6" = c(0, 1600))
+dlx_limits <- list("DLX1"   = c(0, 21000),
+                   "DLX2"   = c(0, 21000),
+                   "DLX5"   = c(0, 1600),
+                   "DLX6"   = c(0, 1600),
+                   "PDGFRA" = c(0, 22000),
+                   "GSX2"   = c(0, 200))
 
 cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm",
                                                       "G34R_ser", "KORepair_ser")) {
@@ -209,7 +212,7 @@ cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm"
     filter(gene_symbol == gene) %>% 
     mutate(Group_broad = factor(Group_broad,
                                 levels = levels)) %>% 
-    rr_ggplot(aes(x = Group_broad, y = gene_expression), plot_num = 1) +
+    ggplot(aes(x = Group_broad, y = gene_expression)) +
     geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
     scale_colour_manual(values = c("cyan4", "midnightblue")) +
     stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
@@ -222,33 +225,44 @@ cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm"
   
 }
 
+gbm002_counts %>% 
+  select(sample, gene_symbol, gene_expression, Group_broad) %>% 
+  write_tsv(glue("{figout}/dlx_serum_boxplot-1.source_data.tsv"))
+
 imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts)) %>% 
-  {plot_grid(plotlist = ., ncol = 4)}
+  {plot_grid(plotlist = ., ncol = 6)}
 
 ```
 
 
 ### Targeted DGE, for stem condition - GBM002
 
-```{r targeted_dge_nsm, fig.width = 14, fig.height = 7}
+```{r targeted_dge_nsm}
 
 gbm002_counts_nsm <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_nsm/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                            goi = goi) %>%
   left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
-  left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID")) %>% 
-  filter(baseMean > 100)
+  left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
+
+dge_stem %>% filter(gene_symbol %in% goi)
 
 ```
 
-```{r dlx_stem_boxplot, width = 5, height = 3}
+```{r dlx_stem_boxplot, fig.width = 14, fig.height = 5, echo_fig = TRUE}
 
-dlx_limits <- list("DLX1" = c(0, 4000),
-                   "DLX2" = c(0, 5300),
-                   "DLX5" = c(0, 400),
-                   "DLX6" = c(0, 500))
+dlx_limits <- list("DLX1"   = c(0, 4000),
+                   "DLX2"   = c(0, 5300),
+                   "DLX5"   = c(0, 400),
+                   "DLX6"   = c(0, 500),
+                   "PDGFRA" = c(0, 30000),
+                   "GSX2"   = c(0, 30))
+
+gbm002_counts_nsm %>% 
+  select(sample, gene_symbol, gene_expression, Group_broad) %>% 
+  write_tsv(glue("{figout}/dlx_stem_boxplot-1.source_data.tsv"))
 
 imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts_nsm)) %>% 
-  {plot_grid(plotlist = ., ncol = 4)}
+  {plot_grid(plotlist = ., ncol = 6)}
 
 ```
 
