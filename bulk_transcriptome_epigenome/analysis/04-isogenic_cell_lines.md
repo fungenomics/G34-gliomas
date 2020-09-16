@@ -509,7 +509,7 @@ cl_ssgsea_tidy %>%
 This document was last rendered on:
 
 ```
-## 2020-09-15 12:39:57
+## 2020-09-15 22:56:55
 ```
 
 The git repository and last commit:
@@ -517,7 +517,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [97ee370] 2020-09-15: Update lockfile
+## Head:     [93596e5] 2020-09-15: Re-generate GSEA bulk RNA-seq analysis
 ```
 
 The random seed was set with `set.seed(100)`
@@ -559,11 +559,10 @@ The R session info:
 ## [19] stringr_1.4.0       knitr_1.29          vctrs_0.3.4        
 ## [22] hms_0.5.3           rprojroot_1.3-2     grid_3.5.1         
 ## [25] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
-## [28] farver_2.0.3        codetools_0.2-15    backports_1.1.9    
-## [31] ellipsis_0.3.1      htmltools_0.5.0     assertthat_0.2.1   
-## [34] colorspace_1.4-1    renv_0.10.0         labeling_0.3       
-## [37] stringi_1.5.3       lazyeval_0.2.2      munsell_0.5.0      
-## [40] crayon_1.3.4
+## [28] backports_1.1.9     ellipsis_0.3.1      htmltools_0.5.0    
+## [31] assertthat_0.2.1    colorspace_1.4-1    renv_0.10.0        
+## [34] stringi_1.5.3       lazyeval_0.2.2      munsell_0.5.0      
+## [37] crayon_1.3.4
 ```
 
 </details>

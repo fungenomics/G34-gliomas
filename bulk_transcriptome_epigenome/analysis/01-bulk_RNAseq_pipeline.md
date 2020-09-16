@@ -518,7 +518,7 @@ read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/
 This document was last rendered on:
 
 ```
-## 2020-09-15 11:00:51
+## 2020-09-15 22:46:04
 ```
 
 The git repository and last commit:
@@ -526,7 +526,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [31a366d] 2020-09-15: Output DGE from bulk RNA-seq tumor comparison
+## Head:     [93596e5] 2020-09-15: Re-generate GSEA bulk RNA-seq analysis
 ```
 
 The random seed was set with `set.seed(100)`
@@ -554,24 +554,22 @@ The R session info:
 ## [1] stats     graphics  grDevices datasets  utils     methods   base     
 ## 
 ## other attached packages:
-##  [1] cowplot_0.9.4 ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4  
-##  [6] glue_1.4.2    magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2  
-## [11] here_0.1     
+##  [1] ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4   glue_1.4.2   
+##  [6] magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2   here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] Rcpp_1.0.5          git2r_0.27.1        pillar_1.4.6       
 ##  [4] compiler_3.5.1      BiocManager_1.30.10 plyr_1.8.6         
-##  [7] tools_3.5.1         digest_0.6.25       jsonlite_1.7.1     
-## [10] evaluate_0.14       lifecycle_0.2.0     tibble_3.0.3       
-## [13] gtable_0.3.0        pkgconfig_2.0.3     rlang_0.4.7        
-## [16] yaml_2.2.1          xfun_0.17           withr_2.2.0        
-## [19] stringr_1.4.0       knitr_1.29          vctrs_0.3.4        
-## [22] hms_0.5.3           rprojroot_1.3-2     grid_3.5.1         
-## [25] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
-## [28] codetools_0.2-15    backports_1.1.9     ellipsis_0.3.1     
-## [31] htmltools_0.5.0     assertthat_0.2.1    colorspace_1.4-1   
-## [34] renv_0.10.0         stringi_1.5.3       lazyeval_0.2.2     
-## [37] munsell_0.5.0       crayon_1.3.4
+##  [7] tools_3.5.1         digest_0.6.25       evaluate_0.14      
+## [10] lifecycle_0.2.0     tibble_3.0.3        gtable_0.3.0       
+## [13] pkgconfig_2.0.3     rlang_0.4.7         yaml_2.2.1         
+## [16] xfun_0.17           withr_2.2.0         stringr_1.4.0      
+## [19] knitr_1.29          vctrs_0.3.4         hms_0.5.3          
+## [22] rprojroot_1.3-2     grid_3.5.1          tidyselect_1.1.0   
+## [25] R6_2.4.1            rmarkdown_1.11      backports_1.1.9    
+## [28] ellipsis_0.3.1      htmltools_0.5.0     assertthat_0.2.1   
+## [31] colorspace_1.4-1    renv_0.10.0         stringi_1.5.3      
+## [34] lazyeval_0.2.2      munsell_0.5.0       crayon_1.3.4
 ```
 
 </details>

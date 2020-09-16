@@ -278,7 +278,7 @@ dge_and_epi %>%
 This document was last rendered on:
 
 ```
-## 2020-09-15 11:01:09
+## 2020-09-15 22:54:01
 ```
 
 The git repository and last commit:
@@ -286,7 +286,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [31a366d] 2020-09-15: Output DGE from bulk RNA-seq tumor comparison
+## Head:     [93596e5] 2020-09-15: Re-generate GSEA bulk RNA-seq analysis
 ```
 
 The random seed was set with `set.seed(100)`
@@ -326,13 +326,12 @@ The R session info:
 ## [13] pkgconfig_2.0.3     rlang_0.4.7         yaml_2.2.1         
 ## [16] xfun_0.17           withr_2.2.0         stringr_1.4.0      
 ## [19] knitr_1.29          vctrs_0.3.4         hms_0.5.3          
-## [22] cowplot_0.9.4       rprojroot_1.3-2     grid_3.5.1         
-## [25] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
-## [28] farver_2.0.3        purrr_0.3.4         codetools_0.2-15   
-## [31] backports_1.1.9     scales_1.1.1        ellipsis_0.3.1     
-## [34] htmltools_0.5.0     assertthat_0.2.1    colorspace_1.4-1   
-## [37] renv_0.10.0         labeling_0.3        stringi_1.5.3      
-## [40] lazyeval_0.2.2      munsell_0.5.0       crayon_1.3.4
+## [22] rprojroot_1.3-2     grid_3.5.1          tidyselect_1.1.0   
+## [25] R6_2.4.1            rmarkdown_1.11      purrr_0.3.4        
+## [28] backports_1.1.9     scales_1.1.1        ellipsis_0.3.1     
+## [31] htmltools_0.5.0     assertthat_0.2.1    colorspace_1.4-1   
+## [34] renv_0.10.0         stringi_1.5.3       lazyeval_0.2.2     
+## [37] munsell_0.5.0       crayon_1.3.4
 ```
 
 </details>
