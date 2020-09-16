@@ -1,0 +1,247 @@
+---
+title: "01 - Interneuron pseudotemporal trajectory"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    keep_md: true
+    theme: flatly
+    css: ../../include/style.css
+    toc: yes
+    toc_depth: 4
+    number_sections: true
+    df_print: paged
+    includes:
+      before_body: ../../include/header.html
+      after_body:  ../../include/footer.html
+---
+
+<!-- FRONT MATTER, insert configuration info -->
+
+```{r header, echo = FALSE, results = 'asis', warning = FALSE}
+
+# Index of the document
+# ...determines name of the subfolder of `outputs` and `figures`
+doc_id <- "01"
+subdir <- "singlecell_normal"
+
+suppressMessages(library(here))
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "header.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF FRONT MATTER -->
+
+
+# Overview
+
+To pinpoint the where along interneuron differentiation
+G34 HGGs may arise, we retrieve genes which are (1) upregulated by RNA-seq and
+H3K27-acetylated in G34 gliomas compared to other HGGs, and (2) downregulated
+by RNA-seq and H3K27-trimethylated in G34 gliomas compared to other HGGs,
+from the multi-omics analysis in the `bulk_transcriptome_epigenome` directory.
+We then interrogate the expression of these genes along the normal interneuron
+differentiation trajectory that we've constructed previously with monocle.
+
+
+# Libraries
+
+```{r libs, warning = FALSE, message = FALSE, echo = TRUE, cache = FALSE}
+
+# Load libraries here
+library(tidyr)
+library(dplyr)
+library(readr)
+library(glue)
+library(purrr)
+library(cytobox)
+library(magrittr)
+library(pheatmap)
+library(monocle)
+
+source(here(subdir, "analysis/functions.R"))
+
+```
+
+
+# Analysis
+
+## Cell type density along normal interneuron differentiation trajectory
+
+First we load a table of pseudotime values per cell:
+
+```{r load_pseudotime}
+
+# Clean up the cell names, which got mangled a bit due to additional prefixes
+# when the Seurat objects were merged
+tidy_cellnames <- function(pseudotime) {
+    
+    pseudotime %>%
+        mutate(cell = case_when(
+            grepl("e12|e15", cell) ~ paste0("__", cell),
+            grepl("p0", cell) ~ paste0("__", cell),
+            TRUE ~ cell
+        )) %>%
+        mutate(pseudotime = Pseudotime)
+    
+}
+
+inhibitory_pseudotime <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_inhibitory_neurons_pseudotime.txt")) %>%
+    tidy_cellnames()
+
+```
+
+Next load the cell type identities for each cell:
+
+```{r inhib_identity}
+
+inhibitory_pseudotime$pseudotime %<>% scales::rescale(to = c(0, 100))
+
+# Load the metadata for the joint forebrain and set the identities
+forebrain_meta <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_joint_forebrain_metadata.tsv"))
+
+inhibitory_pseudotime <- left_join(inhibitory_pseudotime, forebrain_meta, by = c("cell" = "Cell"))
+
+```
+
+Finally, generate a density plot of each cell type along pseudotime, to represent
+the relative proportions of each cell type as differentiation proceeds:
+
+```{r interneuron_differentiation_density_plot, fig.width = 5, fig.height = 2, echo_fig = TRUE}
+
+# Grab cells in the clusters included in this Monocle analysis,
+# and plot their density in pseuodtime
+inhibitory_pseudotime %>%
+    filter(grepl("VRGC|INIP|MGINH|CINH", ID_20190730_with_blacklist_and_refined)) %>%
+    separate(ID_20190730_with_blacklist_and_refined,
+             sep = "_",
+             into = c("Sample", "Cell_type")) %>%
+    rr_ggplot(aes(x = Pseudotime), plot_num = 1) +
+    geom_density(aes(fill = Cell_type), alpha = 0.8, size = 0.4) +
+    scale_fill_manual(values = c(
+        "VRGC"   = "#ffb219",
+        "INIP-P" = "#8798C8",
+        "MGINH"  = "#4a1cc9",
+        "CINHN"  = "#135ca0"
+    )) +
+    theme_min()
+
+```
+
+## Plot genes of interest along pseudotime
+
+```{r load_monocle}
+
+load(here("reference_datasets/2019_Jessa/Jessa2019_inhibitory_neurons.monocle.Rda"))
+
+pal_pseudotime <- colorRampPalette(c("navy", "white", "red"))(n = 200)
+
+```
+
+One way to evaluate whether the genes which drive enrichment of fetal neuronal signatures
+vs. depletion of pediatric/adult signatures in G34 gliomas by GSEA are related to maturity is by checking
+their expression during normal differentiation. Get the genes from the GSEA analysis:
+
+```{r load_leading_edge_genes}
+
+signatures <- c("MGE newborn neurons 1", "Parvalbumin interneurons")
+
+fgsea_df_idh_filt <- read_tsv(here("bulk_transcriptome_epigenome/output/02/fgsea_results_padj<0.01_IDH_top_le.tsv"))
+
+leading_edge <- fgsea_df_idh_filt %>% 
+    filter(Cell_type %in% signatures) %>% 
+    select(Cell_type, leadingEdge_top) %>% 
+    tibble::deframe() %>% 
+    map(~ .x %>% stringr::str_split(", ") %>% unlist() %>% hg2mm() %>% filter_NA())
+
+leading_edge
+
+```
+
+However, we only want to plot genes with reasonable mean exp in the clusters of
+this lineage, so that the smoothing makes sense:
+
+```{r filter_leading_edge_genes, dependson = 'load_leading_edge_genes'}
+
+all_genes <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_forebrain_gene_names.tsv")) %>%
+    pull(genes)
+
+filter_by_mean_expr <- function(genes) {
+    
+    genes <- genes[genes %in% all_genes] %>% unique()
+    
+    # Check expression in all the clusters which comprise the cortical
+    # inhibitory neuron lineages
+    feather::read_feather(here("reference_datasets/2019_Jessa/Jessa2019_mean_expression.feather"),
+                          c("Cluster", genes)) %>%
+        gather(Gene, Mean_expression, 2:ncol(.)) %>%
+        filter(grepl("^F", Cluster) & grepl("e12|e15|p0", Cluster)) %>%
+        filter(grepl("INIP|INH|VRGC", Cluster)) %>%
+        filter(Mean_expression > 0.1) %>%
+        pull(Gene) %>%
+        unique() %>%
+        sort()
+    
+}
+
+(leading_edge_filt <- map(leading_edge, ~ filter_by_mean_expr(.x)))
+names(leading_edge_filt) <- gsub(" ", "_", names(leading_edge_filt))
+
+```
+
+Extract genes to examine in pseudotime from the transcriptome/epigenome analyses -- we'll
+gate genes based on high zK27Ac and low zK27me3, or vice versa:
+
+```{r epi_filter_genes}
+
+# Read in output of ChIP-seq analysis
+multiomic_genes <- read_tsv(here("bulk_transcriptome_epigenome/output/03/DGE_and_histone_marks.tsv"))
+
+multiomic_genes_top <- list("UP" = multiomic_genes %>%
+                             filter(G34R.zK27ac > 0.6) %>%
+                             pull(symbol) %>% hg2mm() %>% filter_NA(),
+                         "DOWN" = multiomic_genes %>%
+                             filter(G34R.zK27m3 > 0.6) %>%
+                             pull(symbol) %>% hg2mm() %>% filter_NA())
+
+(multiomic_genes_top_filt <- map(multiomic_genes_top, ~ filter_by_mean_expr(.x)))
+
+```
+
+
+Intersect RNA-seq leading genes and multi-omic genes:
+
+```{r pseudotime_heatmap, echo_fig = TRUE, dependson = 'load_leading_edge_genes'}
+
+pseudotime_union <- list(
+    # Newborn interneuron & upregulated genes
+    "UP"   = unique(c(leading_edge_filt[[1]], multiomic_genes_top_filt[[1]])),
+                         
+    # Postnatal interneuron & downregulated genes
+    "DOWN" = unique(c(leading_edge_filt[[2]], multiomic_genes_top_filt[[2]])))
+
+imap(pseudotime_union, ~ ordered_pseudotime_heatmap(monocle[.x,],
+                                                    show_rownames = TRUE,
+                                                    order_by_pseudotime = TRUE,
+                                                    hmcols = pal_pseudotime,
+                                                    prefix = glue("{figout}/pseudotime_heatmap{.y}")))
+
+knitr::include_graphics(glue("{figout}/pseudotime_heatmapUP.png"))
+knitr::include_graphics(glue("{figout}/pseudotime_heatmapDOWN.png"))
+
+```
+
+
+<!-- END MATTER, insert reproducibility info -->
+
+```{r footer, echo = FALSE, results = 'asis', warning = FALSE, cache = FALSE}
+
+# Knit child document with header
+res <- knitr::knit_child(here("include", "footer.Rmd"), envir = environment(), quiet = TRUE)
+cat(res, sep = '\n')
+
+```
+
+<!-- END OF END MATTER -->

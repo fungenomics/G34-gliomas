@@ -72,7 +72,7 @@ Load tumor data:
 ```{r load_data}
 
 dge <- read_tsv(here(subdir, "output/01/DGE_HGG-IDHvsHGG-G34R.V_padj<0.01_baseMean>100_absLFC>2.tsv")) %>% 
-  separate(ID, into = c("ENSID", "symbol"), sep = ":")
+    separate(ID, into = c("ENSID", "symbol"), sep = ":")
 
 ```
 
@@ -92,48 +92,48 @@ Clean up gene names converted to dates:
 epi %>% distinct(name) %>% pull(name) %>% sort() %>% head(25)
 
 epi <- epi %>%
-  mutate(name = case_when(
-  name == "01-Mar" ~ "MARCH1",
-  name == "02-Mar" ~ "MARCH2",
-  name == "03-Mar" ~ "MARCH3",
-  name == "04-Mar" ~ "MARCH4",
-  name == "05-Mar" ~ "MARCH5",
-  name == "06-Mar" ~ "MARCH6",
-  name == "07-Mar" ~ "MARCH7",
-  name == "08-Mar" ~ "MARCH8",
-  name == "09-Mar" ~ "MARCH9",
-  name == "10-Mar" ~ "MARCH10",
-  name == "11-Mar" ~ "MARCH11",
-  name == "01-Sep" ~ "SEPT1",
-  name == "02-Sep" ~ "SEPT2",
-  name == "03-Sep" ~ "SEPT3",
-  name == "04-Sep" ~ "SEPT4",
-  name == "05-Sep" ~ "SEPT5",
-  name == "06-Sep" ~ "SEPT6",
-  name == "07-Sep" ~ "SEPT7",
-  name == "08-Sep" ~ "SEPT8",
-  name == "09-Sep" ~ "SEPT9",
-  name == "10-Sep" ~ "SEPT10",
-  name == "11-Sep" ~ "SEPT11",
-  name == "12-Sep" ~ "SEPT12",
-  name == "14-Sep" ~ "SEPT14",
-  name == "01-Dec" ~ "DEC1",
-  TRUE ~ name))
+    mutate(name = case_when(
+        name == "01-Mar" ~ "MARCH1",
+        name == "02-Mar" ~ "MARCH2",
+        name == "03-Mar" ~ "MARCH3",
+        name == "04-Mar" ~ "MARCH4",
+        name == "05-Mar" ~ "MARCH5",
+        name == "06-Mar" ~ "MARCH6",
+        name == "07-Mar" ~ "MARCH7",
+        name == "08-Mar" ~ "MARCH8",
+        name == "09-Mar" ~ "MARCH9",
+        name == "10-Mar" ~ "MARCH10",
+        name == "11-Mar" ~ "MARCH11",
+        name == "01-Sep" ~ "SEPT1",
+        name == "02-Sep" ~ "SEPT2",
+        name == "03-Sep" ~ "SEPT3",
+        name == "04-Sep" ~ "SEPT4",
+        name == "05-Sep" ~ "SEPT5",
+        name == "06-Sep" ~ "SEPT6",
+        name == "07-Sep" ~ "SEPT7",
+        name == "08-Sep" ~ "SEPT8",
+        name == "09-Sep" ~ "SEPT9",
+        name == "10-Sep" ~ "SEPT10",
+        name == "11-Sep" ~ "SEPT11",
+        name == "12-Sep" ~ "SEPT12",
+        name == "14-Sep" ~ "SEPT14",
+        name == "01-Dec" ~ "DEC1",
+        TRUE ~ name))
 
 ```
 
 ```{r epi_mean}
 
 epi_mean <- epi %>%
-  select(1:7, G34RV.K27me3.median, nonG34RV.K27me3.median, G34RV.K27ac.median, nonG34RV.K27ac.median, G34R.zK27m3, G34R.zK27ac) %>% 
-  gather(Stat, Score, 8:ncol(.)) %>% 
-  group_by(name, Stat) %>% 
-  summarize(Score = mean(Score)) %>% 
-  spread(Stat, Score) %>% 
-  ungroup()
+    select(1:7, G34RV.K27me3.median, nonG34RV.K27me3.median, G34RV.K27ac.median, nonG34RV.K27ac.median, G34R.zK27m3, G34R.zK27ac) %>% 
+    gather(Stat, Score, 8:ncol(.)) %>% 
+    group_by(name, Stat) %>% 
+    summarize(Score = mean(Score)) %>% 
+    spread(Stat, Score) %>% 
+    ungroup()
 
 epi_indiv <- epi %>% 
-  select(name, 8:40)
+    select(name, 8:40)
 
 epi_meta <- data.frame(Sample = colnames(epi)[8:42],
                        Mark = c(rep("K27me3", 18), rep("K27Ac", 17)),
@@ -144,36 +144,36 @@ save(epi_mean, epi_meta, file = glue("{out}/genic_promoters_histone_tidy.Rda"))
 
 ```
 
-# Crossing epigenomics with other data
+## Crossing epigenomics with other data
 
-## DGE
+### DGE
 
-```{r dge_and_epi, echo_label = TRUE, fig.width = 7, fig.height = 5}
+```{r dge_and_epi, echo_fig = TRUE, fig.width = 7, fig.height = 5}
 
 dge_and_epi <- dge %>%
-  left_join(epi_mean, by = c("symbol" = "name")) %>% 
-  arrange(abs(log2FoldChange)) %T>% 
-  write_tsv(glue("{out}/DGE_and_histone_marks.tsv"))
+    left_join(epi_mean, by = c("symbol" = "name")) %>% 
+    arrange(abs(log2FoldChange)) %T>% 
+    write_tsv(glue("{out}/DGE_and_histone_marks.tsv"))
 
 dge_and_epi %>% 
-  ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3)) +
-  geom_hline(yintercept = 0.5, size = 0.5, colour = "gray90") +
-  geom_vline(xintercept = 0.5, size = 0.5, colour = "gray90") +
-  geom_point(aes(colour = log2FoldChange, size = -log10(padj)), alpha = 0.8) +
-  scale_colour_gradientn(colours = colorRampPalette(c("navy", "white", "red"))(n = 200)) +
-  cowplot::theme_cowplot()
+    ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3)) +
+    geom_hline(yintercept = 0.5, size = 0.5, colour = "gray90") +
+    geom_vline(xintercept = 0.5, size = 0.5, colour = "gray90") +
+    geom_point(aes(colour = log2FoldChange, size = -log10(padj)), alpha = 0.8) +
+    scale_colour_gradientn(colours = colorRampPalette(c("navy", "white", "red"))(n = 200)) +
+    cowplot::theme_cowplot()
 
 goi <- dge_and_epi %>% filter(G34R.zK27ac > 0.9 | G34R.zK27m3 > 0.9) %>%
-  filter(abs(log2FoldChange) > 3) %>%
-  pull(symbol)
+    filter(abs(log2FoldChange) > 3) %>%
+    pull(symbol)
 
 dge_and_epi %>% 
-  rr_ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3), plot_num = 2) +
-  geom_hline(yintercept = 0.5, size = 0.5, colour = "gray90") +
-  geom_vline(xintercept = 0.5, size = 0.5, colour = "gray90") +
-  geom_point(aes(colour = log2FoldChange, size = -log10(padj)), alpha = 0.8) +
-  scale_colour_gradientn(colours = colorRampPalette(c("navy", "white", "red"))(n = 200)) +
-  ggrepel::geom_label_repel(data = dge_and_epi %>% filter(symbol %in% goi), aes(label = symbol))
+    rr_ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3), plot_num = 2) +
+    geom_hline(yintercept = 0.5, size = 0.5, colour = "gray90") +
+    geom_vline(xintercept = 0.5, size = 0.5, colour = "gray90") +
+    geom_point(aes(colour = log2FoldChange, size = -log10(padj)), alpha = 0.8) +
+    scale_colour_gradientn(colours = colorRampPalette(c("navy", "white", "red"))(n = 200)) +
+    ggrepel::geom_label_repel(data = dge_and_epi %>% filter(symbol %in% goi), aes(label = symbol))
 
 ```
 
