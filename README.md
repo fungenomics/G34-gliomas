@@ -8,6 +8,12 @@ This repository contains the code & data for the bulk analysis included
 the G34R/V HGG manuscript (Chen, Deshmukh, Jessa, Hadjadj, et al),
 for the analysis that was performed by our lab.
 
+Contents:
+
+* [Directory organization](https://github.com/fungenomics/G34-gliomas#directory-organization)
+* [Notes for reproducibility](https://github.com/fungenomics/G34-gliomas#notes-for-reproducibility)
+* [GitHub / version control](https://github.com/fungenomics/G34-gliomas#github-repository)
+* [Paper analysis not included in this repo](https://github.com/fungenomics/G34-gliomas#paper-analysis-not-included-in-this-repository)
 
 
 ## Directory organization
@@ -71,7 +77,7 @@ there is an associated description file `bulk_transcriptome_epigenome/output/02/
 
 
 
-## GitHub repository
+## GitHub / version control
 
 This directory is tracked with git and has an associated GitHub repository in the Kleinman
 lab account at https://github.com/fungenomics/G34-gliomas.
