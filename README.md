@@ -12,7 +12,7 @@ Contents:
 
 * [Directory organization](https://github.com/fungenomics/G34-gliomas#directory-organization)
 * [Notes for reproducibility](https://github.com/fungenomics/G34-gliomas#notes-for-reproducibility)
-* [GitHub / version control](https://github.com/fungenomics/G34-gliomas#github-repository)
+* [GitHub / version control](https://github.com/fungenomics/G34-gliomas#github--version-control)
 * [Paper analysis not included in this repo](https://github.com/fungenomics/G34-gliomas#paper-analysis-not-included-in-this-repository)
 
 
