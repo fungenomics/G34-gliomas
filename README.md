@@ -104,13 +104,14 @@ the command line with the `rmarkdown` package:
 
 ## Paper analysis not included in this repository
 
-* The standard bulk RNA-seq analysis performed by the Kleinman Lab in-house pipeline
+* In-house bulk RNAseq pipeline. The standard bulk RNA-seq analysis performed by the Kleinman Lab in-house pipeline
 is run in the standard location on Beluga, with associated level 3 analysis at
 `/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples`.
 That directory contains a number of iterations as samples were added, etc;
 the R Markdown files contain the paths for the exact outputs used in the final manuscript.
-* scRNAseq analysis of the patient tumor samples, performed by Veronique Lisi, is
-stored at `/lustre03/project/6004736/vlisi/fromHydra/SCRATCH/vlisi/LEGACY/G34`
+* scRNAseq analysis of the patient tumor samples and external datasets. For the processing and QC of individual
+samples, the backup is at `/lustre03/project/6004736/sjessa/from_hydra/HGG-G34/samples`. The analysis performed by Veronique Lisi is
+stored at `/lustre03/project/6004736/vlisi/fromHydra/SCRATCH/vlisi/LEGACY/G34`.
 * Any analysis performed by the Jabado Lab (Carol Chen, Djihad Hadjadj, Shriya Deshmukh)
 
 
