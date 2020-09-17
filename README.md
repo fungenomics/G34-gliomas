@@ -13,11 +13,13 @@ for the analysis that was performed by our lab.
 ## Directory organization
 
 * `reference_datasets`: data, code, and processed outputs for scRNAseq
-normal brain reference datasets, with one sub-directory per publication. The process
+normal brain reference datasets, with one sub-directory per publication.
+For external publications, the process
 of obtaining or deriving cluster markers used in later analysis is recorded here.
 * `bulk_transcriptome_epigenome`: data, code, figures and output for 
 bulk RNA-seq and ChIP-seq analysis of patient tumors and tumor-derived cell lines.
-* `singlecell_normal`: data, code, figures and output for 
+* `singlecell_normal`: data, code, figures and output for analysis of the scRNAseq
+normal brain data
 * `renv`: directory maintained by the R package `renv`, containing the isolated
 project specific library
 * `include`: shared templates, Rmd/HTML headers/footers, and R functions used
@@ -52,17 +54,20 @@ the seed, and the R session info.
 ### Figures and source data
 
 For most figures, the source data underlying the plot is saved along side the figure
-in the respective `figures` directory. If so, a message like this is displayed
+in the respective `figures` directory. If so, a message is displayed
 in the markdown/HTML files underneath the chunk whih produces the plot,
-giving the path for the figures/source data within this project directory:
+giving the path for the figures/source data within this project directory.
 
-`[figure/source data @ G34-gliomas/bulk_transcriptome_epigenome/figures/01/gsx2_pdgfra_correlation…]`
+e.g. `[figure/source data @ G34-gliomas/bulk_transcriptome_epigenome/figures/01/gsx2_pdgfra_correlation…]`
 
 
 ### Analysis outputs
 
+For most text file & R object outputs, there is a text file saved next to the object
+with the extension `.desc`, with a very brief one-line description of what's contained in the file.
 
-
+e.g. for the output file `bulk_transcriptome_epigenome/output/02/fgsea_df.tsv`,
+there is an associated description file `bulk_transcriptome_epigenome/output/02/fgsea_df.desc`
 
 
 
@@ -76,12 +81,25 @@ The following are tracked / available on GitHub:
 * `.Rmd` files, containing the code, and `.md` files, containing code and outputs
 * Figures in `png` format
 * Certain output files (`tsv`/`Rda`/`Rds`), if they're small
+* The brief `desc` files for otputs
 * The lockfile produced by the `renv` package
 
 The following are not tracked / available on GitHub:
 * `HTML` files, because these can be large, but they can be regenerated from the intermediate `.md` files saved
-* Figures in `pdf` format
-* Raw data and large processed data files
+* Figures in `pdf` format, and figure source data
+* Raw data and large analysis output / processed data files
 * The actual packages in the R library 
+
+
+## Paper analysis not included in this repository
+
+* The standard bulk RNA-seq analysis performed by the Kleinman Lab in-house pipeline
+is run in the standard location on Beluga, with associated level 3 analysis at
+`/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples`.
+That directory contains a number of iterations as samples were added, etc;
+the R Markdown files contain the paths for the exact outputs used in the final manuscript.
+* scRNAseq analysis of the patient tumor samples, performed by Veronique Lisi, is
+stored at `/lustre03/project/6004736/vlisi/fromHydra/SCRATCH/vlisi/LEGACY/G34`
+* Any analysis performed by the Jabado Lab
 
 
