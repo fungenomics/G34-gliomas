@@ -96,6 +96,11 @@ The following are not tracked / available on GitHub:
 * Raw data and large analysis output / processed data files
 * The actual packages in the R library 
 
+An HTML file can be regenerated from a markdown `.md` file, like so on
+the command line with the `rmarkdown` package:
+
+`R --no-save -e "rmarkdown::render(input = 'bulk_transcriptome_epigenome/analysis/01-bulk_RNAseq_pipeline.md', output_format = 'html_document')"`
+
 
 ## Paper analysis not included in this repository
 
@@ -106,6 +111,6 @@ That directory contains a number of iterations as samples were added, etc;
 the R Markdown files contain the paths for the exact outputs used in the final manuscript.
 * scRNAseq analysis of the patient tumor samples, performed by Veronique Lisi, is
 stored at `/lustre03/project/6004736/vlisi/fromHydra/SCRATCH/vlisi/LEGACY/G34`
-* Any analysis performed by the Jabado Lab
+* Any analysis performed by the Jabado Lab (Carol Chen, Djihad Hadjadj, Shriya Deshmukh)
 
 

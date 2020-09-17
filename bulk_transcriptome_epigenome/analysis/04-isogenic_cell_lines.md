@@ -1,6 +1,6 @@
 ---
-title: "01 - Bulk RNAseq"
-date: "16 September, 2020"
+title: "04 - isogenic cell lines"
+date: "17 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -446,8 +446,16 @@ raw_counts[1:5, 1:5]
 ```
 
 ```r
-save(raw_counts, file = glue("{out}/cl_raw_counts.Rda"))
+rr_saveRDS(object = raw_counts,
+           desc = "Raw RNA-seq counts for GBM002 cell lines",
+           file = glue("{out}/cl_raw_counts.Rds"))
+```
 
+```
+## ...writing description of cl_raw_counts.Rds to G34-gliomas/bulk_transcriptome_epigenome/output/04/cl_raw_counts.desc
+```
+
+```r
 dim(raw_counts)
 ```
 
@@ -488,10 +496,23 @@ cl_ssgsea <- ssgsea_le(expr_mat = raw_counts,
 cl_ssgsea$enrichment_scores %>%
   as.data.frame() %>%
   tibble::rownames_to_column(var = "Signature") %>%
-  write_tsv(glue("{out}/bulk_ssgsea_scores.tsv"))
+  rr_write_tsv(path = glue("{out}/cl_ssgsea_scores.tsv"),
+               desc = "ssGSEA scores for cell type signatures in GBM002 cell lines")
+```
 
+```
+## ...writing description of cl_ssgsea_scores.tsv to G34-gliomas/bulk_transcriptome_epigenome/output/04/cl_ssgsea_scores.desc
+```
+
+```r
 leading_edge <- cl_ssgsea$leading_edge
-save(leading_edge, file = glue("{out}/cl_ssgsea_le.Rda"))
+rr_saveRDS(object = leading_edge,
+           desc = "Leading edge froms ssGSEA analysis of cell type signatures in GBM002 cell lines",
+           file = glue("{out}/cl_ssgsea_le.Rds"))
+```
+
+```
+## ...writing description of cl_ssgsea_le.Rds to G34-gliomas/bulk_transcriptome_epigenome/output/04/cl_ssgsea_le.desc
 ```
 
 ### Visualize results
@@ -523,7 +544,7 @@ cl_ssgsea_tidy %>%
   ylim(c(22400, 24000))
 ```
 
-![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//viz_ssgsea-1.png)<!-- -->
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//viz_ssgsea-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/04//viz_ssgsea...*]~</span>
 
 
 
@@ -539,7 +560,7 @@ cl_ssgsea_tidy %>%
 This document was last rendered on:
 
 ```
-## 2020-09-16 18:25:59
+## 2020-09-17 13:25:28
 ```
 
 The git repository and last commit:
@@ -547,7 +568,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [250bd7d] 2020-09-16: Actually update lockfile, with monocle this time...
+## Head:     [918687c] 2020-09-17: Update TOC links
 ```
 
 The random seed was set with `set.seed(100)`
@@ -572,7 +593,7 @@ The R session info:
 ## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices datasets  utils     methods   base     
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
 ##  [1] pbapply_1.4-3 cowplot_0.9.4 ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0
@@ -580,20 +601,16 @@ The R session info:
 ## [11] tidyr_0.8.2   here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5          git2r_0.27.1        plyr_1.8.6         
-##  [4] pillar_1.4.6        compiler_3.5.1      RColorBrewer_1.1-2 
-##  [7] BiocManager_1.30.10 tools_3.5.1         digest_0.6.25      
-## [10] evaluate_0.14       lifecycle_0.2.0     tibble_3.0.3       
-## [13] gtable_0.3.0        pkgconfig_2.0.3     rlang_0.4.7        
-## [16] parallel_3.5.1      yaml_2.2.1          xfun_0.17          
-## [19] withr_2.2.0         stringr_1.4.0       knitr_1.29         
-## [22] vctrs_0.3.4         hms_0.5.3           rprojroot_1.3-2    
-## [25] grid_3.5.1          tidyselect_1.1.0    R6_2.4.1           
-## [28] rmarkdown_1.11      farver_2.0.3        codetools_0.2-15   
-## [31] backports_1.1.9     ellipsis_0.3.1      htmltools_0.5.0    
-## [34] assertthat_0.2.1    colorspace_1.4-1    renv_0.10.0        
-## [37] labeling_0.3        stringi_1.5.3       lazyeval_0.2.2     
-## [40] munsell_0.5.0       crayon_1.3.4
+##  [1] Rcpp_1.0.5         git2r_0.27.1       pillar_1.4.6       compiler_3.5.1    
+##  [5] RColorBrewer_1.1-2 plyr_1.8.6         tools_3.5.1        digest_0.6.25     
+##  [9] evaluate_0.14      lifecycle_0.2.0    tibble_3.0.3       gtable_0.3.0      
+## [13] pkgconfig_2.0.3    rlang_0.4.7        parallel_3.5.1     yaml_2.2.1        
+## [17] xfun_0.17          withr_2.2.0        stringr_1.4.0      knitr_1.29        
+## [21] vctrs_0.3.4        hms_0.5.3          rprojroot_1.3-2    grid_3.5.1        
+## [25] tidyselect_1.1.0   R6_2.4.1           rmarkdown_1.11     codetools_0.2-15  
+## [29] backports_1.1.9    ellipsis_0.3.1     htmltools_0.5.0    assertthat_0.2.1  
+## [33] colorspace_1.4-1   stringi_1.5.3      lazyeval_0.2.2     munsell_0.5.0     
+## [37] crayon_1.3.4
 ```
 
 </details>

@@ -504,7 +504,8 @@ signif_in_idh <- fgsea_df_idh_filt$Signature
 
 save(signif_in_idh, file = glue("{out}/signif_in_idh.Rda"))
 
-# Helper function to actually generate the heatmap
+# Helper function to actually generate the heatmap, which will be called several
+# times to generate different heatmaps with different inputs/outputs
 hm_fun <- partial(pheatmap,
                   border_color = NA,
                   color = colorRampPalette(c("blue","white","red"))(100),
@@ -537,7 +538,10 @@ heatmap_inputs_fb <- prep_gsea_heatmap(fgsea_df,
                                                                      "Velmeshev et al 2019")),
                                        row_order = row_order)
 
-# Generate heatmap
+# Save source data manually
+write_tsv(heatmap_inputs_fb$heatmap_data_wide, glue("{figout}/gsea_heatmap_hgg.source_data.tsv"))
+
+# Generate heatmap in pdf and png
 hm_fun(mat = heatmap_inputs_fb$heatmap_data_wide,
        annotation_col = heatmap_inputs_fb$col_anno,
        main = "Forebrain references",
@@ -569,6 +573,9 @@ heatmap_inputs_bcor <- prep_gsea_heatmap(fgsea_df,
                                                         Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR"),
                                          row_order = 1)
 
+# Save source data manually
+write_tsv(heatmap_inputs_bcor$heatmap_data_wide, glue("{figout}/gsea_heatmap_bcor.source_data.tsv"))
+
 hm_fun(mat = heatmap_inputs_bcor$heatmap_data_wide,
        annotation_col = heatmap_inputs_bcor$col_anno,
        filename = glue("{figout}/gsea_heatmap_bcor.png"))
@@ -593,6 +600,9 @@ heatmap_inputs_str <- prep_gsea_heatmap(fgsea_df,
                                         signatures = signif_in_idh,
                                         filters = quos(Dataset == "Anderson et al 2020"),
                                         row_order = row_order)
+
+# Save source data manually
+write_tsv(heatmap_inputs_str$heatmap_data_wide, glue("{figout}/gsea_heatmap_hgg_striatum.source_data.tsv"))
 
 # Generate heatmap
 hm_fun(mat = heatmap_inputs_str$heatmap_data_wide,
@@ -619,6 +629,10 @@ heatmap_inputs_svz <- prep_gsea_heatmap(fgsea_df,
                                         signatures = signif_in_idh,
                                         filters = quos(Dataset == "Mizrak et al 2019"),
                                         row_order = row_order)
+
+# Save source data manually
+write_tsv(heatmap_inputs_svz$heatmap_data_wide, glue("{figout}/gsea_heatmap_hgg_svz.source_data.tsv"))
+
 # Generate heatmap
 hm_fun(mat = heatmap_inputs_svz$heatmap_data_wide,
        annotation_col = heatmap_inputs_svz$col_anno,

@@ -89,7 +89,7 @@ data_long$Stdev   <- as.numeric(data_long$Stdev)
 ```
 
 
-```{r human_pdgfra_plot, fig.width = 7, fig.height = 3}
+```{r human_pdgfra_plot, fig.width = 7, fig.height = 3, echo_fig = TRUE}
 
 # Colour palette
 palette_human <- c("red", "navy")
@@ -140,7 +140,7 @@ data_long$Stdev   <- as.numeric(data_long$Stdev)
 ```
 
 
-```{r mouse_pdgfra_plot, fig.width = 7, fig.height = 3}
+```{r mouse_pdgfra_plot, fig.width = 7, fig.height = 3, echo_fig = TRUE}
 
 # Colour palette
 palette_mouse <- c("blue", "orange", "gray50")
@@ -175,7 +175,7 @@ data_long$Stdev   <- as.numeric(data_long$Stdev)
 ```
 
 
-```{r human_gsx2_plot, fig.width = 7, fig.height = 3}
+```{r human_gsx2_plot, fig.width = 7, fig.height = 3, echo_fig = TRUE}
 
 plot_4c(data_long, palette_human)
 
@@ -204,7 +204,7 @@ data_long$Stdev   <- as.numeric(data_long$Stdev)
 ```
 
 
-```{r mouse_gsx2_plot, fig.width = 7, fig.height = 3}
+```{r mouse_gsx2_plot, fig.width = 7, fig.height = 3, echo_fig = TRUE}
 
 plot_4c(data_long, palette_mouse)
 

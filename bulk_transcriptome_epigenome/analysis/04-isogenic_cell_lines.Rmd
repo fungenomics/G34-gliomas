@@ -1,5 +1,5 @@
 ---
-title: "01 - Bulk RNAseq"
+title: "04 - isogenic cell lines"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
@@ -280,7 +280,9 @@ head(rownames(raw_counts) %<>% strsplit(":") %>% sapply(getElement, 1))
 raw_counts <- as.matrix(raw_counts)
 
 raw_counts[1:5, 1:5]
-save(raw_counts, file = glue("{out}/cl_raw_counts.Rda"))
+rr_saveRDS(object = raw_counts,
+           desc = "Raw RNA-seq counts for GBM002 cell lines",
+           file = glue("{out}/cl_raw_counts.Rds"))
 
 dim(raw_counts)
 
@@ -320,16 +322,19 @@ cl_ssgsea <- ssgsea_le(expr_mat = raw_counts,
 cl_ssgsea$enrichment_scores %>%
   as.data.frame() %>%
   tibble::rownames_to_column(var = "Signature") %>%
-  write_tsv(glue("{out}/bulk_ssgsea_scores.tsv"))
+  rr_write_tsv(path = glue("{out}/cl_ssgsea_scores.tsv"),
+               desc = "ssGSEA scores for cell type signatures in GBM002 cell lines")
 
 leading_edge <- cl_ssgsea$leading_edge
-save(leading_edge, file = glue("{out}/cl_ssgsea_le.Rda"))
+rr_saveRDS(object = leading_edge,
+           desc = "Leading edge froms ssGSEA analysis of cell type signatures in GBM002 cell lines",
+           file = glue("{out}/cl_ssgsea_le.Rds"))
 
 ```
 
 ### Visualize results
 
-```{r viz_ssgsea, width = 2.5, height = 3}
+```{r viz_ssgsea, width = 2.5, height = 3, echo_fig = TRUE}
 
 cl_ssgsea_tidy <- cl_ssgsea$enrichment_scores %>%
   as.data.frame() %>%

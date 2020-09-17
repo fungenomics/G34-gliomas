@@ -76,7 +76,7 @@ source(here::here(subdir, "analysis/functions.R"))
 
 # Analysis
 
-## Prepare inputs for RNAseq pipeline - cell lines
+## Prepare inputs for RNAseq pipeline - patient tumors
 
 Load sample metadata:
 

@@ -1,6 +1,6 @@
 ---
 title: "03 - Epigenome / ChIP-seq analysis"
-date: "15 September, 2020"
+date: "17 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -178,32 +178,32 @@ epi %>% distinct(name) %>% pull(name) %>% sort() %>% head(25)
 ```r
 epi <- epi %>%
   mutate(name = case_when(
-  name == "01-Mar" ~ "MARCH1",
-  name == "02-Mar" ~ "MARCH2",
-  name == "03-Mar" ~ "MARCH3",
-  name == "04-Mar" ~ "MARCH4",
-  name == "05-Mar" ~ "MARCH5",
-  name == "06-Mar" ~ "MARCH6",
-  name == "07-Mar" ~ "MARCH7",
-  name == "08-Mar" ~ "MARCH8",
-  name == "09-Mar" ~ "MARCH9",
-  name == "10-Mar" ~ "MARCH10",
-  name == "11-Mar" ~ "MARCH11",
-  name == "01-Sep" ~ "SEPT1",
-  name == "02-Sep" ~ "SEPT2",
-  name == "03-Sep" ~ "SEPT3",
-  name == "04-Sep" ~ "SEPT4",
-  name == "05-Sep" ~ "SEPT5",
-  name == "06-Sep" ~ "SEPT6",
-  name == "07-Sep" ~ "SEPT7",
-  name == "08-Sep" ~ "SEPT8",
-  name == "09-Sep" ~ "SEPT9",
-  name == "10-Sep" ~ "SEPT10",
-  name == "11-Sep" ~ "SEPT11",
-  name == "12-Sep" ~ "SEPT12",
-  name == "14-Sep" ~ "SEPT14",
-  name == "01-Dec" ~ "DEC1",
-  TRUE ~ name))
+    name == "01-Mar" ~ "MARCH1",
+    name == "02-Mar" ~ "MARCH2",
+    name == "03-Mar" ~ "MARCH3",
+    name == "04-Mar" ~ "MARCH4",
+    name == "05-Mar" ~ "MARCH5",
+    name == "06-Mar" ~ "MARCH6",
+    name == "07-Mar" ~ "MARCH7",
+    name == "08-Mar" ~ "MARCH8",
+    name == "09-Mar" ~ "MARCH9",
+    name == "10-Mar" ~ "MARCH10",
+    name == "11-Mar" ~ "MARCH11",
+    name == "01-Sep" ~ "SEPT1",
+    name == "02-Sep" ~ "SEPT2",
+    name == "03-Sep" ~ "SEPT3",
+    name == "04-Sep" ~ "SEPT4",
+    name == "05-Sep" ~ "SEPT5",
+    name == "06-Sep" ~ "SEPT6",
+    name == "07-Sep" ~ "SEPT7",
+    name == "08-Sep" ~ "SEPT8",
+    name == "09-Sep" ~ "SEPT9",
+    name == "10-Sep" ~ "SEPT10",
+    name == "11-Sep" ~ "SEPT11",
+    name == "12-Sep" ~ "SEPT12",
+    name == "14-Sep" ~ "SEPT14",
+    name == "01-Dec" ~ "DEC1",
+    TRUE ~ name))
 ```
 
 
@@ -212,6 +212,8 @@ epi_mean <- epi %>%
   select(1:7, G34RV.K27me3.median, nonG34RV.K27me3.median, G34RV.K27ac.median, nonG34RV.K27ac.median, G34R.zK27m3, G34R.zK27ac) %>% 
   gather(Stat, Score, 8:ncol(.)) %>% 
   group_by(name, Stat) %>% 
+  # Take the mean over different transcripts (although note that for each transcript,
+  # the score is the same anyway)
   summarize(Score = mean(Score)) %>% 
   spread(Stat, Score) %>% 
   ungroup()
@@ -224,20 +226,35 @@ epi_meta <- data.frame(Sample = colnames(epi)[8:42],
                        Group = c(rep("G34R/V", 5), rep("IDH/SETD2", 7), rep("WT", 6),
                                  rep("G34R/V", 6), rep("IDH/SETD2", 6), rep("WT", 5)))
 
-save(epi_mean, epi_meta, file = glue("{out}/genic_promoters_histone_tidy.Rda"))
+rr_saveRDS(desc = "Median and z-scored values of promoter H3K27me3/ac for G34 and non-G34 entities",
+           object = epi_mean,
+           file = glue("{out}/genic_promoters_histone_summary.Rds"))
 ```
 
-# Crossing epigenomics with other data
+```
+## ...writing description of genic_promoters_histone_summary.Rds to G34-gliomas/bulk_transcriptome_epigenome/output/03/genic_promoters_histone_summary.desc
+```
 
-## DGE
+## Crossing epigenomics with other data
+
+### DGE
 
 
 ```r
+# Join the differentially expressed genes table and the epigenomics data
+# table based on gene symbol
 dge_and_epi <- dge %>%
   left_join(epi_mean, by = c("symbol" = "name")) %>% 
   arrange(abs(log2FoldChange)) %T>% 
-  write_tsv(glue("{out}/DGE_and_histone_marks.tsv"))
+  rr_write_tsv(path = glue("{out}/DGE_and_histone_marks.tsv"),
+               desc = "Integrated RNA-seq differential expression and histone mark ChIPseq values for patient tumor samples")
+```
 
+```
+## ...writing description of DGE_and_histone_marks.tsv to G34-gliomas/bulk_transcriptome_epigenome/output/03/DGE_and_histone_marks.desc
+```
+
+```r
 dge_and_epi %>% 
   ggplot(aes(x = G34R.zK27ac, y = G34R.zK27m3)) +
   geom_hline(yintercept = 0.5, size = 0.5, colour = "gray90") +
@@ -263,7 +280,7 @@ dge_and_epi %>%
   ggrepel::geom_label_repel(data = dge_and_epi %>% filter(symbol %in% goi), aes(label = symbol))
 ```
 
-![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/03//dge_and_epi-2.png)<!-- -->
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/03//dge_and_epi-2.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/03//dge_and_epi...*]~</span>
 
 
 <!-- END MATTER, insert reproducibility info -->
@@ -278,7 +295,7 @@ dge_and_epi %>%
 This document was last rendered on:
 
 ```
-## 2020-09-15 22:54:01
+## 2020-09-17 13:17:46
 ```
 
 The git repository and last commit:
@@ -286,7 +303,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [93596e5] 2020-09-15: Re-generate GSEA bulk RNA-seq analysis
+## Head:     [918687c] 2020-09-17: Update TOC links
 ```
 
 The random seed was set with `set.seed(100)`
@@ -311,7 +328,7 @@ The R session info:
 ## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices datasets  utils     methods   base     
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
 ## [1] ggrepel_0.8.0      RColorBrewer_1.1-2 ggplot2_3.1.0      glue_1.4.2        
@@ -319,19 +336,16 @@ The R session info:
 ## [9] here_0.1          
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5          git2r_0.27.1        pillar_1.4.6       
-##  [4] compiler_3.5.1      BiocManager_1.30.10 plyr_1.8.6         
-##  [7] tools_3.5.1         digest_0.6.25       evaluate_0.14      
-## [10] lifecycle_0.2.0     tibble_3.0.3        gtable_0.3.0       
-## [13] pkgconfig_2.0.3     rlang_0.4.7         yaml_2.2.1         
-## [16] xfun_0.17           withr_2.2.0         stringr_1.4.0      
-## [19] knitr_1.29          vctrs_0.3.4         hms_0.5.3          
-## [22] rprojroot_1.3-2     grid_3.5.1          tidyselect_1.1.0   
-## [25] R6_2.4.1            rmarkdown_1.11      purrr_0.3.4        
-## [28] backports_1.1.9     scales_1.1.1        ellipsis_0.3.1     
-## [31] htmltools_0.5.0     assertthat_0.2.1    colorspace_1.4-1   
-## [34] renv_0.10.0         stringi_1.5.3       lazyeval_0.2.2     
-## [37] munsell_0.5.0       crayon_1.3.4
+##  [1] Rcpp_1.0.5       git2r_0.27.1     pillar_1.4.6     compiler_3.5.1  
+##  [5] plyr_1.8.6       tools_3.5.1      digest_0.6.25    evaluate_0.14   
+##  [9] lifecycle_0.2.0  tibble_3.0.3     gtable_0.3.0     pkgconfig_2.0.3 
+## [13] rlang_0.4.7      yaml_2.2.1       xfun_0.17        withr_2.2.0     
+## [17] stringr_1.4.0    knitr_1.29       vctrs_0.3.4      hms_0.5.3       
+## [21] cowplot_0.9.4    rprojroot_1.3-2  grid_3.5.1       tidyselect_1.1.0
+## [25] R6_2.4.1         rmarkdown_1.11   farver_2.0.3     purrr_0.3.4     
+## [29] codetools_0.2-15 backports_1.1.9  scales_1.1.1     ellipsis_0.3.1  
+## [33] htmltools_0.5.0  assertthat_0.2.1 colorspace_1.4-1 labeling_0.3    
+## [37] stringi_1.5.3    lazyeval_0.2.2   munsell_0.5.0    crayon_1.3.4
 ```
 
 </details>

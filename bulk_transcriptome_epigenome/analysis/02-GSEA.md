@@ -1,6 +1,6 @@
 ---
 title: "02 - GSEA with cell type gene sigantures"
-date: "16 September, 2020"
+date: "17 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -641,7 +641,8 @@ signif_in_idh <- fgsea_df_idh_filt$Signature
 
 save(signif_in_idh, file = glue("{out}/signif_in_idh.Rda"))
 
-# Helper function to actually generate the heatmap
+# Helper function to actually generate the heatmap, which will be called several
+# times to generate different heatmaps with different inputs/outputs
 hm_fun <- partial(pheatmap,
                   border_color = NA,
                   color = colorRampPalette(c("blue","white","red"))(100),
@@ -673,7 +674,10 @@ heatmap_inputs_fb <- prep_gsea_heatmap(fgsea_df,
                                                                      "Velmeshev et al 2019")),
                                        row_order = row_order)
 
-# Generate heatmap
+# Save source data manually
+write_tsv(heatmap_inputs_fb$heatmap_data_wide, glue("{figout}/gsea_heatmap_hgg.source_data.tsv"))
+
+# Generate heatmap in pdf and png
 hm_fun(mat = heatmap_inputs_fb$heatmap_data_wide,
        annotation_col = heatmap_inputs_fb$col_anno,
        main = "Forebrain references",
@@ -706,6 +710,9 @@ heatmap_inputs_bcor <- prep_gsea_heatmap(fgsea_df,
                                                         Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR"),
                                          row_order = 1)
 
+# Save source data manually
+write_tsv(heatmap_inputs_bcor$heatmap_data_wide, glue("{figout}/gsea_heatmap_bcor.source_data.tsv"))
+
 hm_fun(mat = heatmap_inputs_bcor$heatmap_data_wide,
        annotation_col = heatmap_inputs_bcor$col_anno,
        filename = glue("{figout}/gsea_heatmap_bcor.png"))
@@ -731,6 +738,9 @@ heatmap_inputs_str <- prep_gsea_heatmap(fgsea_df,
                                         signatures = signif_in_idh,
                                         filters = quos(Dataset == "Anderson et al 2020"),
                                         row_order = row_order)
+
+# Save source data manually
+write_tsv(heatmap_inputs_str$heatmap_data_wide, glue("{figout}/gsea_heatmap_hgg_striatum.source_data.tsv"))
 
 # Generate heatmap
 hm_fun(mat = heatmap_inputs_str$heatmap_data_wide,
@@ -758,6 +768,10 @@ heatmap_inputs_svz <- prep_gsea_heatmap(fgsea_df,
                                         signatures = signif_in_idh,
                                         filters = quos(Dataset == "Mizrak et al 2019"),
                                         row_order = row_order)
+
+# Save source data manually
+write_tsv(heatmap_inputs_svz$heatmap_data_wide, glue("{figout}/gsea_heatmap_hgg_svz.source_data.tsv"))
+
 # Generate heatmap
 hm_fun(mat = heatmap_inputs_svz$heatmap_data_wide,
        annotation_col = heatmap_inputs_svz$col_anno,
@@ -885,7 +899,7 @@ rr_write_tsv(table_gsea,
 This document was last rendered on:
 
 ```
-## 2020-09-16 10:32:32
+## 2020-09-17 13:08:31
 ```
 
 The git repository and last commit:
@@ -893,7 +907,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [feed0d9] 2020-09-16: Update lockfile (after installing monocle)
+## Head:     [918687c] 2020-09-17: Update TOC links
 ```
 
 The random seed was set with `set.seed(100)`
@@ -918,7 +932,7 @@ The R session info:
 ## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices datasets  utils     methods   base     
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
 ##  [1] cowplot_0.9.4   ggrepel_0.8.0   pheatmap_1.0.12 scales_1.1.1   
@@ -950,29 +964,28 @@ The R session info:
 ##  [61] modeltools_0.2-23   ellipsis_0.3.1      Seurat_2.3.4       
 ##  [64] ica_1.0-2           farver_2.0.3        pkgconfig_2.0.3    
 ##  [67] R.methodsS3_1.8.1   flexmix_2.3-15      nnet_7.3-12        
-##  [70] labeling_0.3        reshape2_1.4.4      tidyselect_1.1.0   
-##  [73] rlang_0.4.7         munsell_0.5.0       tools_3.5.1        
-##  [76] mathjaxr_1.0-1      ggridges_0.5.2      evaluate_0.14      
-##  [79] stringr_1.4.0       yaml_2.2.1          knitr_1.29         
-##  [82] bit64_4.0.5         fitdistrplus_1.1-1  robustbase_0.93-6  
-##  [85] caTools_1.17.1.1    randomForest_4.6-14 RANN_2.6.1         
-##  [88] pbapply_1.4-3       nlme_3.1-137        R.oo_1.24.0        
-##  [91] hdf5r_1.3.3         compiler_3.5.1      rstudioapi_0.11    
-##  [94] png_0.1-7           stringi_1.5.3       lattice_0.20-35    
-##  [97] Matrix_1.2-14       multtest_2.38.0     vctrs_0.3.4        
-## [100] mutoss_0.1-12       pillar_1.4.6        lifecycle_0.2.0    
-## [103] BiocManager_1.30.10 Rdpack_1.0.0        lmtest_0.9-38      
-## [106] data.table_1.13.0   bitops_1.0-6        irlba_2.3.3        
-## [109] gbRd_0.4-11         R6_2.4.1            latticeExtra_0.6-28
-## [112] renv_0.10.0         KernSmooth_2.23-15  gridExtra_2.3      
-## [115] codetools_0.2-15    MASS_7.3-50         gtools_3.8.2       
-## [118] assertthat_0.2.1    rprojroot_1.3-2     withr_2.2.0        
-## [121] mnormt_2.0.2        multcomp_1.4-13     diptest_0.75-7     
-## [124] parallel_3.5.1      doSNOW_1.0.18       hms_0.5.3          
-## [127] grid_3.5.1          rpart_4.1-13        class_7.3-14       
-## [130] rmarkdown_1.11      segmented_1.2-0     Rtsne_0.15         
-## [133] git2r_0.27.1        numDeriv_2016.8-1.1 Biobase_2.42.0     
-## [136] base64enc_0.1-3
+##  [70] reshape2_1.4.4      tidyselect_1.1.0    rlang_0.4.7        
+##  [73] munsell_0.5.0       tools_3.5.1         mathjaxr_1.0-1     
+##  [76] ggridges_0.5.2      evaluate_0.14       stringr_1.4.0      
+##  [79] yaml_2.2.1          knitr_1.29          bit64_4.0.5        
+##  [82] fitdistrplus_1.1-1  robustbase_0.93-6   caTools_1.17.1.1   
+##  [85] randomForest_4.6-14 RANN_2.6.1          pbapply_1.4-3      
+##  [88] nlme_3.1-137        R.oo_1.24.0         hdf5r_1.3.3        
+##  [91] compiler_3.5.1      rstudioapi_0.11     png_0.1-7          
+##  [94] stringi_1.5.3       lattice_0.20-35     Matrix_1.2-14      
+##  [97] multtest_2.38.0     vctrs_0.3.4         mutoss_0.1-12      
+## [100] pillar_1.4.6        lifecycle_0.2.0     Rdpack_1.0.0       
+## [103] lmtest_0.9-38       data.table_1.13.0   bitops_1.0-6       
+## [106] irlba_2.3.3         gbRd_0.4-11         R6_2.4.1           
+## [109] latticeExtra_0.6-28 KernSmooth_2.23-15  gridExtra_2.3      
+## [112] codetools_0.2-15    MASS_7.3-50         gtools_3.8.2       
+## [115] assertthat_0.2.1    rprojroot_1.3-2     withr_2.2.0        
+## [118] mnormt_2.0.2        multcomp_1.4-13     diptest_0.75-7     
+## [121] parallel_3.5.1      doSNOW_1.0.18       hms_0.5.3          
+## [124] grid_3.5.1          rpart_4.1-13        class_7.3-14       
+## [127] rmarkdown_1.11      segmented_1.2-0     Rtsne_0.15         
+## [130] git2r_0.27.1        numDeriv_2016.8-1.1 Biobase_2.42.0     
+## [133] base64enc_0.1-3
 ```
 
 </details>
