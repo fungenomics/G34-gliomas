@@ -1,0 +1,78 @@
+Sample	Source	Tissue	Group	Genotype_G34	Genotype_PDGFRA	Location_broad	Location	Clone	Condition	Genotype	Media	Internal_sample	rawReadCount	cleanReadRetentionPercentage	mappedPercentage	wholeGenePercentage	mitochondrialPercentage	ribosomalPercentage
+P-1969_S-1968	This study	Tumor	HGG-G34R/V	G34R	WT	Hemispheric	Temporo-Parietal Lobe	NA	NA	NA	NA	088-PS11-1098	268125752	48.98%	94.24%	76.42%	5.63%	.65%
+P-1190_S-1190	This study	Tumor	HGG-G34R/V	G34V	WT	Hemispheric	Parieto-Occipital	NA	NA	NA	NA	117-BTTB1077_Brain_Stranded_RiboZero_1	155345530	66.44%	89.85%	76.50%	.36%	.84%
+P-1330_S-1330	This study	Tumor	HGG-G34R/V	G34R	WT	Hemispheric	Right Occipital-Parietal Lobe	NA	NA	NA	NA	118-P6728_Brain_Stranded_RiboZero_1	122896738	65.67%	89.20%	80.73%	.35%	.77%
+P-3198_S-3199	This study	Tumor	HGG-G34R/V	G34R	Mutant	"NA"	"NA"	NA	NA	NA	NA	207-CH146969_Brain_RNASeq_1	128283098	78.11%	89.49%	85.09%	.76%	1.73%
+P-2106_S-2106	This study	Tumor	HGG-G34R/V	G34R	WT	Hemispheric	Left Frontal Lobe	NA	NA	NA	NA	223-PS13-4218_RiboZero	126717092	77.37%	95.44%	88.04%	.25%	3.02%
+P-1978_S-1978	This study	Tumor	HGG-G34R/V	G34R	WT	Hemispheric	Temporo-Parietal Lobe	NA	NA	NA	NA	245-PS10-801_T	98435932	74.21%	82.24%	83.40%	1.62%	.53%
+P-3200_S-3254	This study	Tumor	HGG-G34R/V	G34V	Mutant	Hemispheric	Left frontal	NA	NA	NA	NA	290-HGG Pair 1 A15-13_replace	123978594	78.63%	92.03%	85.26%	.40%	1.04%
+P-4780_S-5412	This study	Tumor	HGG-G34R/V	G34R	WT	Hemispheric	Left temporal occipital	NA	NA	NA	NA	445-PS16-6278	154844268	78.44%	95.77%	86.12%	.21%	1.04%
+P-1190_S-1197	This study	Tumor	HGG-G34R/V	G34V	Mutant	Hemispheric	Parieto-Occipital	NA	NA	NA	NA	058-1146 (BTTB1077-R)	210483376	59.61%	96.11%	81.62%	1.80%	.60%
+P-3200_S-3867	This study	Tumor	HGG-G34R/V	G34V	WT	Hemispheric	Left frontal	NA	NA	NA	NA	313-HGG Pair 1 S14-4150	127266472	73.98%	84.40%	85.69%	.95%	.45%
+P-6389_S-8771	This study	Tumor	HGG-G34R/V	G34R	Mutant	Hemispheric	Frontal/parietal lobe	NA	NA	NA	NA	AK1891	131575848	82.00%	93.49%	78.10%	2.56%	1.43%
+P-6387_S-8769	This study	Tumor	HGG-G34R/V	G34R	Mutant	Hemispheric	Frontal/temporal lobe	NA	NA	NA	NA	AK723	131716164	84.07%	93.95%	86.92%	2.53%	.48%
+P-6388_S-8770	This study	Tumor	HGG-G34R/V	G34R	Mutant	Hemispheric	Parietal lobe - parasaggital region	NA	NA	NA	NA	AK852	107462494	80.64%	93.27%	85.93%	2.40%	.82%
+P-1969_S-3584	This study	Tumor	HGG-G34R/V	G34R	Mutant	Hemispheric	Temporo-Parietal Lobe	NA	NA	NA	NA	S-3584_RNA_PS12-001724	154224914	82.77%	91.54%	87.34%	2.90%	1.50%
+P-6166_S-8321	This study	Tumor	HGG-G34R/V	G34R	WT	Hemispheric	Frontal lobe - right	NA	NA	NA	NA	S-8321_RNA_UPN-1969	178570902	83.23%	91.81%	88.55%	4.42%	.77%
+P-6331_S-8904	This study	Tumor	HGG-G34R/V	G34R	WT	Hemispheric	"NA"	NA	NA	NA	NA	S-8904_RNA_2W8-PRG4	100905614	83.26%	91.51%	89.76%	3.60%	1.25%
+P-6329_S-8905	This study	Tumor	HGG-G34R/V	G34R	Mutant	Hemispheric	"NA"	NA	NA	NA	NA	S-8905_RNA_5372-18-PRG2	236223662	83.55%	92.06%	87.17%	1.95%	1.89%
+P-6330_S-8906	This study	Tumor	HGG-G34R/V	G34R	Mutant	Hemispheric	"NA"	NA	NA	NA	NA	S-8906_RNA_5722-14-PRG3	119548518	84.03%	91.20%	87.72%	2.62%	1.31%
+HGG_3	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Brainstem	NA	NA	NA	NA	171-112-3 [JN-7]	161919244	78.98%	93.75%	86.79%	.14%	.76%
+HGG_4	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Brainstem	NA	NA	NA	NA	177-347+6 [JN-10]	136974268	78.78%	94.05%	88.07%	.35%	.58%
+HGG_10	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Brainstem	NA	NA	NA	NA	187-586-6 [JN-26]	145355574	74.48%	93.57%	86.23%	.13%	.80%
+HGG_13	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Brainstem	NA	NA	NA	NA	191-675+1(3) [JN-29]	144791162	79.78%	94.65%	89.36%	.46%	.98%
+HGG_14	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Brainstem	NA	NA	NA	NA	194-JN-30T	135584202	76.47%	94.02%	87.62%	.17%	.56%
+HGG_21	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Pons	NA	NA	NA	NA	318-HSJ031_Tumor	101903790	83.65%	93.91%	90.38%	.39%	1.36%
+HGG_24	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Pons	NA	NA	NA	NA	387-HSJ-035	120356418	72.21%	85.19%	84.79%	.96%	1.13%
+HGG_25	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-pons	"NA"	"NA"	Midline	Pons	NA	NA	NA	NA	414-HSJ_50_tumor	122376684	71.53%	77.94%	89.35%	2.39%	1.39%
+HGG_85	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-thalamic	"NA"	"NA"	Midline	Thalamus	NA	NA	NA	NA	125-PL708_Brain_Stranded_RiboZero_1	87953112	65.92%	88.90%	78.77%	.35%	1.03%
+HGG_86	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-thalamic	"NA"	"NA"	Midline	Thalamus	NA	NA	NA	NA	126-PS113293_Brain_Stranded_RiboZero_1	110862728	65.98%	88.03%	78.16%	.07%	.71%
+HGG_91	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-thalamic	"NA"	"NA"	Midline	Thalamus	NA	NA	NA	NA	295-HSJ-019	152831054	77.30%	92.93%	89.58%	.32%	1.82%
+HGG_99	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-thalamic	"NA"	"NA"	Midline	Thalamus	NA	NA	NA	NA	415-HSJ-051_Tumor	138611642	75.38%	79.68%	84.59%	.49%	1.24%
+HGG_108	Jessa et al, Nature Genetics, 2019	Tumor	HGG-H3.3-K27M-thalamic	"NA"	"NA"	Midline	Thalamus	NA	NA	NA	NA	579-HSJ-051R1-tumor	94529142	75.61%	82.66%	83.84%	1.24%	.74%
+HGG_46	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Left Parasagittal Lobe	NA	NA	NA	NA	107-2168_Brain_Stranded_RiboZero_1	97781786	78.06%	93.76%	87.85%	.26%	.97%
+HGG_47	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Right Parietal Lobe	NA	NA	NA	NA	110-2469_Brain_Stranded_RiboZero_1	110983430	71.16%	93.34%	86.96%	.57%	1.96%
+HGG_48	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Right Frontal Lobe	NA	NA	NA	NA	111-2480_Brain_Stranded_RiboZero_1	116373160	78.85%	93.78%	87.22%	.40%	1.20%
+HGG_49	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Left Temporal Lobe	NA	NA	NA	NA	112-2565_Brain_Stranded_RiboZero_1	83017218	81.51%	91.05%	87.87%	1.22%	.99%
+HGG_50	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Right Parietal Lobe	NA	NA	NA	NA	113-2658_Brain_Stranded_RiboZero_1	129064402	78.64%	94.21%	87.69%	.38%	.92%
+HGG_51	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Left Frontal Lobe	NA	NA	NA	NA	116-AK964_Brain_Stranded_RiboZero_1	119498520	77.36%	93.29%	88.04%	.27%	.80%
+HGG_52	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Temporal Lobe	NA	NA	NA	NA	122-PL430_Brain_Stranded_RiboZero_1	113002980	66.07%	75.51%	87.47%	1.31%	.48%
+HGG_53	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemispheric	Frontal Lobe	NA	NA	NA	NA	123-PL637_Brain_Stranded_RiboZero_1	97730002	78.44%	92.19%	88.28%	.28%	.58%
+HGG_38	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemsipheric	Frontal Lobe	NA	NA	NA	NA	595-16-2102-5503-A1	125519490	63.73%	88.68%	88.20%	.19%	1.50%
+HGG_39	Jessa et al, Nature Genetics, 2019	Tumor	HGG-IDH	"NA"	"NA"	Hemsipheric	Right Frontal Lobe	NA	NA	NA	NA	597-HSJ-114-tumor	229577902	75.94%	84.93%	88.18%	.64%	1.27%
+HGG_65	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Temporal Lobe	NA	NA	NA	NA	081-PL184	222548110	73.45%	90.58%	77.89%	17.75%	.35%
+HGG_66	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Left Tempo-Parietal Lobe	NA	NA	NA	NA	115-434_Brain_Stranded_RiboZero_1	125431350	71.81%	92.18%	87.29%	.42%	.97%
+HGG_69	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Right Frontal lobe	NA	NA	NA	NA	198-R006	157319296	75.36%	95.29%	87.08%	.18%	1.68%
+HGG_70	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Right Occipital Lobe	NA	NA	NA	NA	199-R088	157583732	73.71%	93.80%	87.40%	.79%	.65%
+HGG_71	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Right temporal	NA	NA	NA	NA	291-HGG Pair 14 Recurrence C-14-00110	118646392	75.50%	90.61%	87.79%	.47%	1.35%
+HGG_72	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Right temporal lobe	NA	NA	NA	NA	297-JN-695	112672990	77.54%	92.23%	87.07%	.97%	3.49%
+HGG_73	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Right temporal	NA	NA	NA	NA	304-HGG Pair 14 Primary P-09-05142_replace	110536076	77.46%	90.15%	88.33%	1.23%	.96%
+HGG_74	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Temporal lobe	NA	NA	NA	NA	308-PH1233	131574942	76.20%	90.06%	90.28%	1.11%	1.39%
+HGG_76	Jessa et al, Nature Genetics, 2019	Tumor	HGG-WT	"NA"	"NA"	Hemispheric	Frontal Lobe	NA	NA	NA	NA	315-HSJ030_Tumor	112806336	63.68%	92.55%	86.89%	1.15%	1.00%
+EBT_28	Jessa et al, Nature Genetics, 2019	Tumor	PNET-HGNET-BCOR	"NA"	"NA"	"NA"	"NA"	NA	NA	NA	NA	048-EPT0776	68538494	75.60%	76.69%	55.55%	1.48%	.20%
+EBT_29	Jessa et al, Nature Genetics, 2019	Tumor	PNET-HGNET-BCOR	"NA"	"NA"	"NA"	"NA"	NA	NA	NA	NA	251-PNET130_RiboZero	51957362	60.31%	91.74%	83.51%	23.84%	.98%
+EBT_30	Jessa et al, Nature Genetics, 2019	Tumor	PNET-HGNET-BCOR	"NA"	"NA"	"NA"	"NA"	NA	NA	NA	NA	254-PNET162_RiboZero	54425690	62.43%	93.64%	88.38%	13.06%	1.25%
+EBT_31	Jessa et al, Nature Genetics, 2019	Tumor	PNET-HGNET-BCOR	"NA"	"NA"	"NA"	"NA"	NA	NA	NA	NA	476-PNET330	95399270	55.87%	89.20%	87.50%	.28%	.81%
+EBT_32	Jessa et al, Nature Genetics, 2019	Tumor	PNET-HGNET-BCOR	"NA"	"NA"	"NA"	"NA"	NA	NA	NA	NA	479-PNET459	116361802	51.68%	88.57%	89.46%	.18%	.87%
+CMC1118G8	This study	Patient-derived cell line	NA	NA	NA	NA	NA	Parental	H3F3A(+/G34R) serum	H3F3A(+/G34R)	Serum	NA	73480354	36.34%	91.67%	91.44%	3.64%	1.46%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	Parental	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	113570088	78.83%	93.60%	88.52%	0.63%	1.84%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A10	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	66634040	43.19%	91.55%	83.19%	3.47%	.80%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A10	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	73248040	34.66%	90.16%	84.26%	4.08%	.79%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A10	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	83754302	78.74%	95.89%	89.32%	7.2%	.95%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	F06	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	85649538	40.19%	91.02%	83.18%	4.07%	.91%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	F06	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	55025054	29.62%	91.11%	87.56%	5.86%	.96%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	F06	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	101604794	83.11%	96.50%	89.05%	7.05%	.97%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A10	H3F3A(+/G34R) serum	H3F3A(+/G34R)	Serum	NA	210162798	83.36%	96.07%	88.97%	7.58%	.76%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	F06	H3F3A(+/G34R) serum	H3F3A(+/G34R)	Serum	NA	103212066	82.51%	96.04%	89.44%	7.08%	.78%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A09	H3F3A(+/+) stem	H3F3A(+/+)	Stem cell media	NA	62732192	38.55%	92.14%	82.69%	4.4%	.78%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A09	H3F3A(+/+) stem	H3F3A(+/+)	Stem cell media	NA	64064326	35.41%	91.01%	85.32%	4.77%	.85%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A09	H3F3A(+/+) stem	H3F3A(+/+)	Stem cell media	NA	122352952	81.59%	95.14%	85.39%	7.04%	.86%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	C08	H3F3A(+/-) stem	H3F3A(+/-)	Stem cell media	NA	59931520	38.18%	91.80%	86.02%	5%	.97%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	C08	H3F3A(+/-) stem	H3F3A(+/-)	Stem cell media	NA	62778100	36.02%	90.88%	88.33%	5.83%	.81%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	C08	H3F3A(+/-) stem	H3F3A(+/-)	Stem cell media	NA	127829054	80.94%	96.07%	89.24%	7.12%	.92%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	A09	H3F3A(+/+) serum	H3F3A(+/+)	Serum	NA	136873138	81.70%	95.59%	86.42%	7.36%	.71%
+HSJD-GBM002	This study	Patient-derived cell line	NA	NA	NA	NA	NA	C08	H3F3A(+/-) serum	H3F3A(+/-)	Serum	NA	195032716	82.61%	95.88%	88.40%	8.36%	.73%
+KNS-42	This study	Patient-derived cell line	NA	NA	NA	NA	NA	Parental	H3F3A(+/G34R) stem	H3F3A(+/G34V)	Stem cell media	NA	149125802	79.13%	87.24%	86.10%	0.63%	2.20%
+KNS-42	This study	Patient-derived cell line	NA	NA	NA	NA	NA	Parental	H3F3A(+/G34V) serum	H3F3A(+/G34V)	Serum	NA	57817122	39.52%	91.14%	80.42%	2.72%	.90%
+PS10-801	This study	Patient-derived cell line	NA	NA	NA	NA	NA	Parental	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	95443580	78.57%	91.10%	89.74%	0.72%	2.08%
+PS10-801	This study	Patient-derived cell line	NA	NA	NA	NA	NA	Parental	H3F3A(+/G34R) stem	H3F3A(+/G34R)	Stem cell media	NA	81510472	77.99%	94.31%	91.01%	0.34%	2.55%

@@ -30,6 +30,9 @@ logs
 # Exclude exploratory
 exploratory
 
+# Exclude the CNV analysis
+singlecell_tumor/
+
 # Exclude some output
 bulk_transcriptome_epigenome/output/01
 
