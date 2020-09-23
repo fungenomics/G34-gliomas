@@ -1,6 +1,6 @@
 ---
 title: "04 - isogenic cell lines"
-date: "17 September, 2020"
+date: "22 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -97,6 +97,7 @@ In this document, we analyze bulk RNA-seq data from the G34-mutant patient-deriv
 # General
 library(tidyr)
 library(readr)
+library(readxl)
 library(dplyr)
 library(magrittr)
 library(glue)
@@ -126,8 +127,8 @@ in the analysis:
 
 ```r
 (cell_line_meta <- readxl::read_xlsx(here(subdir, "data/20200219-cell_line_metadata.xlsx")) %>% 
-   mutate(Group_broad = paste0(Genotype_broad, "_", Media)) %>% 
-   mutate(Group_broad = gsub("/", "", Group_broad)))
+     mutate(Group_broad = paste0(Genotype_broad, "_", Media)) %>% 
+     mutate(Group_broad = gsub("/", "", Group_broad)))
 ```
 
 <div data-pagedtable="false">
@@ -173,15 +174,15 @@ is dataset-dependent, and we may want to compare expression levels across groups
 dir.create(file.path(out, "All_cell_line_data"), showWarnings = FALSE)
 
 cell_line_meta %>%
-  select(ID, Nickname, Group = Group_broad) %>%
-  write_tsv(file.path(out, "All_cell_line_data", "info.samples.tsv"))
+    select(ID, Nickname, Group = Group_broad) %>%
+    write_tsv(file.path(out, "All_cell_line_data", "info.samples.tsv"))
 
 data.frame(Group = unique(cell_line_meta$Group_broad),
            Label = unique(cell_line_meta$Group_broad),
            Order = seq_along(unique(cell_line_meta$Group_broad)),
            Color = palette_groups[unique(cell_line_meta$Group_broad)],
            stringsAsFactors = FALSE) %>%
-  write_tsv(file.path(out, "All_cell_line_data", "info.groups.tsv"))
+    write_tsv(file.path(out, "All_cell_line_data", "info.groups.tsv"))
 ```
 
 
@@ -205,8 +206,8 @@ pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_sampl
 
 ```r
 align_stats <- read_tsv(file.path(pipeline_path, "All_cell_line_data", "alignment.statistics.tsv")) %>%
-  separate(mitochondrialPercentage, sep = "%", into = "mitochondrialPercentage") %>%
-  mutate(mitochondrialPercentage = as.numeric(mitochondrialPercentage))
+    separate(mitochondrialPercentage, sep = "%", into = "mitochondrialPercentage") %>%
+    mutate(mitochondrialPercentage = as.numeric(mitochondrialPercentage))
 ```
 
 ```
@@ -236,7 +237,7 @@ align_stats <- read_tsv(file.path(pipeline_path, "All_cell_line_data", "alignmen
 # DT::datatable(align_stats, filter = "top", class = 'white-space: nowrap')
 
 left_join(cell_line_meta, align_stats, by = c("Nickname" = "name")) %>%
-  write_tsv(glue("{out}/cell_line_metadata_with_align_stats.tsv"))
+    write_tsv(glue("{out}/cell_line_metadata_with_align_stats.tsv"))
 ```
 
 ## G34R vs KO / repair in serum
@@ -246,8 +247,8 @@ left_join(cell_line_meta, align_stats, by = c("Nickname" = "name")) %>%
 
 ```r
 dge_serum <- read_tsv(file.path(pipeline_path, "GBM002_ser/diff/Ensembl.ensGene.exon/G34R_servsKORepair_ser.tsv")) %>% 
-  separate(ID, into = c("ENSID", "gene_symbol"), sep = ":") %>% 
-  mutate(log10p = -log10(padj))
+    separate(ID, into = c("ENSID", "gene_symbol"), sep = ":") %>% 
+    mutate(log10p = -log10(padj))
 ```
 
 ```
@@ -265,17 +266,17 @@ dge_serum <- read_tsv(file.path(pipeline_path, "GBM002_ser/diff/Ensembl.ensGene.
 
 ```r
 dge_serum %>% 
-  filter(baseMean > 100 & padj < 0.05) %>% 
-  rr_ggplot(aes(x = log2FoldChange, y = log10p, label = gene_symbol), alpha = 0.8, plot_num = 1) +
-  geom_point()
+    filter(baseMean > 100 & padj < 0.05) %>% 
+    rr_ggplot(aes(x = log2FoldChange, y = log10p, label = gene_symbol), alpha = 0.8, plot_num = 1) +
+    geom_point()
 ```
 
 ![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//dge_serum-1.png)<!-- -->
 
 ```r
 dge_stem <- read_tsv(file.path(pipeline_path, "GBM002_nsm/diff/Ensembl.ensGene.exon/G34R_nsmvsKORepair_nsm.tsv")) %>% 
-  separate(ID, into = c("ENSID", "gene_symbol"), sep = ":") %>% 
-  mutate(log10p = -log10(padj))
+    separate(ID, into = c("ENSID", "gene_symbol"), sep = ":") %>% 
+    mutate(log10p = -log10(padj))
 ```
 
 ```
@@ -302,9 +303,9 @@ for the serum samples together only.
 goi <- c("DLX1", "DLX2", "DLX5", "DLX6", "PDGFRA", "GSX2")
 
 gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
-                                       goi = goi) %>%
-  left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
-  left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
+                                         goi = goi) %>%
+    left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
+    left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
 ```
 
 ```
@@ -334,43 +335,127 @@ dlx_limits <- list("DLX1"   = c(0, 21000),
 
 cl_dotplot <- function(gene, lims, counts, levels = c("G34R_nsm", "KORepair_nsm",
                                                       "G34R_ser", "KORepair_ser")) {
-  
-  counts %>%
-    filter(gene_symbol == gene) %>% 
-    mutate(Group_broad = factor(Group_broad,
-                                levels = levels)) %>% 
-    ggplot(aes(x = Group_broad, y = gene_expression)) +
-    geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
-    scale_colour_manual(values = c("cyan4", "midnightblue")) +
-    stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
-                 geom = "crossbar", width = 0.2) +
-    theme_min(border_colour = "black") +
-    ylim(lims) +
-    ggtitle(gene) +
-    rotateX() +
-    noLegend()
-  
+    
+    counts %>%
+        filter(gene_symbol == gene) %>% 
+        mutate(Group_broad = factor(Group_broad,
+                                    levels = levels)) %>% 
+        ggplot(aes(x = Group_broad, y = gene_expression)) +
+        geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
+        scale_colour_manual(values = c("cyan4", "midnightblue")) +
+        stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+                     geom = "crossbar", width = 0.2) +
+        theme_min(border_colour = "black") +
+        ylim(lims) +
+        ggtitle(gene) +
+        rotateX() +
+        noLegend()
+    
 }
 
 gbm002_counts %>% 
-  select(sample, gene_symbol, gene_expression, Group_broad) %>% 
-  write_tsv(glue("{figout}/dlx_serum_boxplot-1.source_data.tsv"))
+    select(sample, gene_symbol, gene_expression, Group_broad) %>% 
+    write_tsv(glue("{figout}/dlx_serum_boxplot-1.source_data.tsv"))
 
 imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts)) %>% 
-  {plot_grid(plotlist = ., ncol = 6)}
+    {plot_grid(plotlist = ., ncol = 6)}
 ```
 
 ![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_serum_boxplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_serum_boxplot...*]~</span>
 
+#### Investigation of DGE in the serum condition
+
+
+```r
+# Load up DGE results from DESeq2
+res_ser <- read_tsv(file.path(pipeline_path, "GBM002_ser/diff/Ensembl.ensGene.exon/G34R_servsKORepair_ser.tsv")) %>% 
+    separate(ID, into = c("ENSG", "symbol"), sep = ":") 
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   ID = col_character(),
+##   baseMean = col_double(),
+##   log2FoldChange = col_double(),
+##   lfcSE = col_double(),
+##   stat = col_double(),
+##   pvalue = col_double(),
+##   padj = col_double()
+## )
+```
+
+```r
+# Construct the input dataframe for an MA plot
+res_ser2 <- res_ser %>%
+    select(symbol, baseMean, log2FoldChange, padj) %>%
+    mutate(signif   = ifelse( is.na(padj), FALSE, padj < 0.05 )) %>% 
+    mutate(dlx      = symbol %in% c("DLX1", "DLX2", "DLX5", "DLX6")) %>% 
+    mutate(fc = case_when(
+        log2FoldChange > 2 ~ "LFC > 2",
+        log2FoldChange < -2 ~ "LFC < -2",
+        TRUE ~ "-2 < LFC < 2")) %>% 
+    mutate(log2FoldChange = ifelse(abs(log2FoldChange) > 2,
+                                   sign(log2FoldChange) * 2,
+                                   log2FoldChange))
+
+# Make an MA plot, labelling the DLX genes
+res_ser2 %>%
+    ggplot(aes(x = log10(baseMean), y = log2FoldChange)) +
+    geom_hline(yintercept = 0, colour = "gray90") +
+    geom_point(aes(colour = signif, size = dlx, shape = fc), alpha = 0.5) +
+    scale_colour_manual(values = c("gray50", "red")) +
+    scale_size_manual(values = c("TRUE" = 3, "FALSE" = 0.5)) +
+    scale_shape_manual(values = c("LFC > 2" = 24, "LFC < -2" = 25, "-2 < LFC < 2" = 19)) +
+    geom_text_repel(data = res_ser2 %>% filter(symbol %in% c("DLX1", "DLX2", "DLX5", "DLX6")),
+               aes(x = log10(baseMean), y = log2FoldChange, label = symbol)) +
+    ylim(c(-2, 2))
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//ma_plot-1.png)<!-- -->
+
+Examination of p-values:
+
+
+```r
+# Here's a histongram of p-values across genes
+res_ser %>% 
+    gather(stat, value, pvalue, padj) %>%
+    ggplot(aes(x = value)) +
+    geom_histogram() +
+    facet_wrap(~ stat, ncol = 1)
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//p-values-1.png)<!-- -->
+
+```r
+# Filter to genes with baseMean > 100 and redraw the plot
+res_ser %>% 
+    filter(baseMean > 100) %>% 
+    gather(stat, value, pvalue, padj) %>%
+    ggplot(aes(x = value)) +
+    geom_histogram() +
+    facet_wrap(~ stat, ncol = 1)
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//p-values-2.png)<!-- -->
 
 ### Targeted DGE, for stem condition - GBM002
 
 
 ```r
 gbm002_counts_nsm <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_nsm/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
-                                           goi = goi) %>%
-  left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
-  left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
+                                             goi = goi) %>%
+    left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
+    left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
 ```
 
 ```
@@ -397,11 +482,11 @@ dlx_limits <- list("DLX1"   = c(0, 4000),
                    "GSX2"   = c(0, 30))
 
 gbm002_counts_nsm %>% 
-  select(sample, gene_symbol, gene_expression, Group_broad) %>% 
-  write_tsv(glue("{figout}/dlx_stem_boxplot-1.source_data.tsv"))
+    select(sample, gene_symbol, gene_expression, Group_broad) %>% 
+    write_tsv(glue("{figout}/dlx_stem_boxplot-1.source_data.tsv"))
 
 imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts_nsm)) %>% 
-  {plot_grid(plotlist = ., ncol = 6)}
+    {plot_grid(plotlist = ., ncol = 6)}
 ```
 
 ![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_stem_boxplot-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/04//dlx_stem_boxplot...*]~</span>
@@ -414,7 +499,7 @@ imap(dlx_limits, ~ cl_dotplot(.y, .x, counts = gbm002_counts_nsm)) %>%
 
 ```r
 raw_counts <- file.path(pipeline_path, "All_GBM002_new/counts/Ensembl.ensGene.exon.raw.tsv.gz") %>%
-  read.table(header = T, row.names = 1, check.names = F, sep = "\t")
+    read.table(header = T, row.names = 1, check.names = F, sep = "\t")
 
 head(rownames(raw_counts) %<>% strsplit(":") %>% sapply(getElement, 1))
 ```
@@ -494,10 +579,10 @@ cl_ssgsea <- ssgsea_le(expr_mat = raw_counts,
                        normalize = FALSE)
 
 cl_ssgsea$enrichment_scores %>%
-  as.data.frame() %>%
-  tibble::rownames_to_column(var = "Signature") %>%
-  rr_write_tsv(path = glue("{out}/cl_ssgsea_scores.tsv"),
-               desc = "ssGSEA scores for cell type signatures in GBM002 cell lines")
+    as.data.frame() %>%
+    tibble::rownames_to_column(var = "Signature") %>%
+    rr_write_tsv(path = glue("{out}/cl_ssgsea_scores.tsv"),
+                 desc = "ssGSEA scores for cell type signatures in GBM002 cell lines")
 ```
 
 ```
@@ -520,31 +605,92 @@ rr_saveRDS(object = leading_edge,
 
 ```r
 cl_ssgsea_tidy <- cl_ssgsea$enrichment_scores %>%
-  as.data.frame() %>%
-  tibble::rownames_to_column(var = "Signature") %>%
-  gather(Sample, Score, 2:ncol(.)) %>%
-  left_join(cell_line_meta, by = c("Sample" = "Nickname"))
+    as.data.frame() %>%
+    tibble::rownames_to_column(var = "Signature") %>%
+    gather(Sample, Score, 2:ncol(.)) %>%
+    left_join(cell_line_meta, by = c("Sample" = "Nickname"))
 
 cl_ssgsea_tidy %>%
-  filter(Signature %in% c("newborn_inhib_neuron", "rgc")) %>%
-  mutate(Signature = factor(Signature, levels = c("rgc", "newborn_inhib_neuron"))) %>%
-  filter(Media == "ser") %>%
-  mutate(Group_broad = factor(Group_broad,
-                              levels = c("G34R_nsm", "KORepair_nsm",
-                                         "G34R_ser", "KORepair_ser"))) %>%
-  rr_ggplot(aes(x = Group_broad, y = Score), plot_num = 1) +
-  geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
-  scale_colour_manual(values = c("cyan4", "midnightblue")) +
-  stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
-               geom = "crossbar", width = 0.2) +
-  theme_min(border_colour = "black") +
-  facet_wrap(~ Signature) +
-  rotateX() +
-  noLegend() +
-  ylim(c(22400, 24000))
+    filter(Signature %in% c("newborn_inhib_neuron", "rgc")) %>%
+    mutate(Signature = factor(Signature, levels = c("rgc", "newborn_inhib_neuron"))) %>%
+    filter(Media == "ser") %>%
+    mutate(Group_broad = factor(Group_broad,
+                                levels = c("G34R_nsm", "KORepair_nsm",
+                                           "G34R_ser", "KORepair_ser"))) %>%
+    rr_ggplot(aes(x = Group_broad, y = Score), plot_num = 1) +
+    geom_jitter(aes(colour = Group_broad), size = 5, alpha = 0.87, width = 0.1) +
+    scale_colour_manual(values = c("cyan4", "midnightblue")) +
+    stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+                 geom = "crossbar", width = 0.2) +
+    theme_min(border_colour = "black") +
+    facet_wrap(~ Signature) +
+    rotateX() +
+    noLegend() +
+    ylim(c(22400, 24000))
 ```
 
 ![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//viz_ssgsea-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/04//viz_ssgsea...*]~</span>
+
+## Distinguishing the effect of G34 vs. cell of origin
+
+In a comparison of H3K27me3 at promoters in G34-mutant HGG patient tumor samples vs non-G34 mutant
+HGGs, G34 tumors have several thousand promoters enriched for K27me3 compared
+to the other tumor types.
+
+To investigate whether these are an effect of the G34 mutation, or an effect
+of cell of origin (both of which differ between patient tumors), we'll look
+at the expression of these promoters in the CRISPR cell lines, allowing to decouple
+the effect of G34 (which differs in the isogenic cell line pairs) vs. cell of origin (which
+does not).
+
+
+```r
+# Read in the tumour promoter K27me3 scores
+tumor_k27me3 <- read_xlsx(here(subdir, "data/TABLE-S3_G34-HGG-Epigenome.xlsx"))
+
+# Subset by thresholds used in the paper
+# z-score_H3K27me3 > 0.5, pvalue_H3K27me3 < 0.05
+tumor_k27me3_filt <- tumor_k27me3 %>% 
+    filter(`z-score_H3K27me3` > 0.5) %>% 
+    distinct(name, .keep_all = TRUE)
+
+# Read in the counts for the cell lines
+gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
+                                         goi = tumor_k27me3_filt$name) %>%
+    left_join(cell_line_meta, by = c("sample" = "Nickname"))
+```
+
+```
+## Joining, by = "gene_symbol"
+```
+
+```r
+# Check fold changes from RNA-seq DGE in stem at these promoters
+dge_stem %>% 
+    filter(gene_symbol %in% tumor_k27me3_filt$name) %>% 
+    ggplot(aes(x = log2FoldChange)) +
+    geom_density()
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//read_tumor_k27me3-1.png)<!-- -->
+
+```r
+# Check what proportion of those genes have associated significant DGE
+dge_stem %>%
+    filter(gene_symbol %in% tumor_k27me3_filt$name) %>% 
+    mutate(significant_upon_editing = case_when(
+        is.na(padj) ~ "No",
+        padj < 0.05 & log2FoldChange > 1 ~ "Yes",
+        TRUE ~ "No")) %>%
+    count(significant_upon_editing) %>% 
+    ggplot(aes(x = "", y = n)) +
+    geom_bar(aes(fill = significant_upon_editing), stat = "identity") +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    geom_text(aes(x = c(1, 1), y = c(1000, 0), label = n), size=5)
+```
+
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/04//read_tumor_k27me3-2.png)<!-- -->
 
 
 
@@ -560,7 +706,7 @@ cl_ssgsea_tidy %>%
 This document was last rendered on:
 
 ```
-## 2020-09-17 13:25:28
+## 2020-09-22 12:42:00
 ```
 
 The git repository and last commit:
@@ -568,7 +714,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [918687c] 2020-09-17: Update TOC links
+## Head:     [3318007] 2020-09-19: Update README.md
 ```
 
 The random seed was set with `set.seed(100)`
@@ -593,24 +739,28 @@ The R session info:
 ## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## [1] stats     graphics  grDevices datasets  utils     methods   base     
 ## 
 ## other attached packages:
 ##  [1] pbapply_1.4-3 cowplot_0.9.4 ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0
-##  [6] purrr_0.3.4   glue_1.4.2    magrittr_1.5  dplyr_0.8.0   readr_1.3.1  
-## [11] tidyr_0.8.2   here_0.1     
+##  [6] purrr_0.3.4   glue_1.4.2    magrittr_1.5  dplyr_0.8.0   readxl_1.2.0 
+## [11] readr_1.3.1   tidyr_0.8.2   here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5         git2r_0.27.1       pillar_1.4.6       compiler_3.5.1    
-##  [5] RColorBrewer_1.1-2 plyr_1.8.6         tools_3.5.1        digest_0.6.25     
-##  [9] evaluate_0.14      lifecycle_0.2.0    tibble_3.0.3       gtable_0.3.0      
-## [13] pkgconfig_2.0.3    rlang_0.4.7        parallel_3.5.1     yaml_2.2.1        
-## [17] xfun_0.17          withr_2.2.0        stringr_1.4.0      knitr_1.29        
-## [21] vctrs_0.3.4        hms_0.5.3          rprojroot_1.3-2    grid_3.5.1        
-## [25] tidyselect_1.1.0   R6_2.4.1           rmarkdown_1.11     codetools_0.2-15  
-## [29] backports_1.1.9    ellipsis_0.3.1     htmltools_0.5.0    assertthat_0.2.1  
-## [33] colorspace_1.4-1   stringi_1.5.3      lazyeval_0.2.2     munsell_0.5.0     
-## [37] crayon_1.3.4
+##  [1] Rcpp_1.0.5          git2r_0.27.1        plyr_1.8.6         
+##  [4] pillar_1.4.6        compiler_3.5.1      cellranger_1.1.0   
+##  [7] RColorBrewer_1.1-2  BiocManager_1.30.10 tools_3.5.1        
+## [10] digest_0.6.25       evaluate_0.14       lifecycle_0.2.0    
+## [13] tibble_3.0.3        gtable_0.3.0        pkgconfig_2.0.3    
+## [16] rlang_0.4.7         parallel_3.5.1      yaml_2.2.1         
+## [19] xfun_0.17           withr_2.2.0         stringr_1.4.0      
+## [22] knitr_1.29          vctrs_0.3.4         hms_0.5.3          
+## [25] rprojroot_1.3-2     grid_3.5.1          tidyselect_1.1.0   
+## [28] R6_2.4.1            rmarkdown_1.11      farver_2.0.3       
+## [31] codetools_0.2-15    backports_1.1.9     ellipsis_0.3.1     
+## [34] htmltools_0.5.0     assertthat_0.2.1    colorspace_1.4-1   
+## [37] renv_0.10.0         labeling_0.3        stringi_1.5.3      
+## [40] lazyeval_0.2.2      munsell_0.5.0       crayon_1.3.4
 ```
 
 </details>
