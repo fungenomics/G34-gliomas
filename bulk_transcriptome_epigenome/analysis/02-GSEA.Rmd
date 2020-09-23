@@ -82,7 +82,16 @@ source(here::here(subdir, "analysis/functions.R"))
 
 # Load data
 
-This sections loads the reference datasets, including cell-type specific gene
+## Tumor metadata
+
+```{r load_bulk}
+
+bulk_samples <- readxl::read_xlsx(
+    here::here(subdir, "data/2020-02-25_bulkRNAseq_metadata.xlsx"))
+
+```
+
+The following sections loads the reference datasets, including cell-type specific gene
 signatures, corresponding palettes, and cluster annotations.
 
 ## Fetal mouse brain
@@ -492,7 +501,6 @@ rr_write_tsv(fgsea_df_idh_filt,
 # Visualization
 
 
-
 ## Heatmap across comparisons
 
 Helpers for creating the heatmaps:
@@ -568,8 +576,8 @@ signif_in_bcor <- fgsea_df %>%
 heatmap_inputs_bcor <- prep_gsea_heatmap(fgsea_df,
                                          signatures = signif_in_bcor,
                                          filters = quos(Dataset %in% c("Jessa et al 2019",
-                                                                     "Nowakowski et al 2017",
-                                                                     "Velmeshev et al 2019"),
+                                                                       "Nowakowski et al 2017",
+                                                                       "Velmeshev et al 2019"),
                                                         Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR"),
                                          row_order = 1)
 
@@ -657,21 +665,21 @@ The most enriched or depleted signature for each cell type:
 # A function to add the NES and adj p-value to the enrichment plot, based on
 # the functions included in the fgsea package
 plot_enrich_with_stats <- function(sig, title, source, colour, plot_num) {
-
-  signatures = switch(source,
-                      "nowakowski" = nowakowski_signatures$hg_ens,
-                      "atlas"      = atlas_signatures$hg_ens,
-                      "velmeshev"  = velmeshev_signatures$hg_ens,
-                      "anderson"   = anderson_signatures$hg_ens)
-
-  plotEnrichment2(signatures[[sig]],
-                  stats$`HGG-G34R.V_vs_HGG-IDH`,
-                  colour = colour,
-                  plot_num = plot_num) +
-    labs(title = paste0(title, "\nNES: ",
-                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2),
-                        ", p_adj: ",
-                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific()))
+    
+    signatures = switch(source,
+                        "nowakowski" = nowakowski_signatures$hg_ens,
+                        "atlas"      = atlas_signatures$hg_ens,
+                        "velmeshev"  = velmeshev_signatures$hg_ens,
+                        "anderson"   = anderson_signatures$hg_ens)
+    
+    plotEnrichment2(signatures[[sig]],
+                    stats$`HGG-G34R.V_vs_HGG-IDH`,
+                    colour = colour,
+                    plot_num = plot_num) +
+        labs(title = paste0(title, "\nNES: ",
+                            fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2),
+                            ", p_adj: ",
+                            fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific()))
 }
 
 # Plot for select signatures
@@ -740,6 +748,119 @@ rr_write_tsv(table_gsea,
 
 ```
 
+## Coonfirmation of signal by direct expression of gene programs
+
+In this analysis, we have looked at differential signal between tumor groups,
+but let's interrogate directly the expression of genes in the interneuron gene
+program.
+
+Set up palettes:
+
+```{r palettes_samples}
+
+palette_groups <- c(
+    "G34R/V"            = "cyan4",
+    "K27M-pons"         = "gold1",
+    "K27M-thal"         = "goldenrod3",
+    "IDH"               = "#883067")
+
+```
+
+Select gene signatures to visualize in the heatmap -- we'll use the same ones as for the GSEA enrichment plots:
+
+```{r gene_sigs_for_vis}
+
+signatures <- c("HF nIN1",  # Newborn interneuron signature
+                "F-p6 OPC") # Oligodendrocyte signature
+
+leading_edge <- fgsea_df_idh_filt %>% 
+    filter(Signature %in% signatures) %>% 
+    select(Signature, leadingEdge_top) %>% 
+    tibble::deframe() %>% 
+    map(~ .x %>% stringr::str_split(", ") %>% unlist())
+
+heatmap_genes <- unique(unlist(leading_edge))
+
+```
+
+Load normalized counts for genes of interest from the pipeline run:
+
+```{r prep_heatmap_vst}
+
+# Load counts from the pipeline and subset to genes of interest
+counts_subset_heatmap <- extract_pipeline_counts(path = file.path(pipeline_path,
+                                                                  "All_tumor_samples/counts/Ensembl.ensGene.exon.vst.tsv.gz"),
+                                                 goi = heatmap_genes,
+                                                 long = FALSE)
+
+# gene x sample heatmap
+# Set genes with NA expression to 0
+counts_subset_heatmap[is.na(counts_subset_heatmap)] <- 0
+
+# Reformat the ENSEMBL_ID:symbol format to get just gene symbol for simplicity
+rownames(counts_subset_heatmap) <- rownames(counts_subset_heatmap) %>% strsplit(":") %>% sapply(`[[`, 2)
+
+# Remove samples from the HGG-WT and HGNET-BCOR subgorups
+filt_samples <- bulk_samples %>% filter(Group %in% c("HGG-WT", "PNET-HGNET-BCOR")) %>% pull(Sample)
+counts_subset_heatmap_filt <- counts_subset_heatmap[, !colnames(counts_subset_heatmap) %in% filt_samples]
+
+# z-score
+z_score <- function(x){
+    (x - mean(x)) / sd(x)
+}
+
+# Apply z-scoring across samples, gene x sample
+counts_subset_heatmap_filt_z <- apply(counts_subset_heatmap_filt, 1, z_score)
+
+# Construct annotations for gene programs & samples
+gene_anno <- data.frame("gene" = rownames(counts_subset_heatmap)) %>% 
+    distinct(gene) %>% 
+    mutate("Program" = case_when(
+        gene %in% signatures_sym[["F-p6 OPC"]] ~ "Oligodendrocyte",
+        gene %in% signatures_sym[["HF nIN1"]] ~ "Interneuron",
+        TRUE ~ "Other")) %>% 
+    tibble::column_to_rownames(var = "gene")
+
+sample_anno <- bulk_samples %>% 
+    select(Sample, Group) %>% 
+    mutate(Group = recode(Group,
+                          "HGG-G34R/V" = "G34R/V",
+                          "HGG-H3.3-K27M-pons" = "K27M-pons",
+                          "HGG-H3.3-K27M-thalamic" = "K27M-thal",
+                          "HGG-IDH" = "IDH",
+                          "HGG-WT" = "WT",
+                          "PNET-HGNET-BCOR" = "HGNET-BCOR")) %>% 
+    filter(!(Group %in% c("WT", "HGNET-BCOR"))) %>% 
+    tibble::column_to_rownames(var = "Sample")
+
+```
+
+
+```{r heatmap_gene_programs_vst}
+
+# Plot as gene x sample
+hm_fun <- purrr::partial(pheatmap,
+                         mat = t(counts_subset_heatmap_filt_z),
+                         cluster_rows = FALSE, cluster_cols = FALSE,
+                         scale = "none",
+                         annotation_row = gene_anno,
+                         annotation_col = sample_anno,
+                         annotation_colors = list("Group" = palette_groups,
+                                                  "Program" = c("Interneuron" = "#8798C8",
+                                                                "Oligodendrocyte" = "#b4e04e")),
+                         cellwidth = 8,
+                         cellheight = 8,
+                         border_color = NA,
+                         color = rdbu,
+                         show_colnames = FALSE,
+                         fontsize_row = 5)
+
+hm_fun(filename = glue("{figout}/heatmap_gene_programs_vst.png"))
+hm_fun(filename = glue("{figout}/heatmap_gene_programs_vst.pdf"))
+
+knitr::include_graphics(glue("{figout}/heatmap_gene_programs_vst.png"))
+
+```
 
 
 
