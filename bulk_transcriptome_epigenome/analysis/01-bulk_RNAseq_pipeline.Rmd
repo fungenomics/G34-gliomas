@@ -318,6 +318,8 @@ rr_plot_grid(df = counts_subset_boxplot, plot_num = 1, plotlist = boxplots, ncol
 
 ## PDGFRA vs. GSX2 correlation in tumours & cell lines
 
+### G34 mutants
+
 Here we'll examine the correlation between PDGFRA and GSX2 expression in bulk RNAseq
 data for human tumours and patient-derived cell lines.
 
@@ -375,6 +377,49 @@ cor_df %>%
 
 ```
 
+### Non-G34
+
+Repeat this computation for non-G34 samples, as a comparator.
+
+```{r correlation_non_g34}
+
+cor_df_non_g34 <- counts_subset %>%
+  mutate(Group2 = recode(Group2, "K27M-pons" = "K27M", "K27M-thal" = "K27M")) %>% 
+  filter(gene_symbol %in% c("GSX2", "PDGFRA")) %>% 
+  filter(Group2 != "G34R/V" & Source != "Cell line") %>% 
+  select(sample, Group2, Source, gene_symbol, gene_expression) %>% 
+  spread(gene_symbol, gene_expression)
+
+# Linear model for non-G34
+m2 <- lm(PDGFRA ~ GSX2, cor_df_non_g34)
+summary(m2)
+
+# R-squared
+round(summary(m2)$r.squared, 2)
+
+# p-value
+round(summary(m2)$coefficients[2,4], 3)
+
+# Correlation value
+sqrt(summary(m2)$r.squared)
+
+```
+
+Let's also perform the calculation per-group:
+
+```{r correlation_per_group, dependson = 'correlation_non_g34'}
+
+map_dfr(unique(cor_df_non_g34$Group2), function(grp) {
+  
+  m <- lm(PDGFRA ~ GSX2, cor_df_non_g34 %>% filter(Group2 == grp))
+  data.frame("Group"   = grp,
+             "R2"      = round(summary(m)$r.squared, 2),
+             "p-value" = round(summary(m)$coefficients[2,4], 3),
+             "Correlation" = sqrt(summary(m)$r.squared))
+}
+)
+
+```
 
 ## Extract DGE
 

@@ -1,6 +1,6 @@
 ---
 title: "01 - Bulk RNAseq"
-date: "17 September, 2020"
+date: "24 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -398,6 +398,8 @@ rr_plot_grid(df = counts_subset_boxplot, plot_num = 1, plotlist = boxplots, ncol
 
 ## PDGFRA vs. GSX2 correlation in tumours & cell lines
 
+### G34 mutants
+
 Here we'll examine the correlation between PDGFRA and GSX2 expression in bulk RNAseq
 data for human tumours and patient-derived cell lines.
 
@@ -482,6 +484,92 @@ cor_df %>%
 
 ![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation...*]~</span>
 
+### Non-G34
+
+Repeat this computation for non-G34 samples, as a comparator.
+
+
+```r
+cor_df_non_g34 <- counts_subset %>%
+  mutate(Group2 = recode(Group2, "K27M-pons" = "K27M", "K27M-thal" = "K27M")) %>% 
+  filter(gene_symbol %in% c("GSX2", "PDGFRA")) %>% 
+  filter(Group2 != "G34R/V" & Source != "Cell line") %>% 
+  select(sample, Group2, Source, gene_symbol, gene_expression) %>% 
+  spread(gene_symbol, gene_expression)
+
+# Linear model for non-G34
+m2 <- lm(PDGFRA ~ GSX2, cor_df_non_g34)
+summary(m2)
+```
+
+```
+## 
+## Call:
+## lm(formula = PDGFRA ~ GSX2, data = cor_df_non_g34)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -102237  -16944   -6647    4753  386929 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)   
+## (Intercept)   4953.5    15358.1   0.323   0.7490   
+## GSX2           699.6      237.5   2.945   0.0057 **
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 74700 on 35 degrees of freedom
+## Multiple R-squared:  0.1986,	Adjusted R-squared:  0.1757 
+## F-statistic: 8.676 on 1 and 35 DF,  p-value: 0.0057
+```
+
+```r
+# R-squared
+round(summary(m2)$r.squared, 2)
+```
+
+```
+## [1] 0.2
+```
+
+```r
+# p-value
+round(summary(m2)$coefficients[2,4], 3)
+```
+
+```
+## [1] 0.006
+```
+
+```r
+# Correlation value
+sqrt(summary(m2)$r.squared)
+```
+
+```
+## [1] 0.4456931
+```
+
+Let's also perform the calculation per-group:
+
+
+```r
+map_dfr(unique(cor_df_non_g34$Group2), function(grp) {
+  
+  m <- lm(PDGFRA ~ GSX2, cor_df_non_g34 %>% filter(Group2 == grp))
+  data.frame("Group"   = grp,
+             "R2"      = round(summary(m)$r.squared, 2),
+             "p-value" = round(summary(m)$coefficients[2,4], 3),
+             "Correlation" = sqrt(summary(m)$r.squared))
+}
+)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Group"],"name":[1],"type":["chr"],"align":["left"]},{"label":["R2"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Correlation"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"HGNET-BCOR","2":"0.35","3":"0.297","4":"0.5881594"},{"1":"WT","2":"0.08","3":"0.457","4":"0.2853009"},{"1":"IDH","2":"0.01","3":"0.758","4":"0.1119512"},{"1":"K27M","2":"0.26","3":"0.077","4":"0.5066390"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 
 ## Extract DGE
 
@@ -518,7 +606,7 @@ read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/
 This document was last rendered on:
 
 ```
-## 2020-09-17 13:01:58
+## 2020-09-24 16:02:01
 ```
 
 The git repository and last commit:
@@ -526,7 +614,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [918687c] 2020-09-17: Update TOC links
+## Head:     [b330fad] 2020-09-23: Add additional analysis of isogenic cell lines
 ```
 
 The random seed was set with `set.seed(100)`
@@ -551,23 +639,25 @@ The R session info:
 ## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## [1] stats     graphics  grDevices datasets  utils     methods   base     
 ## 
 ## other attached packages:
-##  [1] cowplot_0.9.4 ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4  
-##  [6] glue_1.4.2    magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2  
-## [11] here_0.1     
+##  [1] ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4   glue_1.4.2   
+##  [6] magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2   here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5         git2r_0.27.1       pillar_1.4.6       compiler_3.5.1    
-##  [5] RColorBrewer_1.1-2 plyr_1.8.6         tools_3.5.1        digest_0.6.25     
-##  [9] jsonlite_1.7.1     evaluate_0.14      lifecycle_0.2.0    tibble_3.0.3      
-## [13] gtable_0.3.0       pkgconfig_2.0.3    rlang_0.4.7        yaml_2.2.1        
-## [17] xfun_0.17          withr_2.2.0        stringr_1.4.0      knitr_1.29        
-## [21] vctrs_0.3.4        hms_0.5.3          rprojroot_1.3-2    grid_3.5.1        
-## [25] tidyselect_1.1.0   R6_2.4.1           rmarkdown_1.11     codetools_0.2-15  
-## [29] backports_1.1.9    ellipsis_0.3.1     htmltools_0.5.0    assertthat_0.2.1  
-## [33] colorspace_1.4-1   stringi_1.5.3      lazyeval_0.2.2     munsell_0.5.0     
+##  [1] Rcpp_1.0.5          git2r_0.27.1        plyr_1.8.6         
+##  [4] pillar_1.4.6        compiler_3.5.1      RColorBrewer_1.1-2 
+##  [7] BiocManager_1.30.10 tools_3.5.1         digest_0.6.25      
+## [10] evaluate_0.14       lifecycle_0.2.0     tibble_3.0.3       
+## [13] gtable_0.3.0        pkgconfig_2.0.3     rlang_0.4.7        
+## [16] yaml_2.2.1          xfun_0.17           withr_2.2.0        
+## [19] stringr_1.4.0       knitr_1.29          vctrs_0.3.4        
+## [22] hms_0.5.3           rprojroot_1.3-2     grid_3.5.1         
+## [25] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
+## [28] backports_1.1.9     ellipsis_0.3.1      htmltools_0.5.0    
+## [31] assertthat_0.2.1    colorspace_1.4-1    renv_0.10.0        
+## [34] stringi_1.5.3       lazyeval_0.2.2      munsell_0.5.0      
 ## [37] crayon_1.3.4
 ```
 
