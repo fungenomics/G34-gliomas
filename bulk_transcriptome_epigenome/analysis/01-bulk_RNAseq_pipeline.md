@@ -480,9 +480,11 @@ p1 <- cor_df %>%
     limits = c(1, 10^6)) +
   # Zoom into the area of the plot where data is contained
   coord_cartesian(ylim = c(10^3, 10^6))
+
+p1
 ```
 
-<br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation...*]~</span>
+![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation...*]~</span>
 
 <!-- Generate a version with labels: -->
 
@@ -615,7 +617,7 @@ read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/
 This document was last rendered on:
 
 ```
-## 2020-09-28 09:56:53
+## 2020-09-28 14:01:28
 ```
 
 The git repository and last commit:
@@ -623,7 +625,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [f55adef] 2020-09-25: Add PDGFRA-GSX2 correlation for non-G34 samples
+## Head:     [5457cb7] 2020-09-28: Add plot for virtual 4c update
 ```
 
 The random seed was set with `set.seed(100)`
@@ -658,11 +660,11 @@ The R session info:
 ## loaded via a namespace (and not attached):
 ##  [1] Rcpp_1.0.5         git2r_0.27.1       pillar_1.4.6       compiler_3.5.1    
 ##  [5] RColorBrewer_1.1-2 plyr_1.8.6         tools_3.5.1        digest_0.6.25     
-##  [9] jsonlite_1.7.1     evaluate_0.14      lifecycle_0.2.0    tibble_3.0.3      
-## [13] gtable_0.3.0       pkgconfig_2.0.3    rlang_0.4.7        yaml_2.2.1        
-## [17] xfun_0.17          withr_2.2.0        stringr_1.4.0      knitr_1.29        
-## [21] vctrs_0.3.4        hms_0.5.3          rprojroot_1.3-2    grid_3.5.1        
-## [25] tidyselect_1.1.0   R6_2.4.1           rmarkdown_1.11     codetools_0.2-15  
+##  [9] evaluate_0.14      lifecycle_0.2.0    tibble_3.0.3       gtable_0.3.0      
+## [13] pkgconfig_2.0.3    rlang_0.4.7        yaml_2.2.1         xfun_0.17         
+## [17] withr_2.2.0        stringr_1.4.0      knitr_1.29         vctrs_0.3.4       
+## [21] hms_0.5.3          rprojroot_1.3-2    grid_3.5.1         tidyselect_1.1.0  
+## [25] R6_2.4.1           rmarkdown_1.11     farver_2.0.3       codetools_0.2-15  
 ## [29] backports_1.1.9    ellipsis_0.3.1     htmltools_0.5.0    assertthat_0.2.1  
 ## [33] colorspace_1.4-1   stringi_1.5.3      lazyeval_0.2.2     munsell_0.5.0     
 ## [37] crayon_1.3.4

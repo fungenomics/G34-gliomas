@@ -375,6 +375,8 @@ p1 <- cor_df %>%
   # Zoom into the area of the plot where data is contained
   coord_cartesian(ylim = c(10^3, 10^6))
 
+p1
+
 ```
 
 <!-- Generate a version with labels: -->
