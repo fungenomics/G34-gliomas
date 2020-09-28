@@ -195,7 +195,8 @@ data_long <- data %>%
   unite(Cortex, Average_Cortex, STDEVA_Cortex) %>%
   unite(ESC,    Average_ESC, STDEVA_ESC) %>%
   gather(Group, Value, GE, Cortex, ESC) %>%
-  separate(Value, into = c("Average", "Stdev"), sep = "_")
+  separate(Value, into = c("Average", "Stdev"), sep = "_") %>% 
+  filter(Group != "ESC")
 
 # Make sure we have numeric columns for plotting
 data_long$Average <- as.numeric(data_long$Average)
@@ -204,7 +205,7 @@ data_long$Stdev   <- as.numeric(data_long$Stdev)
 ```
 
 
-```{r mouse_gsx2_plot, fig.width = 7, fig.height = 3, echo_fig = TRUE}
+```{r mouse_gsx2_plot, fig.width = 7, fig.height = 3, echo_fig = TRUE, dependson = 'prep_mouse_gsx2'}
 
 plot_4c(data_long, palette_mouse)
 
