@@ -1,5 +1,5 @@
 ---
-title: "02 - GSEA with cell type gene sigantures"
+title: "02 - GSEA with cell type gene signatures"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
@@ -41,14 +41,15 @@ In this document, we gather a reference of developmental gene signatures from se
 
 We obtained reference datasets for the forebrain across species and the lifespan:
 
-* Jessa et al, 2019
-* Nowakowski et al, 2017
-* Velmeshev et al, 2019
+* [Jessa et al, 2019](https://doi.org/10.1038/s41588-019-0531-7)
+* [Nowakowski et al, 2017](https://doi.org/10.1126/science.aap8809)
+* [Velmeshev et al, 2019](https://doi.org/10.1126/science.aav8130)
 
 We also obtained two reference datasets capturing the adult SVZ:
 
-* Anderson et al, 2020
-* Mizrak et al, 2019
+* [Anderson et al, 2020](https://doi.org/10.1016/j.celrep.2020.02.030)
+* [Mizrak et al, 2019](https://doi.org/10.1016/j.celrep.2018.12.044)
+
 
 # Libraries
 
@@ -165,7 +166,8 @@ names(nowakowski_signatures$hg_sym) <- paste0("HF ", names(nowakowski_signatures
 velmeshev_anno <- read_tsv(here("reference_datasets/2019_Velmeshev/processed_data/01-cluster_names_with_interpretation.tsv")) %>% 
     mutate(Age = "Human ped/adult",
            Cluster = paste0("HP ", Cluster),
-           Dataset = "Velmeshev et al 2019")
+           Dataset = "Velmeshev et al 2019",
+           Sample  = "Human ped/adult cortex")
 
 # Signatures
 velmeshev_signatures <- readRDS(here("reference_datasets/2019_Velmeshev/processed_data/01-cluster_gene_signatures.Rds"))
@@ -368,34 +370,34 @@ rr_saveRDS(file = glue("{out}/bulk_fgsea.Rds"),
 
 ## Filter gene signatures
 
-For the forebrain reference, remove clusters which are proliferating based on either labeled as such, or G2M score,
-as cell-cycle genes may confound GSEA enrichment scores particularly in these tumor comparisons.
-I am not removing any clusters from the striatum/SVZ reference.
+For the forebrain reference, remove clusters which are proliferating based on either labeled as such, or Top2a expression,
+as cell-cycle genes may confound GSEA enrichment scores particularly in these tumor comparisons. No clusters from the striatum/SVZ reference were removed.
 
 ```{r filter_signatures, dependson = c('prep_stats', 'run_gsea'), fig.width = 20, fig.height = 4}
 
 # 1. Atlas
-# Load signatures with cell cycle scores, to quantitatively set a filter
-infosig_with_cc <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
-    arrange(desc(Median_G2M)) %>% 
+# Load expression of Top2a, to quantitatively set a threshold for identifying
+# proliferating clusters
+atlas_top2a_expr <- feather::read_feather(here("reference_datasets/2019_Jessa/Jessa2019_mean_expression.feather"), c("Cluster", "Top2a")) %>% 
+    arrange(desc(Top2a)) %>% 
     full_join(jessa_table_2a)
 
-infosig_with_cc %>%
+atlas_top2a_expr %>%
     filter(Species == "Mouse") %>%
     mutate(Cluster = factor(Cluster, levels = unique(.$Cluster))) %>%
-    ggplot(aes(x = Cluster, y = Median_G2M)) +
+    ggplot(aes(x = Cluster, y = Top2a)) +
     geom_point(aes(colour = Cluster)) +
     scale_colour_manual(values = palette_atlas) +
-    # Set an arbitrary threshold, where the G2M score starts tapering off
-    geom_hline(yintercept = 0.35) +
+    # Setting a threshold on Top2a expression
+    geom_hline(yintercept = 0.4) +
     theme_min() +
     rotateX() +
     noLegend()
 
-atlas_sigs_drop <- infosig_with_cc %>%
+atlas_sigs_drop <- atlas_top2a_expr %>%
     # Remove anything with G2M scores above the threshold, OR which is labelled
     # as proliferating, as indicated by a trailing "-P" in the cluster abbreviation
-    filter(Median_G2M > 0.35 | grepl("-P$", Cluster) |
+    filter(Top2a > 0.4 | grepl("-P$", Cluster) |
                # Remove anything labeled Other/Other neurons
                (Cell_class %in% c("Other", "Other neurons")) |
                # Filter to only forebrain signatures
@@ -564,7 +566,7 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg.png"))
 
 ```
 
-Generate a second heatma for HGNET-BCOR, which is a non-glioma entity used to have
+Generate a second heatmap for HGNET-BCOR, which is a non-glioma entity used to have
 a comparator group for G34 gliomas that are not not glial in origin.
 
 ```{r gsea_heatmap_bcor, echo_fig = TRUE, dependson = 'summarize_cell_types'}
@@ -658,7 +660,9 @@ knitr::include_graphics(glue("{figout}/gsea_heatmap_hgg_svz.png"))
 
 ## GSEA enrichment plots
 
-The most enriched or depleted signature for each cell type:
+For further analysis of these results, we need specific signatures to investigate.
+In order to do this, we'll select for each cell type, the most enriched or
+depleted signature.
 
 ```{r gsea_enrichment_plots, fig.width = 10, fig.height = 6, dependson = 'prep_stats', echo_fig = TRUE}
 
@@ -682,7 +686,7 @@ plot_enrich_with_stats <- function(sig, title, source, colour, plot_num) {
                             fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific()))
 }
 
-# Plot for select signatures
+# Plot for most enriched or depleted signatures
 p1 <- plot_enrich_with_stats("HF RG-early",
                              "Fetal radial glia",
                              "nowakowski",
@@ -707,9 +711,9 @@ p4 <- plot_enrich_with_stats("HP IN-PV",
                              "blue",
                              plot_num = 4)
 
-p5 <- plot_enrich_with_stats("F-p6 OPC",
+p5 <- plot_enrich_with_stats("HP OPC",
                              "Oligodendrocyte precursors",
-                             "atlas",
+                             "velmeshev",
                              "blue",
                              plot_num = 5)
 
@@ -771,7 +775,7 @@ Select gene signatures to visualize in the heatmap -- we'll use the same ones as
 ```{r gene_sigs_for_vis}
 
 signatures <- c("HF nIN1",  # Newborn interneuron signature
-                "F-p6 OPC") # Oligodendrocyte signature
+                "HP OPC") # Oligodendrocyte signature
 
 leading_edge <- fgsea_df_idh_filt %>% 
     filter(Signature %in% signatures) %>% 
@@ -785,7 +789,7 @@ heatmap_genes <- unique(unlist(leading_edge))
 
 Load normalized counts for genes of interest from the pipeline run:
 
-```{r prep_heatmap_vst}
+```{r prep_heatmap_vst, dependson = 'gene_sigs_for_vis'}
 
 # Load counts from the pipeline and subset to genes of interest
 counts_subset_heatmap <- extract_pipeline_counts(path = file.path(pipeline_path,
@@ -816,7 +820,7 @@ counts_subset_heatmap_filt_z <- apply(counts_subset_heatmap_filt, 1, z_score)
 gene_anno <- data.frame("gene" = rownames(counts_subset_heatmap)) %>% 
     distinct(gene) %>% 
     mutate("Program" = case_when(
-        gene %in% signatures_sym[["F-p6 OPC"]] ~ "Oligodendrocyte",
+        gene %in% signatures_sym[["HP OPC"]] ~ "Oligodendrocyte",
         gene %in% signatures_sym[["HF nIN1"]] ~ "Interneuron",
         TRUE ~ "Other")) %>% 
     tibble::column_to_rownames(var = "gene")
@@ -836,7 +840,7 @@ sample_anno <- bulk_samples %>%
 ```
 
 
-```{r heatmap_gene_programs_vst}
+```{r heatmap_gene_programs_vst, dependson = 'gene_sigs_for_vis'}
 
 # Plot as gene x sample
 hm_fun <- purrr::partial(pheatmap,
