@@ -191,7 +191,7 @@ gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/co
     left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
     left_join(dge_serum, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
 
-dge_serum %>% filter(gene_symbol %in% goi)
+dge_serum %>% select(-ENSID) %>% filter(gene_symbol %in% goi)
 
 ```
 
@@ -300,7 +300,7 @@ gbm002_counts_nsm <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ns
     left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
     left_join(dge_stem, by = c("gene_symbol" = "gene_symbol", "gene_ensg" = "ENSID"))
 
-dge_stem %>% filter(gene_symbol %in% goi)
+dge_stem %>% select(-ENSID) %>% filter(gene_symbol %in% goi)
 
 ```
 
