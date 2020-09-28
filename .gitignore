@@ -1,5 +1,9 @@
 # Default ----
 
+# Ok to keep a copy of this, but don't need to 
+# record every update
+run_slurm.sh
+
 # History files
 .Rhistory
 .Rapp.history
