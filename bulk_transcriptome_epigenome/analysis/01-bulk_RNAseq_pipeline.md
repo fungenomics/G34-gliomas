@@ -1,6 +1,6 @@
 ---
 title: "01 - Bulk RNAseq"
-date: "24 September, 2020"
+date: "28 September, 2020"
 output:
   html_document:
     keep_md: true
@@ -456,7 +456,7 @@ rsq <- round(summary(m)$r.squared, 2)
 pv  <- round(summary(m)$coefficients[2,4], 4)
 
 # Generate the basic plot
-cor_df %>%
+p1 <- cor_df %>%
   # To avoid errors on log-scale, add a small pseudocount for samples with no Gsx2 expression
   mutate(GSX2 = ifelse(GSX2 == 0, 1, GSX2)) %>% 
   rr_ggplot(aes(x = GSX2, y = PDGFRA), plot_num = 1) +
@@ -482,7 +482,16 @@ cor_df %>%
   coord_cartesian(ylim = c(10^3, 10^6))
 ```
 
-![](/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation-1.png)<!-- --><br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation...*]~</span>
+<br><span style="color:#0d00ff">~[figure/source data @ *G34-gliomas/bulk_transcriptome_epigenome/figures/01//gsx2_pdgfra_correlation...*]~</span>
+
+<!-- Generate a version with labels: -->
+
+<!-- ```{r cor_plot_lab, fig.width = 12, fig.height = 9} -->
+
+<!-- p1 + -->
+<!--     geom_label_repel(aes(label = sample)) -->
+
+<!-- ``` -->
 
 ### Non-G34
 
@@ -606,7 +615,7 @@ read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/
 This document was last rendered on:
 
 ```
-## 2020-09-24 16:02:01
+## 2020-09-28 09:56:53
 ```
 
 The git repository and last commit:
@@ -614,7 +623,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [b330fad] 2020-09-23: Add additional analysis of isogenic cell lines
+## Head:     [f55adef] 2020-09-25: Add PDGFRA-GSX2 correlation for non-G34 samples
 ```
 
 The random seed was set with `set.seed(100)`
@@ -639,25 +648,23 @@ The R session info:
 ## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices datasets  utils     methods   base     
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4   glue_1.4.2   
-##  [6] magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2   here_0.1     
+##  [1] cowplot_0.9.4 ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4  
+##  [6] glue_1.4.2    magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2  
+## [11] here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5          git2r_0.27.1        plyr_1.8.6         
-##  [4] pillar_1.4.6        compiler_3.5.1      RColorBrewer_1.1-2 
-##  [7] BiocManager_1.30.10 tools_3.5.1         digest_0.6.25      
-## [10] evaluate_0.14       lifecycle_0.2.0     tibble_3.0.3       
-## [13] gtable_0.3.0        pkgconfig_2.0.3     rlang_0.4.7        
-## [16] yaml_2.2.1          xfun_0.17           withr_2.2.0        
-## [19] stringr_1.4.0       knitr_1.29          vctrs_0.3.4        
-## [22] hms_0.5.3           rprojroot_1.3-2     grid_3.5.1         
-## [25] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
-## [28] backports_1.1.9     ellipsis_0.3.1      htmltools_0.5.0    
-## [31] assertthat_0.2.1    colorspace_1.4-1    renv_0.10.0        
-## [34] stringi_1.5.3       lazyeval_0.2.2      munsell_0.5.0      
+##  [1] Rcpp_1.0.5         git2r_0.27.1       pillar_1.4.6       compiler_3.5.1    
+##  [5] RColorBrewer_1.1-2 plyr_1.8.6         tools_3.5.1        digest_0.6.25     
+##  [9] jsonlite_1.7.1     evaluate_0.14      lifecycle_0.2.0    tibble_3.0.3      
+## [13] gtable_0.3.0       pkgconfig_2.0.3    rlang_0.4.7        yaml_2.2.1        
+## [17] xfun_0.17          withr_2.2.0        stringr_1.4.0      knitr_1.29        
+## [21] vctrs_0.3.4        hms_0.5.3          rprojroot_1.3-2    grid_3.5.1        
+## [25] tidyselect_1.1.0   R6_2.4.1           rmarkdown_1.11     codetools_0.2-15  
+## [29] backports_1.1.9    ellipsis_0.3.1     htmltools_0.5.0    assertthat_0.2.1  
+## [33] colorspace_1.4-1   stringi_1.5.3      lazyeval_0.2.2     munsell_0.5.0     
 ## [37] crayon_1.3.4
 ```
 

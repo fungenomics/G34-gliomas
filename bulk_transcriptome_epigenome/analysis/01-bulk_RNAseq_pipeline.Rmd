@@ -350,7 +350,7 @@ rsq <- round(summary(m)$r.squared, 2)
 pv  <- round(summary(m)$coefficients[2,4], 4)
 
 # Generate the basic plot
-cor_df %>%
+p1 <- cor_df %>%
   # To avoid errors on log-scale, add a small pseudocount for samples with no Gsx2 expression
   mutate(GSX2 = ifelse(GSX2 == 0, 1, GSX2)) %>% 
   rr_ggplot(aes(x = GSX2, y = PDGFRA), plot_num = 1) +
@@ -376,6 +376,15 @@ cor_df %>%
   coord_cartesian(ylim = c(10^3, 10^6))
 
 ```
+
+<!-- Generate a version with labels: -->
+
+<!-- ```{r cor_plot_lab, fig.width = 12, fig.height = 9} -->
+
+<!-- p1 + -->
+<!--     geom_label_repel(aes(label = sample)) -->
+
+<!-- ``` -->
 
 ### Non-G34
 
