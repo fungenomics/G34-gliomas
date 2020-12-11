@@ -1,0 +1,341 @@
+Sample	Age	Cell_type	Cluster	Dataset
+Forebrain E12.5	Mouse E12.5	Ventral radial glial cells	F-e12 VRGC	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Medial ganglionic eminence-derived inhibitory neurons	F-e12 MGINH	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Dorsal radial glial cells	F-e12 DRGC	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Proliferating dorsal radial glial cells	F-e12 DRGC-P	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Cortical excitatory neurons	F-e12 CEXN1	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Cortical inhibitory neurons	F-e12 CINHN	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Excitatory neuron intermediate progenitor cells 1	F-e12 EXIP1	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Thalamic precursors	F-e12 THLP	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Proliferating inhibitory neuron intermediate progenitor cells	F-e12 INIP-P	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Cajal-Retzius neurons	F-e12 CJRZN	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Neurons (Cck)	F-e12 NEUR1	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Meninges	F-e12 MNG	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Cortical hem	F-e12 CHEM	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Thalamic neurons	F-e12 THLN	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Pericytes	F-e12 PERI	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Erythrocytes	F-e12 ERY	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Microglia	F-e12 MGL	Jessa et al 2019
+Forebrain E12.5	Mouse E12.5	Endothelial	F-e12 ENDO	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Proliferating dorsal radial glial cells	F-e15 DRGC-P	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Cortical excitatory neurons 1	F-e15 CEXN1	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Excitatory neuron intermediate progenitor cells 1	F-e15 EXIP1	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Medial ganglionic eminence-derived inhibitory neurons	F-e15 MGINH	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Dorsal radial glial cells	F-e15 DRGC	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Proliferating inhibitory neuron intermediate progenitor cells	F-e15 INIP-P	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Excitatory neuron intermediate progenitor cells 2	F-e15 EXIP2	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Ventral radial glial cells	F-e15 VRGC	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Cortical inhibitory neurons	F-e15 CINHN	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Cortical excitatory neurons 2	F-e15 CEXN2	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Proliferating intermediate progenitor cells	F-e15 EXIP-P	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Cajal-Retzius cells	F-e15 CJRZN	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Cortical hem	F-e15 CHEM	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Neurons (Cck)	F-e15 NEUR1	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Meninges	F-e15 MNG	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Pericytes	F-e15 PERI	Jessa et al 2019
+Forebrain E15.5	Mouse E15.5	Microglia	F-e15 MGL	Jessa et al 2019
+Forebrain P0	Mouse P0	Cortical excitatory neurons 1	F-p0 CEXN1	Jessa et al 2019
+Forebrain P0	Mouse P0	Proliferating mixed progenitors, including neuronal and gliogenic progenitors	F-p0 MIXP-P	Jessa et al 2019
+Forebrain P0	Mouse P0	Astrocytes 1	F-p0 ASTR1	Jessa et al 2019
+Forebrain P0	Mouse P0	Excitatory neuron intermediate progenitor cells 1	F-p0 EXIP1	Jessa et al 2019
+Forebrain P0	Mouse P0	Astrocytes 2	F-p0 ASTR2	Jessa et al 2019
+Forebrain P0	Mouse P0	Oligodendrocyte precursor cells	F-p0 OPC	Jessa et al 2019
+Forebrain P0	Mouse P0	Cortical excitatory neurons 2	F-p0 CEXN2	Jessa et al 2019
+Forebrain P0	Mouse P0	Cortical inhibitory neurons	F-p0 CINHN	Jessa et al 2019
+Forebrain P0	Mouse P0	Astro-ependymal progenitors	F-p0 ASEP	Jessa et al 2019
+Forebrain P0	Mouse P0	Meninges	F-p0 MNG	Jessa et al 2019
+Forebrain P0	Mouse P0	Excitatory neuron intermediate progenitor cells 2	F-p0 EXIP2	Jessa et al 2019
+Forebrain P0	Mouse P0	Medial ganglionic eminence-derived inhibitory neurons	F-p0 MGINH	Jessa et al 2019
+Forebrain P0	Mouse P0	Pericytes	F-p0 PERI	Jessa et al 2019
+Forebrain P0	Mouse P0	Microglia	F-p0 MGL	Jessa et al 2019
+Forebrain P0	Mouse P0	Macrophages	F-p0 MAC	Jessa et al 2019
+Forebrain P0	Mouse P0	Endothelial	F-p0 ENDO	Jessa et al 2019
+Forebrain P0	Mouse P0	Choroid plexus	F-p0 CPLX	Jessa et al 2019
+Forebrain P0	Mouse P0	Unresolved (Esm1, Gnb3)	F-p0 UNR1	Jessa et al 2019
+Forebrain P0	Mouse P0	Cajal-Retzius cells	F-p0 CJRZN	Jessa et al 2019
+Forebrain P0	Mouse P0	Ependymal	F-p0 EPEN	Jessa et al 2019
+Forebrain P3	Mouse P3	Astrocytes 2	F-p3 ASTR2	Jessa et al 2019
+Forebrain P3	Mouse P3	Proliferating inhibitory neuron intermediate progenitor cells	F-p3 INIP-P	Jessa et al 2019
+Forebrain P3	Mouse P3	Oligodendrocyte precursor cells	F-p3 OPC	Jessa et al 2019
+Forebrain P3	Mouse P3	Astrocytes 1	F-p3 ASTR1	Jessa et al 2019
+Forebrain P3	Mouse P3	Proliferating gliogenic progenitors	F-p3 RGC-P	Jessa et al 2019
+Forebrain P3	Mouse P3	Cortical excitatory neurons	F-p3 CEXN1	Jessa et al 2019
+Forebrain P3	Mouse P3	Mixed neurons including cholinergic & GABAergic	F-p3 NEUR2	Jessa et al 2019
+Forebrain P3	Mouse P3	Endothelial	F-p3 ENDO	Jessa et al 2019
+Forebrain P3	Mouse P3	Meninges	F-p3 MNG	Jessa et al 2019
+Forebrain P3	Mouse P3	Ependymal progenitors	F-p3 EPENP	Jessa et al 2019
+Forebrain P3	Mouse P3	Pericytes	F-p3 PERI	Jessa et al 2019
+Forebrain P3	Mouse P3	GABAergic medium spiny neurons (MSN) of the striatum	F-p3 SMSN	Jessa et al 2019
+Forebrain P3	Mouse P3	Ependymal	F-p3 EPEN	Jessa et al 2019
+Forebrain P3	Mouse P3	Migrating, proliferating inhibitory neuron intermediate progenitor cells	F-p3 INIP2-P	Jessa et al 2019
+Forebrain P3	Mouse P3	Microglia	F-p3 MGL	Jessa et al 2019
+Forebrain P3	Mouse P3	Macrophages	F-p3 MAC	Jessa et al 2019
+Forebrain P3	Mouse P3	Astrocytes 3	F-p3 ASTR3	Jessa et al 2019
+Forebrain P3	Mouse P3	Newly-forming oligodendrocytes	F-p3 NFOL	Jessa et al 2019
+Forebrain P6	Mouse P6	Astrocytes 2	F-p6 ASTR2	Jessa et al 2019
+Forebrain P6	Mouse P6	Proliferating mixed progenitors, including neuronal and gliogenic progenitors	F-p6 MIXP-P	Jessa et al 2019
+Forebrain P6	Mouse P6	Oligodendrocyte precursor cells	F-p6 OPC	Jessa et al 2019
+Forebrain P6	Mouse P6	Endothelial	F-p6 ENDO	Jessa et al 2019
+Forebrain P6	Mouse P6	Microglia	F-p6 MGL	Jessa et al 2019
+Forebrain P6	Mouse P6	Meninges	F-p6 MNG	Jessa et al 2019
+Forebrain P6	Mouse P6	Pericytes	F-p6 PERI	Jessa et al 2019
+Forebrain P6	Mouse P6	Astrocytes 2-2	F-p6 ASTR2-2	Jessa et al 2019
+Forebrain P6	Mouse P6	Newly-forming oligodendrocytes	F-p6 NFOL	Jessa et al 2019
+Forebrain P6	Mouse P6	Astrocytes 3	F-p6 ASTR3	Jessa et al 2019
+Forebrain P6	Mouse P6	Ependymal	F-p6 EPEN	Jessa et al 2019
+Forebrain P6	Mouse P6	Split cluster containing erythrocytes & neurons	F-p6 UNR2	Jessa et al 2019
+Forebrain P6	Mouse P6	Proliferating neurogenic progenitors	F-p6 NEURP-P	Jessa et al 2019
+Forebrain P6	Mouse P6	Choroid plexus	F-p6 CPLX	Jessa et al 2019
+Forebrain P6	Mouse P6	Macrophages	F-p6 MAC	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons inhibitory neurons 1	P-e12 PINH1	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons excitatory neurons 1 (Lhx9, Nr4a2)	P-e12 PEXN1	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Radial glial cells	P-e12 RGC	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons inhibitory neurons 2	P-e12 PINH2	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons inhibitory neurons 3	P-e12 PINH3	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons inhibitory neurons 4	P-e12 PINH4	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons excitatory neurons 2 (Shox2, Vsx2)	P-e12 PEXN2	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons unresolved neurons (Tmsb10)	P-e12 NEUR3	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons inhibitory neurons 5 (Tfap2a, Tfap2b)	P-e12 PINH5	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons excitatory neurons 3 (Tlx3, Neurod2)	P-e12 PEXN3	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons excitatory neurons 4 (Phox2b, Tlx3)	P-e12 PEXN4	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Proliferating radial glial cells	P-e12 RGC-P	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Neurogenic progenitors	P-e12 NEURP	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons excitatory neurons 5	P-e12 PEXN5	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons serotonergic neurons	P-e12 SERN	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pericytes	P-e12 PERI	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Pons excitatory neurons 6	P-e12 PEXN6	Jessa et al 2019
+Hindbrain E12.5	Mouse E12.5	Cholinergic neurons	P-e12 ACHN	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 6	P-e15 PINH6	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 7	P-e15 PINH7	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons excitatory neurons 2 (Shox2, Vsx2)	P-e15 PEXN2	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 8 (Gata2, Gata3)	P-e15 PINH8	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 9	P-e15 PINH9	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Neurogenic progenitors	P-e15 NEURP	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons excitatory neurons 7	P-e15 PEXN7	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 5 (Tfap2a, Tfap2b)	P-e15 PINH5	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 10	P-e15 PINH10	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons excitatory neurons 4 (Phox2b, Tlx3)	P-e15 PEXN4	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons excitatory neurons 3 (Tlx3, Neurod2)	P-e15 PEXN3	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons excitatory neurons 8	P-e15 PEXN8	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Proliferating radial glial cells	P-e15 RGC-P	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons excitatory neurons 1 (Lhx9, Nr4a2)	P-e15 PEXN1	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 11	P-e15 PINH11	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons unresolved neurons (Otp)	P-e15 NEUR4	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons serotonergic neurons	P-e15 SERN	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pons inhibitory neurons 12	P-e15 PINH12	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Pericytes	P-e15 PERI	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Ependymal	P-e15 EPEN	Jessa et al 2019
+Pons E15.5	Mouse E15.5	Endothelial	P-e15 ENDO	Jessa et al 2019
+Pons P0	Mouse P0	Astrocytes 1	P-p0 ASTR1	Jessa et al 2019
+Pons P0	Mouse P0	Meninges	P-p0 MNG	Jessa et al 2019
+Pons P0	Mouse P0	Oligodendrocyte precursor cells	P-p0 OPC	Jessa et al 2019
+Pons P0	Mouse P0	Ependymal	P-p0 EPEN	Jessa et al 2019
+Pons P0	Mouse P0	Unipolar brush cells of the dorsal cochlear nucleus	P-p0 UBCN	Jessa et al 2019
+Pons P0	Mouse P0	Mossy fibre neurons	P-p0 MFN	Jessa et al 2019
+Pons P0	Mouse P0	Astrocytes 3	P-p0 ASTR3	Jessa et al 2019
+Pons P0	Mouse P0	Proliferating gliogenic progenitors	P-p0 GRGC-P	Jessa et al 2019
+Pons P0	Mouse P0	Endothelial	P-p0 ENDO	Jessa et al 2019
+Pons P0	Mouse P0	Pericytes	P-p0 PERI	Jessa et al 2019
+Pons P0	Mouse P0	GABAergic interneurons	P-p0 GABAN	Jessa et al 2019
+Pons P0	Mouse P0	Astro-ependymal progenitors	P-p0 ASEP	Jessa et al 2019
+Pons P0	Mouse P0	Microglia	P-p0 MGL	Jessa et al 2019
+Pons P0	Mouse P0	Late gliogenic progenitors	P-p0 GLIP	Jessa et al 2019
+Pons P0	Mouse P0	Macrophages	P-p0 MAC	Jessa et al 2019
+Pons P0	Mouse P0	Schwann	P-p0 SCHW	Jessa et al 2019
+Pons P0	Mouse P0	Vascular leptomeningeal cells	P-p0 VLM	Jessa et al 2019
+Pons P0	Mouse P0	Newly-forming oligodendrocytes	P-p0 NFOL	Jessa et al 2019
+Pons P0	Mouse P0	Vascular smooth muscle cell	P-p0 VSMC	Jessa et al 2019
+Pons P0	Mouse P0	Choroid plexus	P-p0 CPLX	Jessa et al 2019
+Pons P3	Mouse P3	Astrocytes 2	P-p3 ASTR2	Jessa et al 2019
+Pons P3	Mouse P3	Oligodendrocyte precursor cells	P-p3 OPC	Jessa et al 2019
+Pons P3	Mouse P3	Newly-forming oligodendrocytes	P-p3 NFOL	Jessa et al 2019
+Pons P3	Mouse P3	Proliferating oligodendrocyte precursor cells	P-p3 OPC-P	Jessa et al 2019
+Pons P3	Mouse P3	Astrocytes 2	P-p3 ASTR2-2	Jessa et al 2019
+Pons P3	Mouse P3	Ependymal progenitors	P-p3 EPENP	Jessa et al 2019
+Pons P3	Mouse P3	Endothelial	P-p3 ENDO	Jessa et al 2019
+Pons P3	Mouse P3	Mixed inhibitory and excitatory pontine neurons	P-p3 NEUR5	Jessa et al 2019
+Pons P3	Mouse P3	Astrocytes 3	P-p3 ASTR3	Jessa et al 2019
+Pons P3	Mouse P3	Pericytes	P-p3 PERI	Jessa et al 2019
+Pons P3	Mouse P3	Unipolar brush cells of the dorsal cochlear nucleus	P-p3 UBCN	Jessa et al 2019
+Pons P3	Mouse P3	Microglia	P-p3 MGL	Jessa et al 2019
+Pons P3	Mouse P3	Astrocytic progenitors (proliferating)	P-p3 ASTP-P	Jessa et al 2019
+Pons P3	Mouse P3	Late gliogenic progenitors	P-p3 GLIP	Jessa et al 2019
+Pons P3	Mouse P3	Meninges	P-p3 MNG	Jessa et al 2019
+Pons P3	Mouse P3	Ependymal 1	P-p3 EPEN1	Jessa et al 2019
+Pons P3	Mouse P3	Ependymal 2	P-p3 EPEN2	Jessa et al 2019
+Pons P3	Mouse P3	Macrophages	P-p3 MAC	Jessa et al 2019
+Pons P3	Mouse P3	OPC-like, putative doublets, expression of tight-junction genes	P-p3 UNR3	Jessa et al 2019
+Pons P3	Mouse P3	Vascular leptomeningeal cells	P-p3 VLM	Jessa et al 2019
+Pons P6	Mouse P6	Astrocytes 2	P-p6 ASTR2	Jessa et al 2019
+Pons P6	Mouse P6	Proliferating OPC & astrocytic progenitors	P-p6 OPAS-P	Jessa et al 2019
+Pons P6	Mouse P6	Meninges	P-p6 MNG	Jessa et al 2019
+Pons P6	Mouse P6	Newly-forming oligodendrocytes	P-p6 NFOL1	Jessa et al 2019
+Pons P6	Mouse P6	Oligodendrocyte precursor cells	P-p6 OPC	Jessa et al 2019
+Pons P6	Mouse P6	Astrocytes 2-2	P-p6 ASTR2-2	Jessa et al 2019
+Pons P6	Mouse P6	Astrocytes 3	P-p6 ASTR3	Jessa et al 2019
+Pons P6	Mouse P6	Endothelial 1	P-p6 ENDO1	Jessa et al 2019
+Pons P6	Mouse P6	Newly-forming oligodendrocytes	P-p6 NFOL2	Jessa et al 2019
+Pons P6	Mouse P6	Vascular smooth muscle cell	P-p6 VSMC	Jessa et al 2019
+Pons P6	Mouse P6	Microglia	P-p6 MGL	Jessa et al 2019
+Pons P6	Mouse P6	Mixed inhibitory and excitatory pontine neurons	P-p6 NEUR6	Jessa et al 2019
+Pons P6	Mouse P6	Mature oligodendrocytes	P-p6 MOL	Jessa et al 2019
+Pons P6	Mouse P6	Vascular leptomeningeal cells	P-p6 VLM	Jessa et al 2019
+Pons P6	Mouse P6	Pericytes	P-p6 PERI	Jessa et al 2019
+Pons P6	Mouse P6	Ependymal 1	P-p6 EPEN1	Jessa et al 2019
+Pons P6	Mouse P6	Macrophages	P-p6 MAC	Jessa et al 2019
+Pons P6	Mouse P6	Ependymal 2	P-p6 EPEN2	Jessa et al 2019
+Pons P6	Mouse P6	Erythrocytes	P-p6 ERY	Jessa et al 2019
+Pons P6	Mouse P6	Ependymal 3	P-p6 EPEN3	Jessa et al 2019
+Pons P6	Mouse P6	Endothelial 2	P-p6 ENDO2	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Pericytes	B-17w PERI	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Ependymal	B-17w EPEN1	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Unresolved gliogenic progenitors (proliferating)	B-17w GLIP-P1	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Pericytes	B-17w PERI2	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Unresolved gliogenic progenitors	B-17w GLIP1	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Unresolved gliogenic progenitors	B-17w GLIP2	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Unresolved gliogenic progenitors	B-17w GLIP3	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Progenitors	B-17w GLIP-P2	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Pericytes	B-17w PERI3	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Glial progenitors	B-17w GLIP4	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Ependymal	B-17w EPEN2	Jessa et al 2019
+Human brainstem 17pcw	Mouse 17pcw	Oligodendrocyte precursor cells	B-17w OPC	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Pericytes	B-19w PERI	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Ependymal 1	B-19w EPEN1	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Pia mater	B-19w MNG	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Astrocytes 1	B-19w ASTR1	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Endothelial	B-19w ENDO	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Ependymal 2	B-19w EPEN2	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Astrocytes 2	B-19w ASTR2	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Proliferating gliogenic radial glial cells	B-19w GRGC-P	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Unresolved neurons	B-19w NEUR4	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Newly-forming oligodendrocytes	B-19w NFOL	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Erythrocytes	B-19w ERY	Jessa et al 2019
+Human brainstem 19pcw	Mouse 19pcw	Melanocytes	B-19w MELA	Jessa et al 2019
+Forebrain P0 progenitors (refined)	Mouse P0	Proliferating inhibitory neuron intermediate progenitor cells	F-p0 INIP-P	Jessa et al 2019
+Forebrain P0 progenitors (refined)	Mouse P0	Proliferating gliogenic progenitors	F-p0 GRGC-P	Jessa et al 2019
+Forebrain P0 progenitors (refined)	Mouse P0	Proliferating intermediate progenitor cells	F-p0 EXIP-P	Jessa et al 2019
+Pons embryonic progenitors (refined)	Mouse E12.5-E15.5	Mixed/transitioning progenitors	P-e12 MIXP	Jessa et al 2019
+Pons embryonic progenitors (refined)	Mouse E12.5-E15.5	RGC (proliferating) and lower rhombic lip precursors	P-e12 RGLRP-P	Jessa et al 2019
+Pons embryonic progenitors (refined)	Mouse E12.5-E15.5	Gliogenic progenitors	P-e12 GLIP	Jessa et al 2019
+Pons embryonic progenitors (refined)	Mouse E12.5-E15.5	Neurogenic progenitors	P-e12 NEURP2	Jessa et al 2019
+Pons embryonic progenitors (refined)	Mouse E12.5-E15.5	Proliferating neurogenic progenitors	P-e12 NEURP-P	Jessa et al 2019
+Human fetal cortex/MGE	Human fetal	Astrocyte	HF Astrocyte	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	CGE/LGE-derived inhibitory neurons	HF IN-CTX-CGE1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	CGE/LGE-derived inhibitory neurons	HF IN-CTX-CGE2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Choroid	HF Choroid	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Dividing Intermediate Progenitor Cells RG-like	HF IPC-div1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	dividing MGE Progenitors	HF MGE-div	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Dividing Radial Glia (G2/M-phase)	HF RG-div1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Dividing Radial Glia (S-phase)	HF RG-div2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Early and Late Born Excitatory Neuron PFC	HF EN-PFC2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Early and Late Born Excitatory Neuron PFC	HF EN-PFC3	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Early and Late Born Excitatory Neuron V1	HF EN-V1-2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Early Born Deep Layer/subplate Excitatory Neuron PFC	HF EN-PFC1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Early Born Deep Layer/subplate Excitatory Neuron V1	HF EN-V1-1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	earlyRG	HF RG-early	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Endothelial	HF Endothelial	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Excitatory Neuron V1 - late born	HF EN-V1-3	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Glycolysis	HF Glyc	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Intermediate Progenitor Cells EN-like 1	HF IPC-nEN1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Intermediate Progenitor Cells EN-like 2	HF IPC-nEN2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Intermediate Progenitor Cells EN-like 3	HF IPC-nEN3	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Intermediate Progenitor Cells RG-like 4	HF IPC-div2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE newborn neurons 1	HF nIN1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE newborn neurons 2	HF nIN2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE newborn neurons 3	HF nIN3	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE newborn neurons 4	HF nIN4	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE newborn neurons 5	HF nIN5	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE Progenitors 6	HF MGE-IPC1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE Progenitors 7	HF MGE-IPC2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE Progenitors 8	HF MGE-IPC3	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE Radial Glia 1	HF MGE-RG1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE Radial Glia 2	HF MGE-RG2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE-derived Ctx inhibitory neuron, Cortical Plate-enriched	HF IN-CTX-MGE2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	MGE-derived Ctx inhibitory neuron, Germinal Zone Enriched	HF IN-CTX-MGE1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Microglia	HF Microglia	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Mural/Pericyte	HF Mural	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Newborn Excitatory Neuron - early born 2	HF nEN-early2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Newborn Excitatory Neuron - early born 1	HF nEN-early1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Newborn Excitatory Neuron - late born	HF nEN-late	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Oligodendrocyte progenitor cell	HF OPC	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Outer Radial Glia	HF oRG	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Striatal neurons	HF IN-STR	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Truncated Radial Glia	HF tRG	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Unknown1	HF U1	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Unknown2	HF U2	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Unknown3	HF U3	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Unknown4	HF U4	Nowakowski et al 2017
+Human fetal cortex/MGE	Human fetal	Ventricular Radial Glia	HF vRG	Nowakowski et al 2017
+Human ped/adult cortex	Human ped/adult	Fibrous astrocytes	HP AST-FB	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Protoplasmic astrocytes	HP AST-PP	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Endothelial	HP Endothelial	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Parvalbumin interneurons	HP IN-PV	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Somatostatin interneurons	HP IN-SST	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	SV2C interneurons	HP IN-SV2C	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	VIP interneurons	HP IN-VIP	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Microglia	HP Microglia	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	NRGN-expressing neurons 1	HP Neu-NRGN-I	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	NRGN-expressing neurons 2	HP Neu-NRGN-II	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Maturing neurons	HP Neu-mat	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Oligodendrocyte precursor cells	HP OPC	Velmeshev et al 2019
+Human ped/adult cortex	Human ped/adult	Oligodendrocytes	HP Oligodendrocytes	Velmeshev et al 2019
+V-SVZ	Mouse adult	VSVZ-1 Astrocyte	VSVZ-1 Astrocyte	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 COP	VSVZ-1 COP	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 Endothelial	VSVZ-1 Endothelial	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 Ependymal	VSVZ-1 Ependymal	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 Microglia	VSVZ-1 Microglia	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 Mural+Fibroblast	VSVZ-1 Mural+Fibroblast	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 Neuron	VSVZ-1 Neuron	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 OPC	VSVZ-1 OPC	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 Oligodendrocyte	VSVZ-1 Oligodendrocyte	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 T	VSVZ-1 T	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-1 aNSC+TAC+NB	VSVZ-1 aNSC+TAC+NB	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 Astrocytes	VSVZ-2 Astrocytes	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 COP	VSVZ-2 COP	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 Endothelial	VSVZ-2 Endothelial	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 Ependymal	VSVZ-2 Ependymal	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 Fibroblast	VSVZ-2 Fibroblast	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 Microglia	VSVZ-2 Microglia	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 Neuron	VSVZ-2 Neuron	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 OPC	VSVZ-2 OPC	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 Oligodendrocytes	VSVZ-2 Oligodendrocytes	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 T	VSVZ-2 T	Mizrak et al 2019
+V-SVZ	Mouse adult	VSVZ-2 aNSC+TAC+NB	VSVZ-2 aNSC+TAC+NB	Mizrak et al 2019
+Striatum	Mouse P9	Str/SVZ 0-Neurogenic progenitor	Str/SVZ 0-Neurogenic progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 1-SPN	Str/SVZ 1-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 10-Astrocytes	Str/SVZ 10-Astrocytes	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 11-Endothelial	Str/SVZ 11-Endothelial	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 13-SPN	Str/SVZ 13-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 14-SPN	Str/SVZ 14-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 15-OPCs	Str/SVZ 15-OPCs	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 16-OPCs	Str/SVZ 16-OPCs	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 17-SPN	Str/SVZ 17-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 18-Interneurons	Str/SVZ 18-Interneurons	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 19-Neurogenic progenitor	Str/SVZ 19-Neurogenic progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 2-Progenitor	Str/SVZ 2-Progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 21-Endothelial	Str/SVZ 21-Endothelial	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 23-Microglia	Str/SVZ 23-Microglia	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 24-SPN	Str/SVZ 24-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 25-SPN	Str/SVZ 25-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 26-Ependymal	Str/SVZ 26-Ependymal	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 27-SPN	Str/SVZ 27-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 28-SPN	Str/SVZ 28-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 29-SPN	Str/SVZ 29-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 3-Astrocytes	Str/SVZ 3-Astrocytes	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 33-Neurogenic progenitor	Str/SVZ 33-Neurogenic progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 34-Progenitor	Str/SVZ 34-Progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 35-Mural	Str/SVZ 35-Mural	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 36-Interneurons	Str/SVZ 36-Interneurons	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 37-Ctx excitatory neurons	Str/SVZ 37-Ctx excitatory neurons	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 38-SPN	Str/SVZ 38-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 39-Microglia	Str/SVZ 39-Microglia	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 4-OPCs	Str/SVZ 4-OPCs	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 40-Progenitor	Str/SVZ 40-Progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 41-Interneurons	Str/SVZ 41-Interneurons	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 42-Endothelial	Str/SVZ 42-Endothelial	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 43-Endothelial	Str/SVZ 43-Endothelial	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 5-Neurogenic progenitor	Str/SVZ 5-Neurogenic progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 6-SPN	Str/SVZ 6-SPN	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 7-Neurogenic progenitor	Str/SVZ 7-Neurogenic progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 8-Neurogenic progenitor	Str/SVZ 8-Neurogenic progenitor	Anderson et al 2020
+Striatum	Mouse P9	Str/SVZ 9-Microglia	Str/SVZ 9-Microglia	Anderson et al 2020

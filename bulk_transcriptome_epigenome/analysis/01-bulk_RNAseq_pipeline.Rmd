@@ -221,7 +221,7 @@ Load normalized counts for genes of interest from the pipeline run:
 
 ```{r load_counts}
 
-pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
+pipeline_path <- "../../../level3/2020-01_G34_submission1_add_samples/"
 
 # Define genes which we'll plot in this document
 genes_of_interest <- c("GSX2", "DLX1", "DLX2", "PDGFRA", "MOXD1", "EOMES", "NEUROD2")

@@ -136,7 +136,7 @@ the following outputs are loaded for further analysis below and in the subsequen
 
 ```{r rp}
 
-pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/Cell_lines3/"
+pipeline_path <- "../../../level3/2020-01_G34_submission1_add_samples/Cell_lines3/"
 
 ```
 

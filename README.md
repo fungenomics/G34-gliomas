@@ -32,11 +32,46 @@ project specific library
 * `include`: shared templates, Rmd/HTML headers/footers, and R functions used
 throughout the analysis
 
+## Map from figures to code
 
+This section contains a pointer from each figure in the paper to the section (§) where it's generated in the code.
+As described below in the section on preproducibility, the source data for the figure is
+typically saved alongside the figure itself.
+
+### Figure 2
+
+- **Figure 2A**: `bulk_transcriptome_epigenome/02-GSEA...`, § 6.1.1 Forebrain reference
+- **Figure 2C**: `bulk_transcriptome_epigenome/02-GSEA...`, § 6.1.2 Striatal SVZ
+- **Figure 2D**: `bulk_transcriptome_epigenome/01-bulk_RNAseq_pipeline...` § 4.3.2 Lineage specific TFs
+- **Figure 2E**: `bulk_transcriptome_epigenome/03-ChIPseq.Rmd...`, § 4.2.1 DGE
+- **Figure 2F**: `singlecell_normal/analysis/01-interneuron_pseudotime...`,
+    - top panel § 4.1 Cell type density along normal interneuron differentiation trajectory
+    - bottom panel § 4.2 Plot genes of interest along pseudotime
+
+### Figure S2
+
+- **Figure S2A**: `bulk_transcriptome_epigenome/02-GSEA...`, § 6.2 GSEA enrichment plots
+- **Figure S2B**: `bulk_transcriptome_epigenome/02-GSEA...`, § 6.4 Confirmation of signal by direct expression of gene programs
+- **Figure S2D**: `bulk_transcriptome_epigenome/02-GSEA...`, § 6.1.3 Adult V-SVZ
+- **Figure S2E**: `bulk_transcriptome_epigenome/01-bulk_RNAseq_pipeline...` § 4.3.2 Lineage specific TFs
+
+### Figure 3
+
+- **Figure 3A**: `bulk_transcriptome_epigenome/analysis/04-isogenic_cell_lines...`,
+    - top panel § 4.4.3 Targeted DGE, for stem condition - GBM002
+    - bottom panel § 4.4.2 Targeted DGE, for serum condition - GBM002
+- **Figure 3C**: `bulk_transcriptome_epigenome/analysis/04-isogenic_cell_lines...` § 4.5.4 Visualize results
+- **Figure 3D**: `singlecell_normal/analysis/02-gene_bubbleplots...`,
+    - left § 4.1 Mouse developing forebrain
+    - right § 4.3 Striatal SVZ
+
+### Figure S5
+
+- **Figure S5A**: `bulk_transcriptome_epigenome/01-bulk_RNAseq_pipeline...` § 4.4.1 G34 mutants
+- **Figure S5B**: `singlecell_normal/analysis/02-gene_bubbleplots...`, § 4.2 Human
 
 
 ## Notes for reproducibility
-
 
 ### R and R package versions
 
@@ -92,6 +127,7 @@ The following are tracked / available on GitHub:
 * The lockfile produced by the `renv` package
 
 The following are not tracked / available on GitHub:
+
 * `HTML` files, because these can be large, but they can be regenerated from the intermediate `.md` files saved
 * Figures in `pdf` format, and figure source data
 * Raw data and large analysis output / processed data files
@@ -103,11 +139,13 @@ the command line with the `rmarkdown` package:
 `R --no-save -e "rmarkdown::render(input = 'bulk_transcriptome_epigenome/analysis/01-bulk_RNAseq_pipeline.md', output_format = 'html_document')"`
 
 
+
+
 ## Paper analysis not included in this repository
 
 * In-house bulk RNAseq pipeline. The standard bulk RNA-seq analysis performed by the Kleinman Lab in-house pipeline
 is run in the standard location on Beluga, with associated level 3 analysis at
-`/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples`.
+`/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/level3/2020-01_G34_submission1_add_samples`.
 That directory contains a number of iterations as samples were added, etc;
 the R Markdown files contain the paths for the exact outputs used in the final manuscript.
 * scRNAseq analysis of the patient tumor samples and external datasets. For the processing and QC of individual

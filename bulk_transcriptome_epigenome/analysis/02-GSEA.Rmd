@@ -88,7 +88,7 @@ source(here::here(subdir, "analysis/functions.R"))
 ```{r load_bulk}
 
 bulk_samples <- readxl::read_xlsx(
-    here::here(subdir, "data/2020-02-25_bulkRNAseq_metadata.xlsx"))
+  here::here(subdir, "data/2020-02-25_bulkRNAseq_metadata.xlsx"))
 
 ```
 
@@ -103,21 +103,24 @@ Load signatures from our Nature Genetics paper:
 
 # Annotation
 jessa_table_2a <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_Table_2a.tsv")) %>% 
-    mutate(Cluster = gsub("_", " ", Cluster)) %>% 
-    mutate(Age = paste0("Mouse ", Age),
-           Dataset = "Jessa et al 2019")
+  mutate(Cluster = gsub("_", " ", Cluster)) %>% 
+  mutate(Age = paste0("Mouse ", Age),
+         Dataset = "Jessa et al 2019")
 
 # Get data from paper, filter to clusters with a valid signature, from mouse samples
 jessa_table_2a_mouse_noblacklist <- jessa_table_2a %>% 
-    filter(Species == "Mouse" & Structure == "Forebrain" & !is.na(Signature))
+  filter(Species == "Mouse" & Structure == "Forebrain" & !is.na(Signature))
 
 # Parse the signature column to get gene signatures as vectors
 atlas_signatures <- list("mm_sym" = map(jessa_table_2a_mouse_noblacklist$Signature,
                                         ~ stringr::str_split(.x, ", ") %>%
-                                            # Get the first element, otherwise we have
-                                            # a list of one-element lists
-                                            .[[1]]))
+                                          # Get the first element, otherwise we have
+                                          # a list of one-element lists
+                                          .[[1]]))
 names(atlas_signatures$mm_sym) <- jessa_table_2a_mouse_noblacklist$Cluster
+
+# All signatures are 100-genes
+all(map_dbl(atlas_signatures$mm_sym, length) == 100)
 
 # Convert to human symbols / Ensembl IDs
 atlas_signatures$hg_sym <- map(atlas_signatures$mm_sym,
@@ -141,12 +144,12 @@ similar format:
 
 # Annotation
 nowakowski_cluster_anno <- read_csv(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski2017_tableS4_cluster_labels_with_colours.csv")) %>%
-    select(Cluster = `Cluster Name`,
-           Cell_type = `Cluster Interpretation`) %>% 
-    mutate(Cluster = paste0("HF ",  Cluster)) %>% 
-    mutate(Age = "Human fetal",
-           Sample = "Human fetal cortex/MGE",
-           Dataset = "Nowakowski et al 2017")
+  select(Cluster = `Cluster Name`,
+         Cell_type = `Cluster Interpretation`) %>% 
+  mutate(Cluster = paste0("HF ",  Cluster)) %>% 
+  mutate(Age = "Human fetal",
+         Sample = "Human fetal cortex/MGE",
+         Dataset = "Nowakowski et al 2017")
 
 # Signatures
 load(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski_signatures.Rda"))
@@ -164,10 +167,10 @@ names(nowakowski_signatures$hg_sym) <- paste0("HF ", names(nowakowski_signatures
 
 # Annotation
 velmeshev_anno <- read_tsv(here("reference_datasets/2019_Velmeshev/processed_data/01-cluster_names_with_interpretation.tsv")) %>% 
-    mutate(Age = "Human ped/adult",
-           Cluster = paste0("HP ", Cluster),
-           Dataset = "Velmeshev et al 2019",
-           Sample  = "Human ped/adult cortex")
+  mutate(Age = "Human ped/adult",
+         Cluster = paste0("HP ", Cluster),
+         Dataset = "Velmeshev et al 2019",
+         Sample  = "Human ped/adult cortex")
 
 # Signatures
 velmeshev_signatures <- readRDS(here("reference_datasets/2019_Velmeshev/processed_data/01-cluster_gene_signatures.Rds"))
@@ -231,6 +234,8 @@ signatures_sym <- c(atlas_signatures$hg_sym,
                     mizrak_rep1_signatures$hg_sym,
                     mizrak_rep2_signatures$hg_sym)
 
+length(signatures_sym)
+
 rr_saveRDS(file = glue("{out}/signatures_sym.Rds"),
            desc = "Cell type specific gene signatures from several forebrain references (list of vectors, using gene symbols)",
            signatures_sym)
@@ -242,6 +247,8 @@ signatures_ens <- c(atlas_signatures$hg_ens,
                     anderson_signatures$hg_ens,
                     mizrak_rep1_signatures$hg_ens,
                     mizrak_rep2_signatures$hg_ens)
+
+length(signatures_sym)
 
 rr_saveRDS(file = glue("{out}/signatures_ens.Rds"),
            desc = "Cell type specific gene signatures from several forebrain references (list of vectors, using Ensemble gene IDs)",
@@ -265,6 +272,9 @@ cell_type_anno <- bind_rows(jessa_table_2a %>% select(Sample, Age, Cell_type, Cl
                             mizrak_anno,
                             anderson_anno)
 
+rr_write_tsv(df = cell_type_anno, path = glue("{out}/signature_annotations.tsv"),
+             desc = "Cluster info for normal signatures including dataset, age, cell class, etc.")
+
 ```
 
 
@@ -277,9 +287,9 @@ Create colour palettes for each dataset, for visualization:
 palette_atlas <- jessa_table_2a %>% select(Cluster, Colour) %>% deframe()
 
 palette_nowakowski <- read_csv(here("reference_datasets/2017_Nowakowski/processed_data/nowakowski2017_tableS4_cluster_labels_with_colours.csv")) %>%
-    mutate(Cluster = paste0("HF ", `Cluster Name`)) %>%
-    select(Cluster, colour = Colour) %>%
-    deframe()
+  mutate(Cluster = paste0("HF ", `Cluster Name`)) %>%
+  select(Cluster, colour = Colour) %>%
+  deframe()
 
 palette_type <- c("RGC" = "#ffcc00",
                   "RGC (prolif.)" = "#e8a805",
@@ -323,24 +333,24 @@ genes between G34R/V tumors vs. other pediatric brain tumor types.
 
 ```{r prep_stats, message = FALSE, warning = FALSE}
 
-pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/"
+pipeline_path <- "../../../level3/2020-01_G34_submission1_add_samples/"
 
 # Keep all the DGE analyses between tumor groups, accounting for batch
 comps <- list.files(pipeline_path, full.names = TRUE)[
-    grepl("^HGG", list.files(pipeline_path)) &
-        grepl("vs", list.files(pipeline_path)) &
-        grepl("batch_covariate", list.files(pipeline_path)) &
-        !grepl("IDH_and_WT", list.files(pipeline_path))]
+  grepl("^HGG", list.files(pipeline_path)) &
+    grepl("vs", list.files(pipeline_path)) &
+    grepl("batch_covariate", list.files(pipeline_path)) &
+    !grepl("IDH_and_WT", list.files(pipeline_path))]
 
 names(comps) <- gsub("_batch_covariate", "", basename(comps))
 
 # Get the file with the DESeq2 DGE output, and create a vector with the Ensembl
 # gene IDs and stat for that gene, in each comparison
 stats <- map(comps, ~ read_tsv(Sys.glob(file.path(.x, "diff/Ensembl.ensGene.exon/*.tsv"))) %>%
-                 filter(!is.na(stat)) %>%
-                 separate(ID, into = c("Ens", "Sym"), sep = ":") %>%
-                 select(Ens, stat) %>%
-                 deframe())
+               filter(!is.na(stat)) %>%
+               separate(ID, into = c("Ens", "Sym"), sep = ":") %>%
+               select(Ens, stat) %>%
+               deframe())
 
 rr_saveRDS(file = glue("{out}/stats.Rds"),
            desc = "List of DESeq2 stats from differential expression analyses between tumor groups, to use for GSEA",
@@ -376,44 +386,109 @@ as cell-cycle genes may confound GSEA enrichment scores particularly in these tu
 ```{r filter_signatures, dependson = c('prep_stats', 'run_gsea'), fig.width = 20, fig.height = 4}
 
 # 1. Atlas
-# Load expression of Top2a, to quantitatively set a threshold for identifying
-# proliferating clusters
-atlas_top2a_expr <- feather::read_feather(here("reference_datasets/2019_Jessa/Jessa2019_mean_expression.feather"), c("Cluster", "Top2a")) %>% 
-    arrange(desc(Top2a)) %>% 
-    full_join(jessa_table_2a)
+# Load signatures with cell cycle scores, to quantitatively set a filter
+infosig_with_cc <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_cluster_cell_cycle_scores.tsv")) %>%
+  arrange(desc(Median_G2M)) %>% 
+  full_join(jessa_table_2a)
 
-atlas_top2a_expr %>%
-    filter(Species == "Mouse") %>%
-    mutate(Cluster = factor(Cluster, levels = unique(.$Cluster))) %>%
-    ggplot(aes(x = Cluster, y = Top2a)) +
-    geom_point(aes(colour = Cluster)) +
-    scale_colour_manual(values = palette_atlas) +
-    # Setting a threshold on Top2a expression
-    geom_hline(yintercept = 0.4) +
-    theme_min() +
-    rotateX() +
-    noLegend()
+infosig_with_cc %>%
+  filter(Species == "Mouse") %>%
+  mutate(Cluster = factor(Cluster, levels = unique(.$Cluster))) %>%
+  ggplot(aes(x = Cluster, y = Median_G2M)) +
+  geom_point(aes(colour = Cluster)) +
+  scale_colour_manual(values = palette_atlas) +
+  # Set an arbitrary threshold, where the G2M score starts tapering off
+  geom_hline(yintercept = 0.35) +
+  theme_min() +
+  rotateX() +
+  noLegend()
 
-atlas_sigs_drop <- atlas_top2a_expr %>%
-    # Remove anything with G2M scores above the threshold, OR which is labelled
-    # as proliferating, as indicated by a trailing "-P" in the cluster abbreviation
-    filter(Top2a > 0.4 | grepl("-P$", Cluster) |
-               # Remove anything labeled Other/Other neurons
-               (Cell_class %in% c("Other", "Other neurons")) |
-               # Filter to only forebrain signatures
-               (Structure != "Forebrain")) %>%
-    pull(Cluster)
+atlas_sigs_drop <- infosig_with_cc %>%
+  # Remove anything with G2M scores above the threshold, OR which is labelled
+  # as proliferating, as indicated by a trailing "-P" in the cluster abbreviation
+  filter(Median_G2M > 0.35 | grepl("-P$", Cluster) |
+           # Remove anything labeled Other/Other neurons
+           (Cell_class %in% c("Other", "Other neurons")) |
+           # Filter to only forebrain signatures
+           (Structure != "Forebrain")) %>%
+  pull(Cluster)
 
 # 2. Nowakowski
 nowakowski_sigs_drop <- nowakowski_cluster_anno %>%
-    # Filter out proliferating clusters, 
-    filter(grepl("-P$|div|G2M/S|MGE-IPC1|MGE-IPC2|prolif", Cluster) |
-               # Filter out Unknown
-               grepl("Unknown", Cell_type)) %>%
-    pull(Cluster)
+  # Filter out proliferating clusters, 
+  filter(grepl("-P$|div|G2M/S|MGE-IPC1|MGE-IPC2|prolif", Cluster) |
+           # Filter out Unknown cluster
+           grepl("Unknown", Cell_type)) %>%
+  pull(Cluster)
 
 bulk_fgsea_filt <- map(bulk_fgsea, ~ .x %>%
-                           filter(!(pathway %in% c(atlas_sigs_drop, nowakowski_sigs_drop))))
+                         filter(!(pathway %in% c(atlas_sigs_drop, nowakowski_sigs_drop))))
+
+```
+
+## Save final gene signature set
+
+Having filtered out certain signatures, we'll save the final set used for analysis:
+
+```{r save_final_signatures}
+
+signatures_ens_filt <- signatures_ens[!(names(signatures_ens) %in% c(atlas_sigs_drop, nowakowski_sigs_drop))]
+
+length(signatures_ens_filt)
+
+rr_saveRDS(file = glue("{out}/signatures_ens_filt.Rds"),
+           desc = "Cell type specific gene signatures from several forebrain references (list of vectors, using ENSEMBL IDs), after filtering due to cell cycle/proliferation/irrelevant or technical signal",
+           signatures_ens_filt)
+
+signatures_sym_filt <- signatures_sym[!(names(signatures_sym) %in% c(atlas_sigs_drop, nowakowski_sigs_drop))]
+
+length(signatures_sym_filt)
+
+rr_saveRDS(file = glue("{out}/signatures_sym_filt.Rds"),
+           desc = "Cell type specific gene signatures from several forebrain references (list of vectors, using symEMBL IDs), after filtering due to cell cycle/proliferation/irrelevant or technical signal",
+           signatures_sym_filt)
+
+# make a table
+signatures_ens_filt_collapsed <- map(signatures_ens_filt, ~ glue_collapse(.x, ","))
+signatures_sym_filt_collapsed <- map(signatures_sym_filt, ~ glue_collapse(.x, ","))
+signatures_filt_df <- data.frame(Cluster       = names(signatures_ens_filt_collapsed),
+                                 Genes_ENSEMBL = unlist(unname(signatures_ens_filt_collapsed)),
+                                 Genes_symbol  = unlist(unname(signatures_sym_filt_collapsed)))
+
+dim(signatures_filt_df)
+
+rr_write_tsv(df = signatures_filt_df,
+             path = glue("{out}/signatures_filt.tsv"),
+             desc = "Table with all forebrain gene signatures included in analysis after filtering, both gene symbols and ENSEMBl IDs")
+
+```
+
+Make GMX format for GSEA input for sharing:
+
+```{r gmx}
+
+#' Pad a vector x with NAs to length n
+pad <- function(x, n = 120) {
+    
+    if (length(x) < n) c(x, rep(NA, n - length(x)))
+    else x
+    
+}
+
+# pad all signatures
+signatures_sym_filt_padded <- map(signatures_sym_filt, pad)
+signatures_sym_filt_padded_df <- data.frame(signatures_sym_filt_padded)
+colnames(signatures_sym_filt_padded_df) <- names(signatures_sym_filt_padded)
+
+# for GMX format, the first row should be an optional description
+dummy_row <- rep("na", length(signatures_sym_filt_padded))
+names(dummy_row) = names(signatures_sym_filt_padded)
+
+signatures_sym_filt_padded_df <- bind_rows(dummy_row, signatures_sym_filt_padded_df)
+
+write_tsv(signatures_sym_filt_padded_df, glue("{out}/signatures_filt.gmx"))
+
+dim(signatures_sym_filt_padded_df)
 
 ```
 
@@ -426,27 +501,27 @@ Here we transform the fgsea output into tidy format:
 # A function to convert the leading edge from ENSG id to symbols, and from
 # a character vector a flat character string
 flatten_leading_edge <- function(x) {
+  
+  # Convert leading edge genes to gene symbols
+  for (i in 1:nrow(x)) {
     
-    # Convert leading edge genes to gene symbols
-    for (i in 1:nrow(x)) {
-        
-        x[i, ]$leadingEdge <- x[i, ]$leadingEdge %>% ensembl2symbols_safe() %>% glue_collapse(sep = ", ")
-        
-    }
+    x[i, ]$leadingEdge <- x[i, ]$leadingEdge %>% ensembl2symbols_safe() %>% glue_collapse(sep = ", ")
     
-    x$leadingEdge <- as.character(x$leadingEdge)
-    x
-    
+  }
+  
+  x$leadingEdge <- as.character(x$leadingEdge)
+  x
+  
 }
 
 fgsea_df <- imap_dfr(bulk_fgsea_filt, ~ .x %>%
-                         as.data.frame() %>%
-                         flatten_leading_edge() %>%
-                         tibble::add_column(Comparison = .y, .before = 1) %>%
-                         arrange(desc(NES))) %>%
-    rename(Signature = pathway) %>%
-    left_join(cell_type_anno, by = c("Signature" = "Cluster")) %>%
-    select(Comparison, Signature, Sample, Age, Cell_type, everything())
+                       as.data.frame() %>%
+                       flatten_leading_edge() %>%
+                       tibble::add_column(Comparison = .y, .before = 1) %>%
+                       arrange(desc(NES))) %>%
+  rename(Signature = pathway) %>%
+  left_join(cell_type_anno, by = c("Signature" = "Cluster")) %>%
+  select(Comparison, Signature, Sample, Age, Cell_type, everything())
 
 # Save output
 rr_write_tsv(df = fgsea_df,
@@ -465,33 +540,33 @@ are the top-ranked ones i.e. rank < 2000, to ensure we have good lists to work w
 # Generate stats based on the gene symbols
 stats_idh_sym <- read_tsv(Sys.glob(file.path(comps["HGG-G34R.V_vs_HGG-IDH"],
                                              "diff/Ensembl.ensGene.exon/*.tsv"))) %>%
-    filter(!is.na(stat)) %>%
-    separate(ID, into = c("Ens", "Sym"), sep = ":") %>%
-    select(Sym, stat) %>%
-    deframe()
+  filter(!is.na(stat)) %>%
+  separate(ID, into = c("Ens", "Sym"), sep = ":") %>%
+  select(Sym, stat) %>%
+  deframe()
 
 # Apply filters and order by score
 fgsea_df_idh_filt <- fgsea_df %>%
-    filter(Comparison == "HGG-G34R.V_vs_HGG-IDH") %>%
-    filter(padj < 0.01)
+  filter(Comparison == "HGG-G34R.V_vs_HGG-IDH") %>%
+  filter(padj < 0.01)
 
 fgsea_df_idh_filt$leadingEdge_top <- ""
 
 # Get the top-ranked leading edge genes
 for (i in 1:nrow(fgsea_df_idh_filt)) {
-    
-    genes <- stringr::str_split(fgsea_df_idh_filt[i, ]$leadingEdge, ", ") %>% getElement(1)
-    sig <- fgsea_df_idh_filt[i, ]$Signature
-    nes <- fgsea_df_idh_filt[i, ]$NES
-    
-    fgsea_df_idh_filt[i, ]$leadingEdge_top <- get_gene_ranks(pathway   = signatures_sym[[sig]],
-                                                             stats     = stats_idh_sym,
-                                                             direction = ifelse(nes > 0, "enriched", "depleted")) %>%
-        filter(gene %in% genes & rank < 2000) %>%
-        pull(gene) %>%
-        as.character() %>%
-        glue_collapse(", ")
-    
+  
+  genes <- stringr::str_split(fgsea_df_idh_filt[i, ]$leadingEdge, ", ") %>% getElement(1)
+  sig <- fgsea_df_idh_filt[i, ]$Signature
+  nes <- fgsea_df_idh_filt[i, ]$NES
+  
+  fgsea_df_idh_filt[i, ]$leadingEdge_top <- get_gene_ranks(pathway   = signatures_sym[[sig]],
+                                                           stats     = stats_idh_sym,
+                                                           direction = ifelse(nes > 0, "enriched", "depleted")) %>%
+    filter(gene %in% genes & rank < 2000) %>%
+    pull(gene) %>%
+    as.character() %>%
+    glue_collapse(", ")
+  
 }
 
 rr_write_tsv(fgsea_df_idh_filt,
@@ -572,8 +647,8 @@ a comparator group for G34 gliomas that are not not glial in origin.
 ```{r gsea_heatmap_bcor, echo_fig = TRUE, dependson = 'summarize_cell_types'}
 
 signif_in_bcor <- fgsea_df %>%
-    filter(Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR" & padj < 0.01) %>%
-    pull(Signature)
+  filter(Comparison == "HGG-G34R.V_vs_PNET-HGNET-BCOR" & padj < 0.01) %>%
+  pull(Signature)
 
 heatmap_inputs_bcor <- prep_gsea_heatmap(fgsea_df,
                                          signatures = signif_in_bcor,
@@ -669,21 +744,21 @@ depleted signature.
 # A function to add the NES and adj p-value to the enrichment plot, based on
 # the functions included in the fgsea package
 plot_enrich_with_stats <- function(sig, title, source, colour, plot_num) {
-    
-    signatures = switch(source,
-                        "nowakowski" = nowakowski_signatures$hg_ens,
-                        "atlas"      = atlas_signatures$hg_ens,
-                        "velmeshev"  = velmeshev_signatures$hg_ens,
-                        "anderson"   = anderson_signatures$hg_ens)
-    
-    plotEnrichment2(signatures[[sig]],
-                    stats$`HGG-G34R.V_vs_HGG-IDH`,
-                    colour = colour,
-                    plot_num = plot_num) +
-        labs(title = paste0(title, "\nNES: ",
-                            fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2),
-                            ", p_adj: ",
-                            fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific()))
+  
+  signatures = switch(source,
+                      "nowakowski" = nowakowski_signatures$hg_ens,
+                      "atlas"      = atlas_signatures$hg_ens,
+                      "velmeshev"  = velmeshev_signatures$hg_ens,
+                      "anderson"   = anderson_signatures$hg_ens)
+  
+  plotEnrichment2(signatures[[sig]],
+                  stats$`HGG-G34R.V_vs_HGG-IDH`,
+                  colour = colour,
+                  plot_num = plot_num) +
+    labs(title = paste0(title, "\nNES: ",
+                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(NES) %>% round(2),
+                        ", p_adj: ",
+                        fgsea_df_idh_filt %>% filter(Signature == sig) %>% pull(padj) %>% scales::scientific()))
 }
 
 # Plot for most enriched or depleted signatures
@@ -735,16 +810,16 @@ Output results of gene set enrichment analysis (GSEA) for G34R/V compared to oth
 ```{r table}
 
 table_gsea <- fgsea_df %>% 
-    filter(padj < 0.01) %>% 
-    select(Comparison, Cell_type, Age, Dataset, pval, padj, ES, NES, leadingEdge) %>% 
-    mutate(Comparison = factor(Comparison, levels = c(
-        "HGG-G34R.V_vs_HGG-IDH",
-        "HGG-G34R.V_vs_HGG-WT",
-        "HGG-G34R.V_vs_HGG-H3.3-K27M-pons",
-        "HGG-G34R.V_vs_HGG-H3.3-K27M-thalamic",
-        "HGG-G34R.V_vs_PNET-HGNET-BCOR"
-    ))) %>% 
-    arrange(Comparison, desc(NES))
+  filter(padj < 0.01) %>% 
+  select(Comparison, Cell_type, Age, Dataset, pval, padj, ES, NES, leadingEdge) %>% 
+  mutate(Comparison = factor(Comparison, levels = c(
+    "HGG-G34R.V_vs_HGG-IDH",
+    "HGG-G34R.V_vs_HGG-WT",
+    "HGG-G34R.V_vs_HGG-H3.3-K27M-pons",
+    "HGG-G34R.V_vs_HGG-H3.3-K27M-thalamic",
+    "HGG-G34R.V_vs_PNET-HGNET-BCOR"
+  ))) %>% 
+  arrange(Comparison, desc(NES))
 
 rr_write_tsv(table_gsea,
              glue("{out}/table_gsea.tsv"),
@@ -752,7 +827,7 @@ rr_write_tsv(table_gsea,
 
 ```
 
-## Coonfirmation of signal by direct expression of gene programs
+## Confirmation of signal by direct expression of gene programs
 
 In this analysis, we have looked at differential signal between tumor groups,
 but let's interrogate directly the expression of genes in the interneuron gene
@@ -763,10 +838,10 @@ Set up palettes:
 ```{r palettes_samples}
 
 palette_groups <- c(
-    "G34R/V"            = "cyan4",
-    "K27M-pons"         = "gold1",
-    "K27M-thal"         = "goldenrod3",
-    "IDH"               = "#883067")
+  "G34R/V"            = "cyan4",
+  "K27M-pons"         = "gold1",
+  "K27M-thal"         = "goldenrod3",
+  "IDH"               = "#883067")
 
 ```
 
@@ -778,10 +853,10 @@ signatures <- c("HF nIN1",  # Newborn interneuron signature
                 "HP OPC") # Oligodendrocyte signature
 
 leading_edge <- fgsea_df_idh_filt %>% 
-    filter(Signature %in% signatures) %>% 
-    select(Signature, leadingEdge_top) %>% 
-    tibble::deframe() %>% 
-    map(~ .x %>% stringr::str_split(", ") %>% unlist())
+  filter(Signature %in% signatures) %>% 
+  select(Signature, leadingEdge_top) %>% 
+  tibble::deframe() %>% 
+  map(~ .x %>% stringr::str_split(", ") %>% unlist())
 
 heatmap_genes <- unique(unlist(leading_edge))
 
@@ -810,7 +885,7 @@ counts_subset_heatmap_filt <- counts_subset_heatmap[, !colnames(counts_subset_he
 
 # z-score
 z_score <- function(x){
-    (x - mean(x)) / sd(x)
+  (x - mean(x)) / sd(x)
 }
 
 # Apply z-scoring across samples, gene x sample
@@ -818,24 +893,24 @@ counts_subset_heatmap_filt_z <- apply(counts_subset_heatmap_filt, 1, z_score)
 
 # Construct annotations for gene programs & samples
 gene_anno <- data.frame("gene" = rownames(counts_subset_heatmap)) %>% 
-    distinct(gene) %>% 
-    mutate("Program" = case_when(
-        gene %in% signatures_sym[["HP OPC"]] ~ "Oligodendrocyte",
-        gene %in% signatures_sym[["HF nIN1"]] ~ "Interneuron",
-        TRUE ~ "Other")) %>% 
-    tibble::column_to_rownames(var = "gene")
+  distinct(gene) %>% 
+  mutate("Program" = case_when(
+    gene %in% signatures_sym[["HP OPC"]] ~ "Oligodendrocyte",
+    gene %in% signatures_sym[["HF nIN1"]] ~ "Interneuron",
+    TRUE ~ "Other")) %>% 
+  tibble::column_to_rownames(var = "gene")
 
 sample_anno <- bulk_samples %>% 
-    select(Sample, Group) %>% 
-    mutate(Group = recode(Group,
-                          "HGG-G34R/V" = "G34R/V",
-                          "HGG-H3.3-K27M-pons" = "K27M-pons",
-                          "HGG-H3.3-K27M-thalamic" = "K27M-thal",
-                          "HGG-IDH" = "IDH",
-                          "HGG-WT" = "WT",
-                          "PNET-HGNET-BCOR" = "HGNET-BCOR")) %>% 
-    filter(!(Group %in% c("WT", "HGNET-BCOR"))) %>% 
-    tibble::column_to_rownames(var = "Sample")
+  select(Sample, Group) %>% 
+  mutate(Group = recode(Group,
+                        "HGG-G34R/V" = "G34R/V",
+                        "HGG-H3.3-K27M-pons" = "K27M-pons",
+                        "HGG-H3.3-K27M-thalamic" = "K27M-thal",
+                        "HGG-IDH" = "IDH",
+                        "HGG-WT" = "WT",
+                        "PNET-HGNET-BCOR" = "HGNET-BCOR")) %>% 
+  filter(!(Group %in% c("WT", "HGNET-BCOR"))) %>% 
+  tibble::column_to_rownames(var = "Sample")
 
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: "04 - isogenic cell lines"
-date: "25 September, 2020"
+date: "11 December, 2020"
 output:
   html_document:
     keep_md: true
@@ -198,7 +198,7 @@ the following outputs are loaded for further analysis below and in the subsequen
 
 
 ```r
-pipeline_path <- "../../../2019-09_bulk_RNAseq/2020-01_G34_submission1_add_samples/Cell_lines3/"
+pipeline_path <- "../../../level3/2020-01_G34_submission1_add_samples/Cell_lines3/"
 ```
 
 ## Alignment stats
@@ -706,7 +706,7 @@ dge_stem %>%
 This document was last rendered on:
 
 ```
-## 2020-09-25 10:58:04
+## 2020-12-11 13:30:54
 ```
 
 The git repository and last commit:
@@ -714,7 +714,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [b330fad] 2020-09-23: Add additional analysis of isogenic cell lines
+## Head:     [71d3b7e] 2020-09-28: Ignore slurm submission script
 ```
 
 The random seed was set with `set.seed(100)`
@@ -750,17 +750,16 @@ The R session info:
 ##  [1] Rcpp_1.0.5          git2r_0.27.1        plyr_1.8.6         
 ##  [4] pillar_1.4.6        compiler_3.5.1      cellranger_1.1.0   
 ##  [7] RColorBrewer_1.1-2  BiocManager_1.30.10 tools_3.5.1        
-## [10] digest_0.6.25       jsonlite_1.7.1      evaluate_0.14      
-## [13] lifecycle_0.2.0     tibble_3.0.3        gtable_0.3.0       
-## [16] pkgconfig_2.0.3     rlang_0.4.7         parallel_3.5.1     
-## [19] yaml_2.2.1          xfun_0.17           withr_2.2.0        
-## [22] stringr_1.4.0       knitr_1.29          vctrs_0.3.4        
-## [25] hms_0.5.3           rprojroot_1.3-2     grid_3.5.1         
-## [28] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
-## [31] reshape2_1.4.4      codetools_0.2-15    backports_1.1.9    
-## [34] ellipsis_0.3.1      htmltools_0.5.0     assertthat_0.2.1   
-## [37] colorspace_1.4-1    renv_0.10.0         stringi_1.5.3      
-## [40] lazyeval_0.2.2      munsell_0.5.0       crayon_1.3.4
+## [10] digest_0.6.25       evaluate_0.14       lifecycle_0.2.0    
+## [13] tibble_3.0.3        gtable_0.3.0        pkgconfig_2.0.3    
+## [16] rlang_0.4.7         parallel_3.5.1      yaml_2.2.1         
+## [19] xfun_0.17           withr_2.2.0         stringr_1.4.0      
+## [22] knitr_1.29          vctrs_0.3.4         hms_0.5.3          
+## [25] rprojroot_1.3-2     grid_3.5.1          tidyselect_1.1.0   
+## [28] R6_2.4.1            rmarkdown_1.11      backports_1.1.9    
+## [31] ellipsis_0.3.1      htmltools_0.5.0     assertthat_0.2.1   
+## [34] colorspace_1.4-1    renv_0.10.0         stringi_1.5.3      
+## [37] lazyeval_0.2.2      munsell_0.5.0       crayon_1.3.4
 ```
 
 </details>
