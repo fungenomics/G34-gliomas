@@ -77,12 +77,12 @@ typically saved alongside the figure itself.
 
 ### Figure 5
 
-- **Figure 5D**: `singlecell_normal/analysis/03-astrocyte_interneuron_coexpression...`, § 4.4 Developing mouse forebrain and 4.5 H3G34R/V tumors
+- **Figure 5D**: `singlecell_normal/analysis/03-astrocyte_interneuron_coexpression...`, § 5.3 Developing mouse forebrain and 5.4 H3G34R/V tumors
 
 
 ### Figure S6
 
-- **Figure S6C**: `singlecell_normal/analysis/03-astrocyte_interneuron_coexpression...`, § 4.3 Human fetal telencephalon
+- **Figure S6C**: `singlecell_normal/analysis/03-astrocyte_interneuron_coexpression...`, § 5.2 Human fetal telencephalon
 
 
 ## Notes for reproducibility
