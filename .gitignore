@@ -4,6 +4,9 @@
 # record every update
 run_slurm.sh
 
+# Internal README
+README_internal.md
+
 # History files
 .Rhistory
 .Rapp.history

@@ -1,12 +1,8 @@
 
 # G34-gliomas
 
-Selin Jessa
-
-selin.jessa@mail.mcgill.ca
-
 This repository contains the code & data for the bulk analysis included
-the G34R/V HGG manuscript (Chen, Deshmukh, Jessa, Hadjadj, et al),
+the G34R/V HGG manuscript ([Chen, Deshmukh, Jessa, Hadjadj, et al, Cell, 2020](https://doi.org/10.1016/j.cell.2020.11.012)),
 for the analysis that was performed by our lab.
 
 Contents:
@@ -14,7 +10,6 @@ Contents:
 * [Directory organization](https://github.com/fungenomics/G34-gliomas#directory-organization)
 * [Notes for reproducibility](https://github.com/fungenomics/G34-gliomas#notes-for-reproducibility)
 * [GitHub / version control](https://github.com/fungenomics/G34-gliomas#github--version-control)
-* [Paper analysis not included in this repo](https://github.com/fungenomics/G34-gliomas#paper-analysis-not-included-in-this-repository)
 
 
 ## Directory organization
@@ -69,6 +64,17 @@ typically saved alongside the figure itself.
 
 - **Figure S5A**: `bulk_transcriptome_epigenome/01-bulk_RNAseq_pipeline...` § 4.4.1 G34 mutants
 - **Figure S5B**: `singlecell_normal/analysis/02-gene_bubbleplots...`, § 4.2 Human
+
+
+
+### Figure 5
+
+- **Figure 5D**: `singlecell_normal/analysis/03-astrocyte_interneuron_coexpression...`, § 4.4 Developing mouse forebrain and 4.5 H3G34R/V tumors
+
+
+### Figure S6
+
+- **Figure S6C**: `singlecell_normal/analysis/03-astrocyte_interneuron_coexpression...`, § 4.3 Human fetal telencephalon
 
 
 ## Notes for reproducibility
@@ -128,29 +134,11 @@ The following are tracked / available on GitHub:
 
 The following are not tracked / available on GitHub:
 
-* `HTML` files, because these can be large, but they can be regenerated from the intermediate `.md` files saved
 * Figures in `pdf` format, and figure source data
 * Raw data and large analysis output / processed data files
 * The actual packages in the R library 
 
-An HTML file can be regenerated from a markdown `.md` file, like so on
-the command line with the `rmarkdown` package:
+## Contact
 
-`R --no-save -e "rmarkdown::render(input = 'bulk_transcriptome_epigenome/analysis/01-bulk_RNAseq_pipeline.md', output_format = 'html_document')"`
-
-
-
-
-## Paper analysis not included in this repository
-
-* In-house bulk RNAseq pipeline. The standard bulk RNA-seq analysis performed by the Kleinman Lab in-house pipeline
-is run in the standard location on Beluga, with associated level 3 analysis at
-`/lustre03/project/6004736/sjessa/from_beluga/HGG-G34/level3/2020-01_G34_submission1_add_samples`.
-That directory contains a number of iterations as samples were added, etc;
-the R Markdown files contain the paths for the exact outputs used in the final manuscript.
-* scRNAseq analysis of the patient tumor samples and external datasets. For the processing and QC of individual
-samples, the backup is at `/lustre03/project/6004736/sjessa/from_hydra/HGG-G34/samples`. The analysis performed by Veronique Lisi is
-stored at `/lustre03/project/6004736/vlisi/fromHydra/SCRATCH/vlisi/LEGACY/G34`.
-* Any analysis performed by the Jabado Lab (Carol Chen, Djihad Hadjadj, Shriya Deshmukh)
-
-
+Selin Jessa
+selin.jessa at mail.mcgill.ca
