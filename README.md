@@ -148,5 +148,4 @@ The following are not tracked / available on GitHub:
 
 ## Contact
 
-Selin Jessa
-selin.jessa at mail.mcgill.ca
+Selin Jessa (selin.jessa at mail.mcgill.ca)
