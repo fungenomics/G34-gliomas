@@ -12,16 +12,24 @@ Contents:
 * [GitHub / version control](https://github.com/fungenomics/G34-gliomas#github--version-control)
 
 
-## Directory organization
+## Directory organization and links to code
 
 * `reference_datasets`: data, code, and processed outputs for scRNAseq
 normal brain reference datasets, with one sub-directory per publication.
 For external publications, the process
 of obtaining or deriving cluster markers used in later analysis is recorded here.
 * `bulk_transcriptome_epigenome`: data, code, figures and output for 
-bulk RNA-seq and ChIP-seq analysis of patient tumors and tumor-derived cell lines.
+bulk RNA-seq and ChIP-seq analysis of patient tumors and tumor-derived cell lines.  
+    + [Gene expression in bulk RNAseq](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/01-bulk_RNAseq_pipeline.html)
+    + [GSEA enrichment of developmental signatures in tumor RNAseq](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/02-GSEA.html)
+    + [Integration of ChIPseq & RNAseq](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/03-ChIPseq.html)
+    + [Analysis of RNAseq data from isogenic cell lines](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/04-isogenic_cell_lines.html)
+    + [Virtual 4C from HiC data](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/05-4C.html)
 * `singlecell_normal`: data, code, figures and output for analysis of the scRNAseq
 normal brain data
+    + [Analysis of gene expression along normal interneuron pseudotime](https://fungenomics.github.io/G34-gliomas/singlecell_normal/analysis/01-interneuron_pseudotime.html)
+    + [Bubbleplots of interneuron genes in the normal brain](https://fungenomics.github.io/G34-gliomas/singlecell_normal/analysis/02-gene_bubbleplots.html)
+    + [Co-expression of astrocyte/interneuron expression in normal brain & tumors](https://fungenomics.github.io/G34-gliomas/singlecell_normal/analysis/03-astrocyte_interneuron_coexpression.html)
 * `renv`: directory maintained by the R package `renv`, containing the isolated
 project specific library
 * `include`: shared templates, Rmd/HTML headers/footers, and R functions used
