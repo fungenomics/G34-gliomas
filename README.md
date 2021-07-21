@@ -111,7 +111,7 @@ the seed, and the R session info.
 
 For most figures, the source data underlying the plot is saved along side the figure
 in the respective `figures` directory. If so, a message is displayed
-in the markdown/HTML files underneath the chunk whih produces the plot,
+in the markdown/HTML files underneath the chunk which produces the plot,
 giving the path for the figures/source data within this project directory.
 
 e.g. `[figure/source data @ G34-gliomas/bulk_transcriptome_epigenome/figures/01/gsx2_pdgfra_correlation…]`
