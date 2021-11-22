@@ -30,6 +30,8 @@ throughout the analysis
 ## Map from figures to code
 
 This section contains a pointer from each figure in the paper to the section (§) where it's generated in the code.
+For each figure panel, I provide a partial path to the RMD/MD/HTML files within this repository/directory,
+and then the section in the rendered HTML which specifically produces that panel.
 As described below in the section on preproducibility, the source data for the figure is
 typically saved alongside the figure itself.
 
@@ -38,7 +40,7 @@ typically saved alongside the figure itself.
 - **Figure 2A**: `bulk_transcriptome_epigenome/02-GSEA...`, § 6.1.1 Forebrain reference
 - **Figure 2C**: `bulk_transcriptome_epigenome/02-GSEA...`, § 6.1.2 Striatal SVZ
 - **Figure 2D**: `bulk_transcriptome_epigenome/01-bulk_RNAseq_pipeline...` § 4.3.2 Lineage specific TFs
-- **Figure 2E**: `bulk_transcriptome_epigenome/03-ChIPseq.Rmd...`, § 4.2.1 DGE
+- **Figure 2E**: `bulk_transcriptome_epigenome/03-ChIPseq...`, § 4.2.1 DGE
 - **Figure 2F**: `singlecell_normal/analysis/01-interneuron_pseudotime...`,
     - top panel § 4.1 Cell type density along normal interneuron differentiation trajectory
     - bottom panel § 4.2 Plot genes of interest along pseudotime
@@ -78,6 +80,15 @@ typically saved alongside the figure itself.
 
 
 ## Notes for reproducibility
+
+
+### `rr` template & helpers
+
+This repository uses the [`rr`](https://github.com/sjessa/rr) template, which contains
+a set of R markdown templates to help me ensure reproducibility. Secondly, this also
+provides a set of helper functions (located in `rr_helpers.R` and prefixed by `rr_` in the
+function name) to help encourage documentation.
+
 
 ### R and R package versions
 
