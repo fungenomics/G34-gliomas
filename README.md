@@ -1,4 +1,6 @@
 
+[![DOI](https://zenodo.org/badge/266608930.svg)](https://zenodo.org/badge/latestdoi/266608930)
+
 # G34-gliomas
 
 This repository contains the code & data for the bulk analysis included
@@ -7,7 +9,7 @@ for the analysis that was performed by our lab.
 
 This repository is meant to enhance the STAR Methods section by providing code for the custom analyses
 in the manuscript and the exact R dependencies, in order to improve reproducibility for the main results.
-However, it is not a fully executable workflow.
+However, it is not a fully executable workflow. The code is permanently archived on [Zenodo at the doi 10.5281/zenodo.7086446](https://zenodo.org/record/7086447#.YySdcuzMKZw).
 
 *NOTE*: if viewing on GitHub, only code is visible, as inputs, data, and outputs
 are generally not tracked in git.
