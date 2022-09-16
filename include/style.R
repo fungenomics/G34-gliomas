@@ -4,6 +4,22 @@
 ylrd <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "OrRd"))(n = 100)
 rdbu <- rev(grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(n = 100))
 
+palette_groups <- c(
+  "G34R/V"            = "cyan4",
+  "G34R/V-PDGFRA mut" = "#26A27D",
+  "G34R/V-PDGFRA WT"  = "#145448",
+  "K27M-pons"         = "gold1",
+  "K27M-thal"         = "goldenrod3",
+  "IDH"               = "#883067",
+  "WT"                = "navy",
+  "HGNET-BCOR"        = "lavender")
+
+palette_pdgfra <- c("Mutant" = "red",
+                    "WT"     = "gray70")
+
+palette_g34    <- c("G34R"   = "#3d8a71",
+                    "G34V"   = "#6bbfad") 
+
 
 #' Apply a clean theme to a ggplot2 object
 #'

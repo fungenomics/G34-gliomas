@@ -28,15 +28,20 @@ message("Cache: ", cache)
 
 ```
 
+```{r source, cache = FALSE}
+
+source(here("include/rr_helpers.R")) # source helper functions prefixed by rr_
+source(here("include/style.R"))      # source custom palettes/themes
+
+```
+
 </details>
 
 The root directory of this project is:
 
 ```{r here, echo = FALSE, cache = FALSE}
 
-source(here("include/rr_helpers.R"))
-source(here("include/style.R"))
-message(here())
+message(here::here())
 
 ```
 

@@ -5,9 +5,13 @@ This repository contains the code & data for the bulk analysis included
 the G34R/V HGG manuscript ([Chen, Deshmukh, Jessa, Hadjadj, et al, Cell, 2020](https://doi.org/10.1016/j.cell.2020.11.012)),
 for the analysis that was performed by our lab.
 
+*NOTE*: if viewing on GitHub, only code is visible, as inputs, data, and outputs
+are not tracked in git.
+
 Contents:
 
 * [Directory organization](https://github.com/fungenomics/G34-gliomas#directory-organization)
+* [Map from figures to code](https://github.com/fungenomics/G34-gliomas#map-from-figures-to-code)
 * [Notes for reproducibility](https://github.com/fungenomics/G34-gliomas#notes-for-reproducibility)
 * [GitHub / version control](https://github.com/fungenomics/G34-gliomas#github--version-control)
 
@@ -25,11 +29,13 @@ bulk RNA-seq and ChIP-seq analysis of patient tumors and tumor-derived cell line
     + [Integration of ChIPseq & RNAseq](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/03-ChIPseq.html)
     + [Analysis of RNAseq data from isogenic cell lines](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/04-isogenic_cell_lines.html)
     + [Virtual 4C from HiC data](https://fungenomics.github.io/G34-gliomas/bulk_transcriptome_epigenome/analysis/05-4C.html)
+    + Custom functions used within these analyses are stored in `functions.R` and `ssgsea.R`
 * `singlecell_normal`: data, code, figures and output for analysis of the scRNAseq
 normal brain data
     + [Analysis of gene expression along normal interneuron pseudotime](https://fungenomics.github.io/G34-gliomas/singlecell_normal/analysis/01-interneuron_pseudotime.html)
     + [Bubbleplots of interneuron genes in the normal brain](https://fungenomics.github.io/G34-gliomas/singlecell_normal/analysis/02-gene_bubbleplots.html)
     + [Co-expression of astrocyte/interneuron expression in normal brain & tumors](https://fungenomics.github.io/G34-gliomas/singlecell_normal/analysis/03-astrocyte_interneuron_coexpression.html)
+    + Custom functions used within these analyses are stored in `functions.R`
 * `renv`: directory maintained by the R package `renv`, containing the isolated
 project specific library
 * `include`: shared templates, Rmd/HTML headers/footers, and R functions used
@@ -40,7 +46,7 @@ throughout the analysis
 This section contains a pointer from each figure in the paper to the section (§) where it's generated in the code.
 For each figure panel, I provide a partial path to the RMD/MD/HTML files within this repository/directory,
 and then the section in the rendered HTML which specifically produces that panel.
-As described below in the section on preproducibility, the source data for the figure is
+As described below in the section on reproducibility, the source data for the figure is
 typically saved alongside the figure itself.
 
 ### Figure 2
@@ -93,7 +99,7 @@ typically saved alongside the figure itself.
 ### `rr` template & helpers
 
 This repository uses the [`rr`](https://github.com/sjessa/rr) template, which contains
-a set of R markdown templates to help me ensure reproducibility. Secondly, this also
+a set of R markdown templates to help ensure reproducibility. This template also
 provides a set of helper functions (located in `rr_helpers.R` and prefixed by `rr_` in the
 function name) to help encourage documentation.
 
@@ -109,6 +115,8 @@ which:
 can be used to reproduce the R package environment elsewhere
 
 The R version used is 3.5.1.
+The analysis also makes use of our in-house package for scRNAseq visualization,
+[cytobox](https://github.com/fungenomics/cytobox).
 
 
 ### R Markdown

@@ -2,6 +2,24 @@
 
 # Helpers ----
 
+
+#' Run the important parts of the header.Rmd for interactive use, to establish
+#' the output and figures directories
+rr_i <- function() {
+  
+  library(here)
+  source(here("include/style.R"))
+  
+  # double arrow to set a variable outside the scope of the function
+  out        <<- here(subdir, "output", doc_id); dir.create(out, recursive = TRUE)
+  figout     <<- here(subdir, "figures", doc_id, "/"); dir.create(figout, recursive = TRUE)
+  
+  message("Output: ", out)
+  message("Figures: ", figout)
+  
+}
+
+
 #' The here() function always returns a full path from the root directory
 #' This function returns a path from the project root for less clutter
 #' and greater portability
