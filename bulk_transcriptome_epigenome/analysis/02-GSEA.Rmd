@@ -360,7 +360,7 @@ rr_saveRDS(file = glue("{out}/stats.Rds"),
 
 ## Run GSEA
 
-Running GSEA analysis for each differential expression comparison, using the GSVA package:
+Running GSEA analysis for each differential expression comparison, using the [fgsea](https://www.bioconductor.org/packages/release/bioc/html/fgsea.html) package:
 
 ```{r run_gsea, results = "hide", dependson = 'prep_stats'}
 
@@ -380,7 +380,7 @@ rr_saveRDS(file = glue("{out}/bulk_fgsea.Rds"),
 
 ## Filter gene signatures
 
-For the forebrain reference, remove clusters which are proliferating based on either labeled as such, or Top2a expression,
+For the forebrain reference, remove clusters which are proliferating based on either labeled as such,
 as cell-cycle genes may confound GSEA enrichment scores particularly in these tumor comparisons. No clusters from the striatum/SVZ reference were removed.
 
 ```{r filter_signatures, dependson = c('prep_stats', 'run_gsea'), fig.width = 20, fig.height = 4}
@@ -615,7 +615,7 @@ row_order <- c("HGG-G34R.V_vs_HGG-IDH",
 
 ```{r gsea_heatmap_hgg, echo_fig = TRUE, dependson = 'summarize_cell_types'}
 
-# Prep input
+# Prep input -- function sourced from functions.R
 heatmap_inputs_fb <- prep_gsea_heatmap(fgsea_df,
                                        signatures = signif_in_idh,
                                        filters = quos(Dataset %in% c("Jessa et al 2019",
@@ -741,8 +741,8 @@ depleted signature.
 
 ```{r gsea_enrichment_plots, fig.width = 10, fig.height = 6, dependson = 'prep_stats', echo_fig = TRUE}
 
-# A function to add the NES and adj p-value to the enrichment plot, based on
-# the functions included in the fgsea package
+# A function to add the normalized enrichment score (NES) and adj p-value to the
+# enrichment plot, based on the functions included in the fgsea package
 plot_enrich_with_stats <- function(sig, title, source, colour, plot_num) {
   
   signatures = switch(source,
@@ -751,6 +751,7 @@ plot_enrich_with_stats <- function(sig, title, source, colour, plot_num) {
                       "velmeshev"  = velmeshev_signatures$hg_ens,
                       "anderson"   = anderson_signatures$hg_ens)
   
+  # function sourced from functions.R
   plotEnrichment2(signatures[[sig]],
                   stats$`HGG-G34R.V_vs_HGG-IDH`,
                   colour = colour,

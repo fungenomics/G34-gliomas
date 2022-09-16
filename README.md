@@ -5,8 +5,12 @@ This repository contains the code & data for the bulk analysis included
 the G34R/V HGG manuscript ([Chen, Deshmukh, Jessa, Hadjadj, et al, Cell, 2020](https://doi.org/10.1016/j.cell.2020.11.012)),
 for the analysis that was performed by our lab.
 
+This repository is meant to enhance the STAR Methods section by providing code for the custom analyses
+in the manuscript and the exact R dependencies, in order to improve reproducibility for the main results.
+However, it is not a fully executable workflow.
+
 *NOTE*: if viewing on GitHub, only code is visible, as inputs, data, and outputs
-are not tracked in git.
+are generally not tracked in git.
 
 Contents:
 

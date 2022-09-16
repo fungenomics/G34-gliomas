@@ -124,7 +124,7 @@ data.frame(Group = unique(cell_line_meta$Group_broad),
 ```
 
 
-## Run pipeline on Beluga
+## Run in-house bulk RNAseq pipeline
 
 In order to run the in-house DESeq2/expression analysis pipeline, the inputs
 created above are synced to the pipeline folder, and then
@@ -140,7 +140,7 @@ pipeline_path <- "../../../level3/2020-01_G34_submission1_add_samples/Cell_lines
 
 ```
 
-## Alignment stats
+## Assemble RNAseq alignment stats
 
 ```{r align_stats}
 
@@ -179,13 +179,14 @@ dge_stem <- read_tsv(file.path(pipeline_path, "GBM002_nsm/diff/Ensembl.ensGene.e
 
 ### Targeted DGE, for serum condition - GBM002
 
-Note that I have taken care, here, to use the counts normalized
-for the serum samples together only.
+Note that here, we load the counts which were normalized together for serum
+samples only, since the normalization by DESeq2 is sample-dependent.
 
 ```{r targeted_dge_serum only, fig.width = 14, fig.height = 5}
 
 goi <- c("DLX1", "DLX2", "DLX5", "DLX6", "PDGFRA", "GSX2")
 
+# see function specification in functions.R
 gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                          goi = goi) %>%
     left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
@@ -295,6 +296,7 @@ res_ser %>%
 
 ```{r targeted_dge_nsm}
 
+# see function specification in functions.R
 gbm002_counts_nsm <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_nsm/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                              goi = goi) %>%
     left_join(cell_line_meta, by = c("sample" = "Nickname")) %>% 
@@ -371,7 +373,7 @@ poi <- list("newborn_inhib_neuron" = signatures$`HF nIN1`,
 cl_ssgsea <- ssgsea_le(expr_mat = raw_counts,
                        gene_sets = poi,
                        # Following exactly the same parameters as we used
-                       # in the NG bulk analysis
+                       # in the bulk RNAseq analysis for Jessa et al, Nature Genetics, 2019
                        alpha = 0.75,
                        normalize = FALSE)
 
@@ -441,7 +443,8 @@ tumor_k27me3_filt <- tumor_k27me3 %>%
     filter(`z-score_H3K27me3` > 0.5) %>% 
     distinct(name, .keep_all = TRUE)
 
-# Read in the counts for the cell lines
+# Read in the counts for the cell lines - see function specification 
+# in functions.R
 gbm002_counts <- extract_pipeline_counts(file.path(pipeline_path, "GBM002_ser/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                          goi = tumor_k27me3_filt$name) %>%
     left_join(cell_line_meta, by = c("sample" = "Nickname"))

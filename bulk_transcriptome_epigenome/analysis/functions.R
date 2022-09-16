@@ -2,11 +2,13 @@
 
 
 #' Based off of code from Nicolas De Jay. Extract counts for genes of interest from
-#' the raptor bulk RNA-seq pipeline and wrangle them into tidy format
+#' the in-house raptor bulk RNA-seq pipeline and wrangle them into tidy format
 #'
 #' @param path Character, path to counts file
 #' @param goi Character, vector of one or more gene symbols for genes of interest
 #' for which to retrieve counts
+#' @param long Logical, whether to return data in tidy format (one observation
+#' per row). If FALSE, will return a genes x sample matrix. Default: TRUE.
 #'
 #' @return Data frame with four columns: sample, gene_expression, gene_ensg, gene_symbol
 extract_pipeline_counts <- function(path, goi, long = TRUE) {

@@ -142,7 +142,7 @@ pal_pseudotime <- colorRampPalette(c("navy", "white", "red"))(n = 200)
 
 One way to evaluate whether the genes which drive enrichment of fetal neuronal signatures
 vs. depletion of pediatric/adult signatures in G34 gliomas by GSEA are related to maturity is by checking
-their expression during normal differentiation. Get the genes from the GSEA analysis:
+their expression during normal differentiation. Get the genes from the [GSEA analysis](https://github.com/fungenomics/G34-gliomas/blob/master/bulk_transcriptome_epigenome/analysis/02-GSEA.Rmd):
 
 ```{r load_leading_edge_genes}
 
@@ -160,7 +160,7 @@ leading_edge
 
 ```
 
-However, we only want to plot genes with reasonable mean exp in the clusters of
+However, we only want to plot genes with reasonable mean expression in the clusters of
 this lineage, so that the smoothing makes sense:
 
 ```{r filter_leading_edge_genes, dependson = 'load_leading_edge_genes'}
@@ -179,6 +179,7 @@ filter_by_mean_expr <- function(genes) {
         gather(Gene, Mean_expression, 2:ncol(.)) %>%
         filter(grepl("^F", Cluster) & grepl("e12|e15|p0", Cluster)) %>%
         filter(grepl("INIP|INH|VRGC", Cluster)) %>%
+	  # Define reasonable expression as > 0.1
         filter(Mean_expression > 0.1) %>%
         pull(Gene) %>%
         unique() %>%
@@ -191,8 +192,8 @@ names(leading_edge_filt) <- gsub(" ", "_", names(leading_edge_filt))
 
 ```
 
-Extract genes to examine in pseudotime from the transcriptome/epigenome analyses -- we'll
-gate genes based on high zK27Ac and low zK27me3, or vice versa:
+Extract genes to examine in pseudotime from the [joint transcriptome/epigenome analyses](https://github.com/fungenomics/G34-gliomas/blob/master/bulk_transcriptome_epigenome/analysis/03-ChIPseq.Rmd) -- we'll
+gate genes based on high z-score for H3K27Ac and low z-score for H3K27me3, or vice versa:
 
 ```{r epi_filter_genes}
 

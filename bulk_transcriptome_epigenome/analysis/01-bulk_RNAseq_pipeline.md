@@ -1,6 +1,6 @@
 ---
 title: "01 - Bulk RNAseq"
-date: "11 December, 2020"
+date: "22 November, 2021"
 output:
   html_document:
     keep_md: true
@@ -52,6 +52,11 @@ message("Cache: ", cache)
 
 ```
 ## Cache: ~/tmp/G34-gliomas/bulk_transcriptome_epigenome/01/
+```
+
+```r
+source(here("include/rr_helpers.R")) # source helper functions prefixed by rr_
+source(here("include/style.R"))      # source custom palettes/themes
 ```
 
 </details>
@@ -177,7 +182,7 @@ for (group in groups) {
   dir.create(file.path(out, comp), showWarnings = FALSE)
   
   # Create the info.samples.tsv, which needs three columns: ID (path
-  # to the alignment and counts on Hydra), Nickname (short sample name), and Group
+  # to the alignment and counts in our in-house pipeline), Nickname (short sample name), and Group
   bulk_samples %>%
     select(ID, Nickname = Sample, Group, Batch = G34_batch) %>%
     filter(Group %in% c("HGG-G34R/V", group)) %>%
@@ -284,7 +289,8 @@ pipeline_path <- "../../../level3/2020-01_G34_submission1_add_samples/"
 # Define genes which we'll plot in this document
 genes_of_interest <- c("GSX2", "DLX1", "DLX2", "PDGFRA", "MOXD1", "EOMES", "NEUROD2")
 
-# Load counts and convert to tidy format
+# Load counts and convert to tidy format - see function specification 
+# in functions.R
 counts_subset <- extract_pipeline_counts(path = file.path(pipeline_path,
                                                           "All_tumor_samples/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
                                          goi = genes_of_interest) %>% 
@@ -582,7 +588,7 @@ map_dfr(unique(cor_df_non_g34$Group2), function(grp) {
   </script>
 </div>
 
-## Extract DGE
+## Extract differential gene expression analysis
 
 
 
@@ -617,7 +623,7 @@ read.table(file.path(pipeline_path, "HGG-G34R.V_vs_HGG-IDH_batch_covariate/diff/
 This document was last rendered on:
 
 ```
-## 2020-12-11 13:30:02
+## 2021-11-22 16:00:13
 ```
 
 The git repository and last commit:
@@ -625,7 +631,7 @@ The git repository and last commit:
 ```
 ## Local:    master /lustre03/project/6004736/sjessa/from_beluga/HGG-G34/G34-gliomas
 ## Remote:   master @ origin (git@github.com:fungenomics/G34-gliomas.git)
-## Head:     [71d3b7e] 2020-09-28: Ignore slurm submission script
+## Head:     [906cd43] 2021-11-22: Merge branch 'master' of github.com:fungenomics/G34-gliomas
 ```
 
 The random seed was set with `set.seed(100)`
@@ -650,26 +656,22 @@ The R session info:
 ## [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices datasets  utils     methods   base     
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
 ##  [1] ggrepel_0.8.0 scales_1.1.1  ggplot2_3.1.0 purrr_0.3.4   glue_1.4.2   
 ##  [6] magrittr_1.5  dplyr_0.8.0   readr_1.3.1   tidyr_0.8.2   here_0.1     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.5          git2r_0.27.1        plyr_1.8.6         
-##  [4] pillar_1.4.6        compiler_3.5.1      RColorBrewer_1.1-2 
-##  [7] BiocManager_1.30.10 tools_3.5.1         digest_0.6.25      
-## [10] evaluate_0.14       lifecycle_0.2.0     tibble_3.0.3       
-## [13] gtable_0.3.0        pkgconfig_2.0.3     rlang_0.4.7        
-## [16] yaml_2.2.1          xfun_0.17           withr_2.2.0        
-## [19] stringr_1.4.0       knitr_1.29          vctrs_0.3.4        
-## [22] hms_0.5.3           rprojroot_1.3-2     grid_3.5.1         
-## [25] tidyselect_1.1.0    R6_2.4.1            rmarkdown_1.11     
-## [28] backports_1.1.9     ellipsis_0.3.1      htmltools_0.5.0    
-## [31] assertthat_0.2.1    colorspace_1.4-1    renv_0.10.0        
-## [34] stringi_1.5.3       lazyeval_0.2.2      munsell_0.5.0      
-## [37] crayon_1.3.4
+##  [1] Rcpp_1.0.5         git2r_0.27.1       pillar_1.4.6       compiler_3.5.1    
+##  [5] RColorBrewer_1.1-2 plyr_1.8.6         tools_3.5.1        digest_0.6.25     
+##  [9] evaluate_0.14      lifecycle_0.2.0    tibble_3.0.3       gtable_0.3.0      
+## [13] pkgconfig_2.0.3    rlang_0.4.7        yaml_2.2.1         xfun_0.17         
+## [17] withr_2.2.0        stringr_1.4.0      knitr_1.29         vctrs_0.3.4       
+## [21] hms_0.5.3          rprojroot_1.3-2    grid_3.5.1         tidyselect_1.1.0  
+## [25] R6_2.4.1           rmarkdown_1.11     backports_1.1.9    ellipsis_0.3.1    
+## [29] htmltools_0.5.0    assertthat_0.2.1   colorspace_1.4-1   stringi_1.5.3     
+## [33] lazyeval_0.2.2     munsell_0.5.0      crayon_1.3.4
 ```
 
 </details>

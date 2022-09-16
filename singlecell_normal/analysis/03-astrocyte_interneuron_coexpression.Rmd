@@ -37,7 +37,7 @@ cat(res, sep = '\n')
 
 # Overview
 
-Given that we a dual neuronal-astrocytic gene expression program in the tumors,
+Given that we observe a dual neuronal-astrocytic gene expression program in the tumors,
 here we interrogate the expression of interneuron and astrocytic
 gene signatures in the normal brain, and then evaluate the same signatures
 in the tumors, to understand if this is an
@@ -118,7 +118,8 @@ palette_atlas[grepl("MGIN|CINH", names(palette_atlas))] <- "#084081"
 
 ## Get gene signatures
 
-Here, we'll get the leading edge genes from the GSEA analysis, for one human
+Here, we'll get the leading edge genes from the [GSEA analysis](https://github.com/fungenomics/G34-gliomas/blob/master/bulk_transcriptome_epigenome/analysis/02-GSEA.Rmd),
+for one human
 interneuron signature and one astrocyte signature, both enriched in G34R/V tumors.
 
 ```{r get_le}
@@ -219,7 +220,8 @@ data_atlas %>%
 
 ## H3G34R/V tumors
 
-Load Seurat object with all samples combined, and re-constitute a V2 object from the V3 object:
+Load Seurat object with all samples combined. The integration was done in Seurat V3, so here,
+we re-constitute a V2 object from the V3 object, since we are using Seurat V2 throughout this analysis:
 
 ```{r load_g34, cache = FALSE, eval = FALSE}
 

@@ -67,7 +67,7 @@ source(here::here(subdir, "analysis/functions.R"))
 
 ## Load data
 
-Load tumor data:
+Load tumor data including differential expression analysis with filtering, created in the document `01`:
 
 ```{r load_data}
 
@@ -122,14 +122,15 @@ epi <- epi %>%
 
 ```
 
+For ChIPseq levels, for each gene, take the mean across transcripts:
+
 ```{r epi_mean}
 
 epi_mean <- epi %>%
   select(1:7, G34RV.K27me3.median, nonG34RV.K27me3.median, G34RV.K27ac.median, nonG34RV.K27ac.median, G34R.zK27m3, G34R.zK27ac) %>% 
   gather(Stat, Score, 8:ncol(.)) %>% 
   group_by(name, Stat) %>% 
-  # Take the mean over different transcripts (although note that for each transcript,
-  # the score is the same anyway)
+  # Take the mean over different transcripts (although note that for each transcript)
   summarize(Score = mean(Score)) %>% 
   spread(Stat, Score) %>% 
   ungroup()
@@ -148,9 +149,10 @@ rr_saveRDS(desc = "Median and z-scored values of promoter H3K27me3/ac for G34 an
 
 ```
 
-## Crossing epigenomics with other data
+## Crossing epigenomics with RNAseq
 
-### DGE
+Here, we'll cross histone mark enrichment with gene-wise scores from differential
+gene expression analysis based on bulk RNAseq.
 
 ```{r dge_and_epi, echo_fig = TRUE, fig.width = 7, fig.height = 5}
 

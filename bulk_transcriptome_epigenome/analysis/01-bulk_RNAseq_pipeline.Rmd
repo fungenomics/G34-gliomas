@@ -114,9 +114,9 @@ for (group in groups) {
   dir.create(file.path(out, comp), showWarnings = FALSE)
   
   # Create the info.samples.tsv, which needs three columns: ID (path
-  # to the alignment and counts on Hydra), Nickname (short sample name), and Group
+  # to the alignment and counts in our in-house pipeline), Nickname (short sample name), and Group
   bulk_samples %>%
-    select(ID, Nickname = Sample, Group, Batch = G34_batch) %>%
+    select(ID, Nickname = ID_paper, Group, Batch = G34_batch) %>%
     filter(Group %in% c("HGG-G34R/V", group)) %>%
     write_tsv(file.path(out, comp, "info.samples.tsv"))
   
@@ -142,7 +142,7 @@ dataset-dependent, and we will compare expression levels across groups.
 dir.create(file.path(out, "All_tumor_samples"), showWarnings = FALSE)
 
 bulk_samples %>%
-  select(ID, Nickname = IC_Sample, Group) %>%
+  select(ID, Nickname = ID_paper, Group) %>%
   write_tsv(file.path(out, "All_tumor_samples", "info.samples.tsv"))
 
 data.frame(Group = unique(bulk_samples$Group),
@@ -164,7 +164,7 @@ dir.create(file.path(out, "G34RV_by_PDGFRA"), showWarnings = FALSE)
 
 bulk_samples %>%
   filter(Group == "HGG-G34R/V") %>% 
-  select(ID, Nickname = Sample, Group = Genotype_PDGFRA, G34_batch, Genotype_G34) %>%
+  select(ID, Nickname = ID_paper, Group = Genotype_PDGFRA, G34_batch, Genotype_G34) %>%
   write_tsv(file.path(out, "G34RV_by_PDGFRA", "info.samples.tsv"))
 
 data.frame(Group = c("Mutant", "WT"),
@@ -175,9 +175,9 @@ data.frame(Group = c("Mutant", "WT"),
 
 ```
 
-The in-house RNAseq pipeline is then run on these inputs, generating
+Our in-house RNAseq pipeline, `rapor`, is then run on these inputs, generating
 normalized expression counts as well as the output of differential gene expression
-analysis using DESeq2.
+analysis using DESeq2. Normalized counts are saved at `bulk_transcriptome/epigenome/data/raptor_pipeline_output`.
 
 
 ## Prepare inputs for RNAseq pipeline - cell lines
@@ -186,51 +186,27 @@ Load sample metadata for parental cell lines:
 
 ```{r load_cl_meta, message = FALSE}
 
-cl_samples <- readxl::read_xlsx(here::here(subdir, "data/2020-07-23_cellline_parental_metadata.xlsx"))
+cl_samples <- readxl::read_xlsx(here::here(subdir, "data/2020-07-23_cellline_parental_metadata.xlsx")) %>% 
+  mutate(ID_paper = Sample)
 
 ```
 
 
 ## Plot gene expression: tumours
 
-Prepare colour palettes for visualization:
-
-```{r palettes}
-
-palette_groups <- c(
-  "G34R/V"            = "cyan4",
-  "G34R/V-PDGFRA mut" = "#26A27D",
-  "G34R/V-PDGFRA WT"  = "#145448",
-  "K27M-pons"         = "gold1",
-  "K27M-thal"         = "goldenrod3",
-  "IDH"               = "#883067",
-  "WT"                = "navy",
-  "HGNET-BCOR"        = "lavender")
-
-palette_pdgfra <- c("Mutant" = "red",
-                    "WT"     = "gray70")
-
-palette_g34    <- c("G34R"   = "#3d8a71",
-                    "G34V"   = "#6bbfad") 
-
-```
-
-
-
 Load normalized counts for genes of interest from the pipeline run:
 
 ```{r load_counts}
 
-pipeline_path <- "../../../level3/2020-01_G34_submission1_add_samples/"
-
 # Define genes which we'll plot in this document
 genes_of_interest <- c("GSX2", "DLX1", "DLX2", "PDGFRA", "MOXD1", "EOMES", "NEUROD2")
 
-# Load counts and convert to tidy format
-counts_subset <- extract_pipeline_counts(path = file.path(pipeline_path,
-                                                          "All_tumor_samples/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
+# Load counts and convert to tidy format - see function specification 
+# in functions.R
+counts_subset <- extract_pipeline_counts(path = file.path(here(subdir, "data/raptor_pipeline_output"),
+                                                          "All_tumor_samples/Ensembl.ensGene.exon.norm.tsv.gz"),
                                          goi = genes_of_interest) %>% 
-  left_join(bulk_samples, by = c("sample" = "Sample"))
+  left_join(bulk_samples, by = c("sample" = "ID_paper"))
 
 # Tidy up and simplify the names of the tumor groups
 counts_subset <- counts_subset %>%
@@ -327,9 +303,9 @@ data for human tumours and patient-derived cell lines.
 
 goi <- c("GSX2", "PDGFRA")
 
-cor_df <- extract_pipeline_counts(file.path(pipeline_path, "G34RV_and_parental_cell_lines/counts/Ensembl.ensGene.exon.norm.tsv.gz"),
+cor_df <- extract_pipeline_counts(file.path(here(subdir, "data/raptor_pipeline_output"), "G34RV_and_parental_cell_lines/Ensembl.ensGene.exon.norm.tsv.gz"),
                                   goi)  %>% 
-  left_join(bind_rows(bulk_samples, cl_samples), by = c("sample" = "Sample")) %>%
+  left_join(bind_rows(bulk_samples, cl_samples), by = c("sample" = "ID_paper")) %>%
   mutate(Group2 = paste0(Source, " - ", Genotype_PDGFRA)) %>% 
   select(sample, Group2, gene_symbol, gene_expression, Source) %>%
   spread(gene_symbol, gene_expression)
@@ -379,14 +355,6 @@ p1
 
 ```
 
-<!-- Generate a version with labels: -->
-
-<!-- ```{r cor_plot_lab, fig.width = 12, fig.height = 9} -->
-
-<!-- p1 + -->
-<!--     geom_label_repel(aes(label = sample)) -->
-
-<!-- ``` -->
 
 ### Non-G34
 
@@ -432,7 +400,7 @@ map_dfr(unique(cor_df_non_g34$Group2), function(grp) {
 
 ```
 
-## Extract DGE
+## Extract differential gene expression analysis
 
 
 ```{r dge}

@@ -62,7 +62,7 @@ source(here(subdir, "analysis/functions.R"))
 
 ## Mouse developing forebrain
 
-Get expression & signatures:
+Get expression & signatures which were assembled for the [GSEA analysis](https://github.com/fungenomics/G34-gliomas/blob/master/bulk_transcriptome_epigenome/analysis/02-GSEA.Rmd):
 
 ````{r load_atlas}
 
@@ -71,6 +71,7 @@ atlas_signatures <- readRDS(here("bulk_transcriptome_epigenome/output/02/atlas_s
 # Get genes for neuro-ectoderm mouse forebrain clusters
 atlas_signatures <- atlas_signatures$mm_sym[grepl("^F", names(atlas_signatures$mm_sym)) & !grepl("MGL|MAC|ENDO|PERI|MNG", names(atlas_signatures$mm_sym))]
 
+# Certain signatures blacklisted to to high cycling signature, heterogeneous cells, poor markers, etc:
 blacklist <- read_tsv(here("reference_datasets/2019_Jessa/Jessa2019_Table_2a.tsv")) %>%
   select(Cluster, Signature) %>%
   filter(is.na(Signature)) %>%
